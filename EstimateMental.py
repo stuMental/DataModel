@@ -8,6 +8,7 @@ import Preprocessor
 import Logger
 import Config
 import DbUtil
+import CalcCourseMetric
 
 class EstimateMental(object):
     """docstring for EstimateMental"""
@@ -17,25 +18,24 @@ class EstimateMental(object):
         self.__preprocessor = Preprocessor()
         self.__metric = CalcMetric()
         self.__poster = PostMetric()
+        self.__course = CalcCourseMetric()
         self.__db = DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
 
     def estimate(self):
         times = CommonUtil.get_time_range()
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_time'], times['end_time']))
         self.__preprocessor.preprocessor(times['start_time'], times['end_time'])
-        self.__logger.info("Finished to preprocess.")
 
-        self.__logger.info("Begin to compute metrics")
-        metrics = self.__metric.calculate_metrics(times['start_time'], times['end_time'])
-        self.__logger.info("Finished to compute metrics, such as study_state, emotion, mental, relationship.")
-
-        self.__logger.info("Begin to compute interest metric")
+        self.__logger.info("Begin to compute and post daily metrics")
+        metrics = self.__metric.calculate_daily_metrics(times['start_time'], times['end_time'])
         metrics = self.estimate_interest(times['end_time'], metrics)
-        self.__logger.info("Finished to compute interest metric.")
+        self.__poster.post(metrics)
+        self.__logger.info("Finished to compute and post daily metrics")
 
-        self.__logger.info("Begin to post results to UI Database")
-        self.__poster.Post(metrics)
-        self.__logger.info("Finished to process data between {0} and {1}.".format(times['start_time'], times['end_time']))
+        self.__logger.info("Begin to compute and post daily course metrics")
+        course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
+        self.__poster.post_course_metric(metrics)
+        self.__logger.info("Finished to compute and post daily course metrics")
 
     def count_interest(self, end_time):
         ''''''

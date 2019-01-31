@@ -16,7 +16,10 @@ class CalcMetric(object):
     def calculate_daily_metrics(self, start_time, end_time):
         """
             Calculate 4 metrics, including student_emotion, student_study_stat, student_relationship, and student_mental_stat.
-            return {'face_id1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}, 'face_id2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}}
+            return {
+                'face_id1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}, 
+                'face_id2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}
+            }
         """
 
         # Compute the count of each basic metric
@@ -31,17 +34,17 @@ class CalcMetric(object):
         metrcis = {}
         # Calculate student mental status based on body_stat and emotion
         for key, value in emotion_count.items():
-            if not metrcis.has_key(key):
-                metrcis[key] = {}
-
-            metrcis[key]['student_mental_stat'] = self.estimate_mental_stat(value, body_stat_count[key])
+            if body_stat_count.has_key(key):
+                if not metrcis.has_key(key):
+                    metrcis[key] = {}
+                metrcis[key]['student_mental_stat'] = self.estimate_mental_stat(value, body_stat_count[key])
 
         # Calculate student study status based on student mental and face_pose
         # Calculate threshold
         study_stat_thresholds = self.calculate_study_threshold(face_pose_count)
         for key in metrcis:
             if face_pose_count.has_key(key):
-                metrcis[key]['student_study_stat'] = self.estimate_study_stat(metrcis[key], face_pose_count[key], study_stat_thresholds)        
+                metrcis[key]['student_study_stat'] = self.estimate_study_stat(metrcis[key], face_pose_count[key], study_stat_thresholds)
 
         # Calculate student emotion based on emotions
         # Calculate threshold

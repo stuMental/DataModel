@@ -38,7 +38,7 @@ class Preprocessor(object):
                         camera_id, face_pose_stat_time, face_pose, COUNT(*) AS num
                     FROM {2}
                     WHERE face_pose != '-1' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
-                    GROUP BY camera_id, face_pose_stat_time, face_pose
+                    GROUP BY camera_id, face_pose_stat_time, face_posez
                 ) AS t1
                 LEFT OUTER JOIN
                 (
