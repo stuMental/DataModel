@@ -213,7 +213,7 @@ class Preprocessor(object):
     def get_status(self, overall_data, row):
         ''''''
         for r in overall_data:
-            if r[0] == row[0] && r[1] == row[1] && r[2] == row[2]:
+            if r[0] == row[0] and r[1] == row[1] and r[2] == row[2]:
                 return 1 if r[3] >= 0.5 else 0
 
     def get_face_pose_stat(self, ratio):
@@ -228,7 +228,7 @@ class Preprocessor(object):
         maxValue = 0
         res = '-1' # means 'unknown'
         for r in data:
-            if r[0] == row[0] && r[1] == row[1] && maxValue < r[3]:
+            if r[0] == row[0] and r[1] == row[1] and maxValue < r[3]:
                 res = r[2]
                 maxValue = r[3]
 
