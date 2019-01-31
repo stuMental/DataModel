@@ -1,0 +1,106 @@
+Table
+    - person_body_status
+        - id
+        - camera_id
+        - frame_id
+        - body_id
+        - body_stat 军人 0: 姿态 1: 写字 2: 其他 -1: unknown 0： 正常姿态 1: 站立 2: 举手 3：睡觉 4：手托头听课 5：趴着听课
+        - body_track
+        - face_id 学生学号 通过人脸识别之后定位到学生的基本信息
+        - face_track
+        - face_pose  -1: unknown 0： 平视 1: 左顾右盼 2: 低头
+        - face_pose_stat 0： 表示正常 1: 表示不正常
+        - face_pose_stat_time
+        - face_emotion -1: unknown 0: 正常 1: 开心 2: 低落
+        - yawn 0: 没有 1: 打哈欠
+        - unix_timestamp
+        - pose_stat_time: max(body_stat\face_ose) group by pose_stat_time
+        - course_name: 学科
+
+        精神状态 （课堂）
+            - 疲惫
+                body_stat
+                    - body_stat 1， 2 次数大于10
+                emotion
+                    - 开心 小于3 or 低落 > 10
+            - 积极
+                body_stat
+                    - 5 >= 2 or 4 >= 2
+                emotion
+                    - 微笑 > 10
+            - 正常
+                else
+
+        学习状态 （课堂）
+            - 不佳
+                精神状态
+                    - 疲惫
+                face_pose
+                    - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 最后 10%
+            - 非常好
+                精神状态
+                    - 积极
+                face_pose
+                    - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 Top 10%
+            - 良好
+                精神状态
+                    - 积极 或者 正常
+                face_pose
+                    - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 Top 40%
+            - 正常
+                else
+
+        情绪 （天） 阈值 + Top K
+            - 低落
+                emotion
+                    - 低落次数 >= 50 && 低落次数降序 Top 10%
+            - 开心
+                emotion
+                    - 开心次数 >= 50 && 开心次数降序 Top 30%
+            - 正常 - other
+
+        人际关系 (课间数据) 数据累计>= 30 && 该学生出现次数 >= 500 才会评估
+            - 孤僻
+                face_pose
+                    - 低头 比例 >= 60%
+                emotion
+                    - 微笑 比例 <= 1%
+            - 非常好
+                face_pose
+                    - 左顾右盼 比例 >= 30%
+                emotion
+                    - 微笑 比例 >= 10%
+            - 良好
+                face_pose
+                    - 左顾右盼 比例 >= 15%
+                emotion
+                    - 微笑 比例 >= 5%
+            - 正常 - other
+
+        学科兴趣 (课堂) 数据积累 >= 30
+            科目
+                - 学习状态 （天）
+                    良好 + 非常好 >= 60%
+                - 成绩
+                    >= 80分 [0-150] => [0-100]）
+                - or 个人证书
+
+Output Table
+    - student_mental_status_daily
+        - student_number
+        - student_relationship
+        - student_emotion
+        - student_mental_stat
+        - student_study_stat
+        - student_interest
+        - ds
+
+    - student_mental_status_course_daily
+        - student_number
+        - course_name
+        - student_relationship
+        - student_emotion
+        - student_mental_stat
+        - student_study_stat
+        - student_interest
+        - ds
