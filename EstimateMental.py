@@ -54,7 +54,7 @@ class EstimateMental(object):
             if not res[row[0]].has_key(row[1]):
                 res[row[0]][row[1]] = 0
 
-            if row[2] == 0 || row[2] == 1: # 非常好 + 良好的总计天数
+            if row[2] == 0 or row[2] == 1: # 非常好 + 良好的总计天数
                 res[row[0]][row[1]] += 1
             else:
                 continue

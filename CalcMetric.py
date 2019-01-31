@@ -56,7 +56,7 @@ class CalcMetric(object):
         emotion_count = self.count_face_emotion(CommonUtil.get_specific_time(end_time, Config.LOOKBACKWINDOW), end_time, True)
         face_pose_count = self.count_face_pose(CommonUtil.get_specific_time(end_time, Config.LOOKBACKWINDOW), end_time, True)
         for key in metrcis:
-            if emotion_count.has_key(key) && face_pose_count.has_key(key):
+            if emotion_count.has_key(key) and face_pose_count.has_key(key):
                 metrcis[key]['student_relationship'] = self.estimate_relationship(emotion_count[key], face_pose_count[key], relationship_thresholds)
         self.__logger.info("Finished to compute high-level metrics")
 
@@ -263,31 +263,31 @@ class CalcMetric(object):
 
     def estimate_relationship(self, emotions, face_poses, thresholds):
         ''' Estimate the relationship based on threshold and top k'''
-        if emotions['emotion_happy'] < thresholds['solitary_smile'] && face_poses['face_pose_low'] > thresholds['solitary_low']: # 人际关系 -- 孤僻
+        if emotions['emotion_happy'] < thresholds['solitary_smile'] and face_poses['face_pose_low'] > thresholds['solitary_low']: # 人际关系 -- 孤僻
             return 3
-        elif emotions['emotion_happy'] > thresholds['great_smile']  && face_poses['face_pose_around'] > thresholds['great_around']: # 人际关系 -- 非常好
+        elif emotions['emotion_happy'] > thresholds['great_smile']  and face_poses['face_pose_around'] > thresholds['great_around']: # 人际关系 -- 非常好
             return 0
-        elif emotions['emotion_happy'] > thresholds['good_smile'] && face_poses['face_pose_around'] > thresholds['good_around']: # 人际关系 -- 良好
+        elif emotions['emotion_happy'] > thresholds['good_smile'] and face_poses['face_pose_around'] > thresholds['good_around']: # 人际关系 -- 良好
             return 1
         else: # 人际关系 -- 正常
             return 2
 
     def estimate_emotion(self, emotions, thresholds):
         ''''''
-        if emotions['emotion_low'] > Config.EMOTION_THRESHOLD_LOW['SAD_FREQUENCY'] && emotions['emotion_low'] > thresholds['emotion_low']: # 情绪 -- 低落
+        if emotions['emotion_low'] > Config.EMOTION_THRESHOLD_LOW['SAD_FREQUENCY'] and emotions['emotion_low'] > thresholds['emotion_low']: # 情绪 -- 低落
             return 2
-        elif emotions['emotion_happy'] > Config.EMOTION_THRESHOLD_HAPPY['SMILE_FREQUENCY'] && emotions['emotion_happy'] > thresholds['emotion_happy']: # 情绪 -- 开心
+        elif emotions['emotion_happy'] > Config.EMOTION_THRESHOLD_HAPPY['SMILE_FREQUENCY'] and emotions['emotion_happy'] > thresholds['emotion_happy']: # 情绪 -- 开心
             return 0
         else: # 情绪 -- 正常
             return 1
 
     def estimate_study_stat(self, mentals, face_poses, thresholds):
         ''''''
-        if mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'] && face_poses['face_pose_normal'] < thresholds['study_bad']: # 学习状态 -- 不佳
+        if mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'] and face_poses['face_pose_normal'] < thresholds['study_bad']: # 学习状态 -- 不佳
             return 3
-        elif mentals['student_mental_stat'] == Config.STUDY_THREHOLD_GREAT['MENTAL'] && face_poses['face_pose_normal'] > thresholds['study_great']: # 学习状态 -- 非常好
+        elif mentals['student_mental_stat'] == Config.STUDY_THREHOLD_GREAT['MENTAL'] and face_poses['face_pose_normal'] > thresholds['study_great']: # 学习状态 -- 非常好
             return 0
-        elif mentals['student_mental_stat'] in Config.STUDY_THREHOLD_GOOD['MENTAL'] && face_poses['face_pose_normal'] > thresholds['study_good']: # 学习状态 -- 良好
+        elif mentals['student_mental_stat'] in Config.STUDY_THREHOLD_GOOD['MENTAL'] and face_poses['face_pose_normal'] > thresholds['study_good']: # 学习状态 -- 良好
             return 1
         else: # 学习状态 -- 正常
             return 2
@@ -295,13 +295,13 @@ class CalcMetric(object):
     def estimate_mental_stat(self, emotion, body_stat):
         ''''''
         if ((emotion['emotion_happy'] < Config.MENTAL_THRESHOLD_TIRED['EMOTION_SMILE'] \
-            || emotion['emotion_low'] > Config.MENTAL_THRESHOLD_TIRED['EMOTION_LOW']) \
-        && (body_stat['body_stat_sttk'] > Config.MENTAL_THRESHOLD_TIRED['BODY_STAT'] \
-        || body_stat['body_stat_pztk'] > Config.MENTAL_THRESHOLD_TIRED['BODY_STAT'])): # 精神状态 -- 疲惫
+            or emotion['emotion_low'] > Config.MENTAL_THRESHOLD_TIRED['EMOTION_LOW']) \
+        and (body_stat['body_stat_sttk'] > Config.MENTAL_THRESHOLD_TIRED['BODY_STAT'] \
+        or body_stat['body_stat_pztk'] > Config.MENTAL_THRESHOLD_TIRED['BODY_STAT'])): # 精神状态 -- 疲惫
             return 2
         elif (emotion['emotion_happy'] > Config.MENTAL_THRESHOLD_POSITIVE['EMOTION_SMILE'] \
-        && (body_stat['body_stat_sttk'] > Config.MENTAL_THRESHOLD_POSITIVE['BODY_STAT'] \
-        || body_stat['body_stat_pztk'] > Config.MENTAL_THRESHOLD_POSITIVE['BODY_STAT'])): # 精神状态 -- 积极
+        and (body_stat['body_stat_sttk'] > Config.MENTAL_THRESHOLD_POSITIVE['BODY_STAT'] \
+        or body_stat['body_stat_pztk'] > Config.MENTAL_THRESHOLD_POSITIVE['BODY_STAT'])): # 精神状态 -- 积极
             return 0
         else: # 正常
             return 1
