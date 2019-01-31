@@ -4,7 +4,7 @@
 class ClassAPI(object):
     """ Call some APIs of School """
     def __init__(self):
-        super(ClassInfo, self).__init__()
+        super(ClassAPI, self).__init__()
 
     @staticmethod
     def get_class_info(self, student_number):

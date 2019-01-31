@@ -7,9 +7,9 @@ import Logger
 import ClassAPI
 
 class Preprocessor(object):
-    """docstring for CheckAndUpdate"""
+    """docstring for Preprocessor"""
     def __init__(self):
-        super(CheckAndUpdate, self).__init__()
+        super(Preprocessor, self).__init__()
         self.__db = DBUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger(__name__)
 
