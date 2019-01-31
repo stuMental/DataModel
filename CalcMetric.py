@@ -5,12 +5,14 @@ import DbUtil
 import Logger
 import math
 import CommonUtil
+import MetricUtil
 
 class CalcMetric(object):
     """docstring for CalcMetric"""
     def __init__(self):
         super(CalcMetric, self).__init__()
         self.__db = DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__util = MetricUtil()
         self.__logger = Logger(__name__)
 
     def calculate_daily_metrics(self, start_time, end_time):
@@ -37,14 +39,14 @@ class CalcMetric(object):
             if body_stat_count.has_key(key):
                 if not metrcis.has_key(key):
                     metrcis[key] = {}
-                metrcis[key]['student_mental_stat'] = self.estimate_mental_stat(value, body_stat_count[key])
+                metrcis[key]['student_mental_stat'] = self.__util.estimate_mental_stat(value, body_stat_count[key])
 
         # Calculate student study status based on student mental and face_pose
         # Calculate threshold
-        study_stat_thresholds = self.calculate_study_threshold(face_pose_count)
+        study_stat_thresholds = self.__util.calculate_study_threshold(face_pose_count)
         for key in metrcis:
             if face_pose_count.has_key(key):
-                metrcis[key]['student_study_stat'] = self.estimate_study_stat(metrcis[key], face_pose_count[key], study_stat_thresholds)
+                metrcis[key]['student_study_stat'] = self.__util.estimate_study_stat(metrcis[key], face_pose_count[key], study_stat_thresholds)
 
         # Calculate student emotion based on emotions
         # Calculate threshold
@@ -64,25 +66,6 @@ class CalcMetric(object):
         self.__logger.info("Finished to compute high-level metrics")
 
         return metrcis
-
-    def calculate_study_threshold(self, data):
-        ''''''
-        res = []
-        for key, value in data.items():
-            res.append(value['face_pose_normal'])
-
-        res.sort(reverse=True)
-        length = len(data)
-
-        threshold = {}
-        # 不佳
-        threshold['study_bad'] = res[math.floor(length * Config.STUDY_THREHOLD_BAD['FACE_POSE_NORMAL'])]
-        # 非常好
-        threshold['study_great'] = res[math.floor(length * Config.STUDY_THREHOLD_GREAT['FACE_POSE_NORMAL'])]
-        # 良好
-        threshold['study_good'] = res[math.floor(length * Config.STUDY_THREHOLD_GOOD['FACE_POSE_NORMAL'])]
-
-        return threshold
 
     def calculate_emotion_threshold(self, data):
         ''''''
@@ -282,29 +265,4 @@ class CalcMetric(object):
         elif emotions['emotion_happy'] > Config.EMOTION_THRESHOLD_HAPPY['SMILE_FREQUENCY'] and emotions['emotion_happy'] > thresholds['emotion_happy']: # 情绪 -- 开心
             return 0
         else: # 情绪 -- 正常
-            return 1
-
-    def estimate_study_stat(self, mentals, face_poses, thresholds):
-        ''''''
-        if mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'] and face_poses['face_pose_normal'] < thresholds['study_bad']: # 学习状态 -- 不佳
-            return 3
-        elif mentals['student_mental_stat'] == Config.STUDY_THREHOLD_GREAT['MENTAL'] and face_poses['face_pose_normal'] > thresholds['study_great']: # 学习状态 -- 非常好
-            return 0
-        elif mentals['student_mental_stat'] in Config.STUDY_THREHOLD_GOOD['MENTAL'] and face_poses['face_pose_normal'] > thresholds['study_good']: # 学习状态 -- 良好
-            return 1
-        else: # 学习状态 -- 正常
-            return 2
-
-    def estimate_mental_stat(self, emotion, body_stat):
-        ''''''
-        if ((emotion['emotion_happy'] < Config.MENTAL_THRESHOLD_TIRED['EMOTION_SMILE'] \
-            or emotion['emotion_low'] > Config.MENTAL_THRESHOLD_TIRED['EMOTION_LOW']) \
-        and (body_stat['body_stat_sttk'] > Config.MENTAL_THRESHOLD_TIRED['BODY_STAT'] \
-        or body_stat['body_stat_pztk'] > Config.MENTAL_THRESHOLD_TIRED['BODY_STAT'])): # 精神状态 -- 疲惫
-            return 2
-        elif (emotion['emotion_happy'] > Config.MENTAL_THRESHOLD_POSITIVE['EMOTION_SMILE'] \
-        and (body_stat['body_stat_sttk'] > Config.MENTAL_THRESHOLD_POSITIVE['BODY_STAT'] \
-        or body_stat['body_stat_pztk'] > Config.MENTAL_THRESHOLD_POSITIVE['BODY_STAT'])): # 精神状态 -- 积极
-            return 0
-        else: # 正常
             return 1
