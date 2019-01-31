@@ -98,9 +98,6 @@ Output Table
     - student_mental_status_course_daily
         - student_number
         - course_name
-        - student_relationship
-        - student_emotion
         - student_mental_stat
         - student_study_stat
-        - student_interest
         - ds
