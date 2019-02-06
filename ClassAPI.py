@@ -14,7 +14,7 @@ class ClassAPI(object):
     @staticmethod
     def get_course_name(self, camera_id, timespan):
         ''' Get course number according to camera_id and timespan by API '''
-        return ['course_name', 'teacher_name']
+        return ['数学', '张小明'] # Just for test
 
     @staticmethod
     def get_grade(self, student_number, course_name):

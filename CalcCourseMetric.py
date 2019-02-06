@@ -9,9 +9,9 @@ class CalcCourseMetric(object):
     """docstring for CalcCourseMetric"""
     def __init__(self):
         super(CalcCourseMetric, self).__init__()
-        self.__db = DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
-        self.__utils = MetricUtil()
-        self.__logger = Logger(__name__)
+        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__utils = MetricUtil.MetricUtil()
+        self.__logger = Logger.Logger(__name__)
 
     def calculate_course_metrics(self, start_time, end_time):
         """

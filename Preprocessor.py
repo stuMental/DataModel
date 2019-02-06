@@ -10,8 +10,8 @@ class Preprocessor(object):
     """docstring for Preprocessor"""
     def __init__(self):
         super(Preprocessor, self).__init__()
-        self.__db = DBUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
-        self.__logger = Logger(__name__)
+        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__logger = Logger.Logger(__name__)
 
     def preprocessor(self, start_time, end_time):
         self.update_status(start_time, end_time)
@@ -38,7 +38,7 @@ class Preprocessor(object):
                         camera_id, face_pose_stat_time, face_pose, COUNT(*) AS num
                     FROM {2}
                     WHERE face_pose != '-1' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
-                    GROUP BY camera_id, face_pose_stat_time, face_posez
+                    GROUP BY camera_id, face_pose_stat_time, face_pose
                 ) AS t1
                 LEFT OUTER JOIN
                 (
@@ -141,26 +141,46 @@ class Preprocessor(object):
         self.__logger.info("Tring to choose body_stat, face_pose, face_emotion")
 
         sql = '''
-            INSERT INTO {2} SELECT
-                t2.camera_id, f2.frame_id, t2.body_id, t1.body_stat, t2.body_track, t1.face_id, t2.face_track, t1.face_pose, t2.face_pose_stat, t2.face_pose_stat_time, t1.face_emotion, t2.yawn, t2.unix_timestamp, t1.pose_stat_time
-            FROM
-            (
-                (    
-                    SELECT
-                        face_id, pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
-                    FROM {3}
-                    WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown'
-                    GROUP BY face_id, pose_stat_time
-                ) AS t1
-                LEFT OUTER JOIN
-                (
-                    SELECT * FROM WHERE {3} WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown'
-                ) AS t2
-                ON t1.face_id = t2.face_id AND t1.pose_stat_time = t2.pose_stat_time
-            )
-        '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE, Config.RAW_INPUT_TABLE)
+            SELECT
+                face_id, pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
+            FROM {3}
+            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown'
+            GROUP BY face_id, pose_stat_time
+        '''
 
-        self.__db.insert(sql)
+        status = self.to_dict_with_faceid_posestattime(self.__db.select(sql))
+
+        sql = '''
+            SELECT
+                face_id, pose_stat_time, camera_id, frame_id, body_id, body_track, face_track, face_pose_stat, face_pose_stat_time, yawn, unix_timestamp
+            FROM {2}
+            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1}
+        '''.format(start_time, end_time, Config.RAW_INPUT_TABLE)
+
+        metadatas = self.to_dict_with_faceid_posestattime(self.__db.select(sql))
+
+        for face_id, values in status.items():
+            for time, value in values.items():
+                subSql = '''
+                INSERT INTO {14} (camera_id, frame_id, body_id, body_stat, body_track, face_id, face_track, face_pose, face_pose_stat, face_pose_stat_time, face_emotion, yawn, unix_timestamp, pose_stat_time)
+                VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13})
+            '''.format(metadatas[face_id][time]['camera_id'],\
+            metadatas[face_id][time]['frame_id'],\
+            metadatas[face_id][time]['body_id'],\
+            value['body_stat'],\
+            metadatas[face_id][time]['body_track'],\
+            value['face_id'],\
+            metadatas[face_id][time]['face_track'],\
+            value['face_pose'],\
+            metadatas[face_id][time]['face_pose_stat'],\
+            metadatas[face_id][time]['face_pose_stat_time'],\
+            value['face_emotion'],\
+            metadatas[face_id][time]['yawn'],\
+            metadatas[face_id][time]['unix_timestamp'],\
+            value['pose_stat_time'],\
+            Config.INTERMEDIATE_TABLE)
+
+                self.__db.insert(sql)
 
         self.__logger.info("Finish to update")
 
@@ -247,3 +267,17 @@ class Preprocessor(object):
                 face_ids.append(row[0])
 
         return face_ids
+
+    def to_dict_with_faceid_posestattime(self, data):
+        ''''''
+        res = {}
+        for row in data:
+            if not res.has_key(row[0]):
+                res[row[0]] = {}
+
+            if not res[row[0]].has_key(row[1]):
+                row[row[0]][row[1]] = {}
+
+            row[row[0]][row[1]] = row
+
+        return res

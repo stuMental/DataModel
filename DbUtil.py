@@ -10,7 +10,7 @@ class DbUtil(object):
 
     def __init__(self, hostname, user, password, database, charset):
         super(DbUtil, self).__init__()
-        self.__logger = Logger(__name__)
+        self.__logger = Logger.Logger(__name__)
         self.__db = MySQLdb.connect(hostname, user, password, database, charset=charset)
         self.__cursor = self.__db.cursor()
 

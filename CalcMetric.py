@@ -11,9 +11,9 @@ class CalcMetric(object):
     """docstring for CalcMetric"""
     def __init__(self):
         super(CalcMetric, self).__init__()
-        self.__db = DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
-        self.__util = MetricUtil()
-        self.__logger = Logger(__name__)
+        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__util = MetricUtil.MetricUtil()
+        self.__logger = Logger.Logger(__name__)
 
     def calculate_daily_metrics(self, start_time, end_time):
         """

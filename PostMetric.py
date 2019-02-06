@@ -10,8 +10,8 @@ class PostMetric(object):
     """docstring for PostMetric"""
     def __init__(self):
         super(PostMetric, self).__init__()
-        self.__outputDB = DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
-        self.__logger = Logger(__name__)
+        self.__outputDB = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
+        self.__logger = Logger.Logger(__name__)
 
     def post(self, datas):
         ''' Post data to UI database '''
