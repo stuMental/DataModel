@@ -14,12 +14,12 @@ class EstimateMental(object):
     """docstring for EstimateMental"""
     def __init__(self):
         super(EstimateMental, self).__init__()
-        self.__logger = Logger(__name__)
-        self.__preprocessor = Preprocessor()
-        self.__metric = CalcMetric()
-        self.__poster = PostMetric()
-        self.__course = CalcCourseMetric()
-        self.__db = DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
+        self.__logger = Logger.Logger(__name__)
+        self.__preprocessor = Preprocessor.Preprocessor()
+        self.__metric = CalcMetric.CalcMetric()
+        self.__poster = PostMetric.PostMetric()
+        self.__course = CalcCourseMetric.CalcCourseMetric()
+        self.__db = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
 
     def estimate(self):
         times = CommonUtil.get_time_range()
