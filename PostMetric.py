@@ -3,7 +3,7 @@
 
 import DbUtil
 import Config
-import CommonUtil
+from CommonUtil import CommonUtil
 import Logger
 
 class PostMetric(object):

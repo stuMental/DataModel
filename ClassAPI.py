@@ -7,17 +7,17 @@ class ClassAPI(object):
         super(ClassAPI, self).__init__()
 
     @staticmethod
-    def get_class_info(self, student_number):
+    def get_class_info(student_number):
         ''' Get GradeNumber and ClassNumber according to student number （face_id） by API '''
         return ['grade_number', 'class_number', 'people_number', 'head_teacher']
 
     @staticmethod
-    def get_course_name(self, camera_id, timespan):
+    def get_course_name(camera_id, timespan):
         ''' Get course number according to camera_id and timespan by API '''
         return ['数学', '张小明'] # Just for test
 
     @staticmethod
-    def get_grade(self, student_number, course_name):
+    def get_grade(student_number, course_name):
         '''
             Get the grade of the course_name for this student_number
             grade: the student's grade
@@ -26,7 +26,7 @@ class ClassAPI(object):
         return ['grade', 'grade_level ']
 
     @staticmethod
-    def get_award_course(self, student_number):
+    def get_award_course(student_number):
         '''
             Get the student's award according to the student number (face_id)
             course_name: the course name of award, such as: Math, English

@@ -15,7 +15,6 @@ class Preprocessor(object):
 
     def preprocessor(self, start_time, end_time):
         self.update_status(start_time, end_time)
-        self.update_face_id(start_time, end_time)
         self.update_body_id(start_time, end_time)
         self.update_face_pose_state(start_time, end_time)
         self.do_filter(start_time, end_time)
@@ -143,10 +142,10 @@ class Preprocessor(object):
         sql = '''
             SELECT
                 face_id, pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
-            FROM {3}
+            FROM {2}
             WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown'
             GROUP BY face_id, pose_stat_time
-        '''
+        '''.format(start_time, end_time, Config.RAW_INPUT_TABLE)
 
         status = self.to_dict_with_faceid_posestattime(self.__db.select(sql))
 
@@ -159,6 +158,7 @@ class Preprocessor(object):
 
         metadatas = self.to_dict_with_faceid_posestattime(self.__db.select(sql))
 
+        count = 0
         for face_id, values in status.items():
             for time, value in values.items():
                 subSql = '''
@@ -181,8 +181,9 @@ class Preprocessor(object):
             Config.INTERMEDIATE_TABLE)
 
                 self.__db.insert(sql)
+                count += 1
 
-        self.__logger.info("Finish to update")
+        self.__logger.info("Finish to update {0} records.".format(count))
 
     def do_filter(self, start_time, end_time):
         ''''''
@@ -272,12 +273,14 @@ class Preprocessor(object):
         ''''''
         res = {}
         for row in data:
-            if not res.has_key(row[0]):
-                res[row[0]] = {}
+            key1 = row[0].encode('utf-8')
+            key2 = row[1].encode('utf-8')
+            if not res.has_key(key1):
+                res[key1] = {}
 
-            if not res[row[0]].has_key(row[1]):
-                row[row[0]][row[1]] = {}
+            if not res[key1].has_key(key2):
+                res[key1][key2] = {}
 
-            row[row[0]][row[1]] = row
+            res[key1][key2] = row
 
         return res

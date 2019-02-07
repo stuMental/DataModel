@@ -1,7 +1,7 @@
 # !/usr/bin/python
 # -*- coding: utf8 -*-
 
-import CommonUtil
+from CommonUtil import CommonUtil
 import CalcMetric
 import PostMetric
 import Preprocessor

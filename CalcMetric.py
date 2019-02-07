@@ -4,7 +4,7 @@ import Config
 import DbUtil
 import Logger
 import math
-import CommonUtil
+from CommonUtil import CommonUtil
 import MetricUtil
 
 class CalcMetric(object):
