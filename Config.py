@@ -22,7 +22,7 @@ INPUT_DB_CHARSET = 'utf8'
 
 # The config of Output Database
 # Database host
-OUTPUT_DN_HOST = '172.16.14.190'
+OUTPUT_DB_HOST = '172.16.14.190'
 
 # Database username
 OUTPUT_DB_USERNAME = 'root'
