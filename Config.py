@@ -38,7 +38,7 @@ INTERMEDIATE_TABLE = 'im_person_data'
 INTERMEDIATE_TABLE_TRAIN = 'im_train_data'
 
 # Raw input table
-RAW_INPUT_TABLE = 'person_body_status'
+RAW_INPUT_TABLE = 'person_body_status2'
 
 # UI daily status table
 OUTPUT_UI_TABLE = 'student_mental_status_ld'
@@ -48,6 +48,21 @@ OUTPUT_UI_COURSE_TABLE = 'student_mental_status_course_daily'
 
 # Database charset
 OUTPUT_DB_CHARSET = 'utf8'
+
+#通过人脸track识别检测到的统一个track的人脸
+INTERMEDIATE_TRACK_TABLE='person_body_status_face_track'
+
+#在pose_stat_time内统计人体的各个姿态
+INTERMEDIATE_TABLE='person_body_status_pose_stat_midlle'
+
+#在face_pose_stat_time内统计用户的人脸姿态是否正常
+INTERMEDIATE_RES_TABLE='person_body_status_face_pose_stat'
+
+#预处理完成后的数据表
+INTERMEDIATE_TABLE_TRAIN='person_body_status_course_info'
+
+#课程信息表格
+COURSE_INFO='school_course_info'
 
 # The config for Metrics
 # The threshold for Emotion
