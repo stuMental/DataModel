@@ -32,6 +32,9 @@ class DbUtil(object):
     def delete(self, query):
         self.execute(query)
     
+    def create(self, query):
+        self.execute(query)
+
     def execute(self, query):
         try:
             self.__cursor.execute(query)
