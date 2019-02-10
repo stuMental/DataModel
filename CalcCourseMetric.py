@@ -17,13 +17,25 @@ class CalcCourseMetric(object):
         """
             Calculate 2 metrics, including student_study_stat and student_mental_stat for each course for each student.
             return {
-                'face_id1' => {
-                    'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
-                    'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                'class_id1' => {
+                    'face_id1' => {
+                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                    },
+                    'face_id2' => {
+                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                    }
                 },
-                'face_id2' => {
-                    'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
-                    'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                'class_id2' => {
+                    'face_id1' => {
+                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                    },
+                    'face_id2' => {
+                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                    }
                 }
             }
         """
@@ -33,66 +45,80 @@ class CalcCourseMetric(object):
         body_stat_count = self.count_body_stat(start_time, end_time)
         emotion_count = self.count_face_emotion(start_time, end_time)
         face_pose_count = self.count_face_pose(start_time, end_time)
-        self.__logger.info("Finished to compte course basic metrcis")
+        self.__logger.info("Finished to compte course basic metrics")
 
 
         self.__logger.info("Tring to comput the course metrics")
-        metrcis = {}
+        metrics = {}
         # Calculate student mental status based on body_stat and emotion
-        for course_name, values in emotion_count.items():
-            for face_id, value in values.items():
-                if body_stat_count.has_key(course_name) and body_stat_count[course_name].has_key(face_id):
-                    if not metrics.has_key(face_id):
-                        metrics[face_id] = {}
+        self.__logger.info("Begin to compute student_mental_stat")
+        for class_id, raws in emotion_count.items():
+            for course_name, values in raws.items():
+                for face_id, value in values.items():
+                    if body_stat_count.has_key(class_id) and body_stat_count[class_id].has_key(course_name) and body_stat_count[class_id][course_name].has_key(face_id):
+                        if not metrics.has_key(class_id):
+                            metrics[class_id] = {}
 
-                    if not metrics[face_id].has_key(course_name):
-                        metrics[face_id][course_name] = {}
+                        if not metrics[class_id].has_key(face_id):
+                            metrics[class_id][face_id] = {}
 
-                    metrcis[face_id][course_name]['student_mental_stat'] = self.__utils.estimate_mental_stat(value, body_stat_count[course_name][face_id])
+                        if not metrics[class_id][face_id].has_key(course_name):
+                            metrics[class_id][face_id][course_name] = {}
+
+                        metrics[class_id][face_id][course_name]['student_mental_stat'] = self.__utils.estimate_mental_stat(value, body_stat_count[class_id][course_name][face_id])
 
         # Calculate student study status based on student mental and face_pose
         # Calculate threshold
-        for course_name, values in face_pose_count:
-            study_stat_thresholds = self.__utils.calculate_study_threshold(face_pose_count[course_name])
-            for face_id in metrcis:
-                if face_pose_count[course_name].has_key(face_id):
-                    metrcis[face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrcis[face_id][course_name], face_pose_count[course_name][face_id], study_stat_thresholds)
+        self.__logger.info("Begin to compute student_study_stat")
+        for class_id, raws in face_pose_count.items():
+            for course_name, values in raws.items():
+                study_stat_thresholds = self.__utils.calculate_study_threshold(face_pose_count[class_id][course_name])
+                if metrics.has_key(class_id):
+                    for face_id in metrics[class_id]:
+                        if face_pose_count[class_id][course_name].has_key(face_id):
+                            metrics[class_id][face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrics[class_id][face_id][course_name], face_pose_count[class_id][course_name][face_id], study_stat_thresholds)
         self.__logger.info("Finished to compute the course metrics")
 
-        return metrcis
+        return metrics
 
     def count_body_stat(self, start_time, end_time):
         ''''''
         sql = '''
             SELECT
-                course_name, face_id, body_stat, COUNT(*) AS total
+                class_id, course_name, face_id, body_stat, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND body_stat != -1 AND face_id != 'unknown'
-            GROUP BY course_name, face_id, body_stat
+            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            GROUP BY class_id, course_name, face_id, body_stat
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {} # {'course_name' => {'face_id1' => values, 'face_id2' => values}}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
-                res[row[0]] = {}
+            key = row[0].encode('utf-8')
+            if not res.has_key(key):
+                res[key] = {}
+            subKey = row[1].encode('utf-8')
+            if not res[key].has_key(subKey):
+                res[key][subKey] = {}
 
-            if not res[row[0]].has_key(row[1]):
-                res[row[0]][row[1]] = {}
+            ssKey = row[2].encode('utf-8')
+            if not res[key][subKey].has_key(ssKey):
+                res[key][subKey][ssKey] = {}
 
-            if row[2] == 0: # 正常
-                res[row[0]][row[1]]['body_stat_normal'] = row[3]
-            elif row[2] == 1: # 站立
-                res[row[0]][row[1]]['body_stat_standup'] = row[3]
-            elif row[2] == 2: # 举手
-                res[row[0]][row[1]]['body_stat_handup'] = row[3]
-            elif row[2] == 3: # 睡觉
-                res[row[0]][row[1]]['body_stat_sleep'] = row[3]
-            elif row[2] == 4: # 手托着听课
-                res[row[0]][row[1]]['body_stat_sttk'] = row[3]
-            elif row[2] == 5: # 趴着听课
-                res[row[0]][row[1]]['body_stat_pztk'] = row[3]
+            if row[3] == '0': # 正常
+                res[key][subKey][ssKey]['body_stat_normal'] = row[4]
+            elif row[3] == '1': # 站立
+                res[key][subKey][ssKey]['body_stat_standup'] = row[4]
+            elif row[3] == '2': # 举手
+                res[key][subKey][ssKey]['body_stat_handup'] = row[4]
+            elif row[3] == '3': # 睡觉
+                res[key][subKey][ssKey]['body_stat_sleep'] = row[4]
+            elif row[3] == '4': # 手托着听课
+                res[key][subKey][ssKey]['body_stat_sttk'] = row[4]
+            elif row[3] == '5': # 趴着听课
+                res[key][subKey][ssKey]['body_stat_pztk'] = row[4]
             else:
                 continue
+        self.__logger.debug("count_body_stat: " + str(res))
 
         return res
 
@@ -100,56 +126,71 @@ class CalcCourseMetric(object):
         ''''''
         sql = '''
             SELECT
-                course_name, face_id, face_emotion, COUNT(*) AS total
+                class_id, course_name, face_id, face_emotion, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_emotion != -1 AND face_id != 'unknown'
-            GROUP BY course_name, face_id, face_emotion
+            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            GROUP BY class_id, course_name, face_id, face_emotion
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
-                res[row[0]] = {}
+            key = row[0].encode('utf-8')
+            if not res.has_key(key):
+                res[key] = {}
 
-            if not res[row[0]].has_key(row[1]):
-                res[row[0]][row[1]] = {}
+            subKey = row[1].encode('utf-8')
+            if not res[key].has_key(subKey):
+                res[key][subKey] = {}
 
-            if row[2] == 0: # 正常
-                res[row[0]][row[1]]['emotion_normal'] = row[3]
-            elif row[2] == 1: # 开心
-                res[row[0]][row[1]]['emotion_happy'] = row[3]
-            elif row[2] == 2: # 低落
-                res[row[0]][row[1]]['emotion_low'] = row[3]
+            ssKey = row[2].encode('utf-8')
+            if not res[key][subKey].has_key(ssKey):
+                res[key][subKey][ssKey] = {}
+
+            if row[3] == '0': # 正常
+                res[key][subKey][ssKey]['emotion_normal'] = row[4]
+            elif row[3] == '1': # 开心
+                res[key][subKey][ssKey]['emotion_happy'] = row[4]
+            elif row[3] == '2': # 低落
+                res[key][subKey][ssKey]['emotion_low'] = row[4]
             else:
                 continue
+        self.__logger.debug("count_face_emotion: " + str(res))
 
         return res
 
     def count_face_pose(self, start_time, end_time):
         ''' Compute the count of face pose based on face_id level '''
+        # TODO 考虑如何利用face_pose_stat
         sql = '''
             SELECT
-                course_name, face_id, face_pose, COUNT(*) AS total
+                class_id, course_name, face_id, face_pose, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_pose != -1 AND face_pose_stat == 0 AND face_id != 'unknown'
-            GROUP BY course_name, face_id, face_pose
+            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            GROUP BY class_id, course_name, face_id, face_pose
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
-                res[row[0]] = {}
+            key = row[0].encode('utf-8')
+            if not res.has_key(key):
+                res[key] = {}
 
-            if not res[row[0]].has_key(row[1]):
-                res[row[0]][row[1]] = {}
+            subKey = row[1].encode('utf-8')
+            if not res[key].has_key(subKey):
+                res[key][subKey] = {}
 
-            if row[2] == 0: # 平视
-                res[row[0]][row[1]]['face_pose_normal'] = row[3]
-            elif row[2] == 1: # 左顾右盼
-                res[row[0]][row[1]]['face_pose_around'] = row[3]
-            elif row[2] == 2: # 低头
-                res[row[0]][row[1]]['face_pose_low'] = row[3]
+            ssKey = row[2].encode('utf-8')
+            if not res[key][subKey].has_key(ssKey):
+                res[key][subKey][ssKey] = {}
+
+            if row[3] == '0': # 平视
+                res[key][subKey][ssKey]['face_pose_normal'] = row[4]
+            elif row[3] == '1': # 左顾右盼
+                res[key][subKey][ssKey]['face_pose_around'] = row[4]
+            elif row[3] == '2': # 低头
+                res[key][subKey][ssKey]['face_pose_low'] = row[4]
             else:
                 continue
+        self.__logger.debug("count_face_pose: " + str(res))
 
         return res

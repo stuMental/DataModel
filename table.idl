@@ -20,14 +20,14 @@ Table
         精神状态 （课堂）
             - 疲惫
                 body_stat
-                    - body_stat 1， 2 次数大于10
+                    - body_stat 4， 5 次数 >= 10
                 emotion
-                    - 开心 小于3 or 低落 > 10
+                    - 开心 <= 3 or 低落 >= 10
             - 积极
                 body_stat
-                    - 5 >= 2 or 4 >= 2
+                    - 1 >= 2 or 2 >= 2
                 emotion
-                    - 微笑 > 10
+                    - 微笑 >= 10
             - 正常
                 else
 
@@ -88,19 +88,21 @@ Table
 Output Table
     - student_mental_status_daily
         - student_number
+        - class_id
         - student_relationship
         - student_emotion
         - student_mental_stat
         - student_study_stat
         - student_interest
-        - ds
+        - dt
 
     - student_mental_status_course_daily
         - student_number
+        - class_id
         - course_name
         - student_mental_stat
         - student_study_stat
-        - ds
+        - dt
 
 
 Middle Table
@@ -123,34 +125,35 @@ Middle Table
     - person_body_status_pose_stat_midlle
         - camera_id
         - face_id
-	- pose_stat_time
-	- face_pose_stat_time
-	- body_stat
-	- face_pose
-	- face_emotion
+        - pose_stat_time
+        - face_pose_stat_time
+        - body_stat
+        - face_pose
+        - face_emotion
 
     - person_body_status_face_pose_stat
         - camera_id
         - face_id
-	- pose_stat_time
-	- body_stat
-	- face_pose
-	- face_emotion
-	- face_pose_stat
+        - pose_stat_time
+        - body_stat
+        - face_pose
+        - face_emotion
+        - face_pose_stat
 
     - person_body_status_course_info
         - camera_id
-	- face_id
-	- pose_stat_time
-	- body_stat
-	- face_pose
-	- face_emotion
-	- face_pose_stat
-	- course_name
+        - class_id
+        - face_id
+        - pose_stat_time
+        - body_stat
+        - face_pose
+        - face_emotion
+        - face_pose_stat
+        - course_name
 
 Course Info
     - school_course_info
         - course_name 课程名称
-	- start_time 课程开始时间,秒级时间戳
-	- end_time 课程结束时间,秒级时间戳
-	- ds 天维度的日期，例如:20181012
+        - start_time 课程开始时间,秒级时间戳
+        - end_time 课程结束时间,秒级时间戳
+        - ds 天维度的日期，例如:20181012

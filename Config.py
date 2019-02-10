@@ -33,10 +33,6 @@ OUTPUT_DB_PASSWORD = '123456'
 # Database dbname
 OUTPUT_DB_DATABASE = 'iMental'
 
-# Intermediate result table
-INTERMEDIATE_TABLE = 'im_person_data'
-INTERMEDIATE_TABLE_TRAIN = 'im_train_data'
-
 # Raw input table
 RAW_INPUT_TABLE = 'person_body_status2'
 
@@ -68,12 +64,12 @@ COURSE_INFO='school_course_info'
 # The threshold for Emotion
 EMOTION_THRESHOLD_HAPPY = {
     'SMILE_FREQUENCY' : 50,
-    'SMILE_RATIO' : 0.3 # >
+    'SMILE_RATIO' : 0.3 # >=
 }
 
 EMOTION_THRESHOLD_LOW = {
     'SAD_FREQUENCY' : 50,
-    'SAD_RATIO' : 0.1 # >
+    'SAD_RATIO' : 0.1 # >=
 }
 
 # The threshold for Relationship
@@ -101,23 +97,23 @@ MENTAL_THRESHOLD_TIRED = {
 
 MENTAL_THRESHOLD_POSITIVE = {
     'BODY_STAT' : 2,
-    'EMOTION_HAPPY' : 10
+    'EMOTION_SMILE' : 10
 }
 
 # The threshold for Study Status
 STUDY_THREHOLD_BAD = {
     'MENTAL' : 2, # 疲惫
-    'FACE_POSE_NORMAL' : 0.9 # <
+    'FACE_POSE_NORMAL' : 0.9 # <=
 }
 
 STUDY_THREHOLD_GREAT= {
     'MENTAL' : 0, # 积极
-    'FACE_POSE_NORMAL' : 0.1 # >
+    'FACE_POSE_NORMAL' : 0.1 # >=
 }
 
 STUDY_THREHOLD_GOOD = {
     'MENTAL' : [0, 1], # 积极 正常
-    'FACE_POSE_NORMAL' : 0.4 # >
+    'FACE_POSE_NORMAL' : 0.4 # >=
 }
 
 # The degree threshold for course interest
@@ -131,10 +127,13 @@ FACE_POSE_STAT_ABNORMAL = 0.4
 
 # The level of Logger
 # 0: FATAL 1: ERROR 2: WARNING 3: INFO 4: DEBUG
-LOGGER_LEVEL = logging.DEBUG
+LOGGER_LEVEL = logging.INFO
 
 # Lookbackwindow for Relationship and Interest
 LOOKBACKWINDOW = -30 # Days
 
 # The detected count threshold of each face_id
 DETECTED_LOWEST_LIMIT = 500
+
+# 批量插入的阈值
+INSERT_BATCH_THRESHOLD = 1000
