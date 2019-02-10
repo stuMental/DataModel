@@ -22,59 +22,68 @@ class EstimateMental(object):
         self.__db = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
 
     def estimate(self):
-        times = CommonUtil.get_time_range()
+        times = CommonUtil.get_range_unixtime()
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_time'], times['end_time']))
-        self.__preprocessor.preprocessor(times['start_time'], times['end_time'])
+        self.__preprocessor.preprocessor(times['start_time'], times['end_time'], CommonUtil.get_date_day())
+
+        # 先计算分科目的指标，因为兴趣需要基于这个数据计算
+        self.__logger.info("Begin to compute and post daily course metrics")
+        course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
+        self.__poster.post_course_metric(course_metrics, times['start_time'])
+        self.__logger.info("Finished to compute and post daily course metrics")
 
         self.__logger.info("Begin to compute and post daily metrics")
         metrics = self.__metric.calculate_daily_metrics(times['start_time'], times['end_time'])
         metrics = self.estimate_interest(times['end_time'], metrics)
-        self.__poster.post(metrics)
+        self.__poster.post(metrics, times['start_time'])
         self.__logger.info("Finished to compute and post daily metrics")
-
-        self.__logger.info("Begin to compute and post daily course metrics")
-        course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
-        self.__poster.post_course_metric(metrics)
-        self.__logger.info("Finished to compute and post daily course metrics")
 
     def count_interest(self, end_time):
         ''''''
         sql = '''
             SELECT
-                student_number, course_name, student_study_stat
+                class_id, student_number, course_name, student_study_stat
             FROM {2}
-            WHERE ds >= {0} AND ds <= {1}
-        '''.format(CommonUtil.get_specific_time(end_time, Config.LOOKBACKWINDOW), end_time, Config.OUTPUT_UI_COURSE_TABLE)
+            WHERE dt >= {0} AND dt <= {1}
+        '''.format(CommonUtil.get_specific_unixtime(end_time, Config.LOOKBACKWINDOW), end_time, Config.OUTPUT_UI_COURSE_TABLE)
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
-                res[row[0]] = {}
+            key = row[0].encode('utf-8')
+            if not res.has_key(key):
+                res[key] = {}
 
-            if not res[row[0]].has_key(row[1]):
-                res[row[0]][row[1]] = 0
+            subKey = row[1].encode('utf-8')
+            if not res[key].has_key(subKey):
+                res[key][subKey] = {}
 
-            if row[2] == 0 or row[2] == 1: # 非常好 + 良好的总计天数
-                res[row[0]][row[1]] += 1
+            ssKey = row[2].encode('utf-8')
+            if not res[key][subKey].has_key(ssKey):
+                res[key][subKey][ssKey] = 0
+
+            if row[3] == '0' or row[3] == '1': # 非常好 + 良好的总计天数
+                res[key][subKey][ssKey] += 1
             else:
                 continue
-
-            return res
+        self.__logger.debug(str(res))
+        return res
 
     def estimate_interest(self, end_time, metrics):
         ''''''
+        self.__logger.info("Begin to compute student_interest")
         study_states = self.count_interest(end_time)
-        for key, value in metrics.items():
-            if study_states.has_key(key):
-                for course, value in study_states[key].items():
-                    if value >= Config.INTEREST_THRESHOLD:
-                        if not metrics[key].has_key('student_interest'):
-                            metrics[key]['student_interest'] = course
-                        else:
-                            metrics[key]['student_interest'] += ',' + course
+        for class_id, values in metrics.items():
+            for face_id in values:
+                if study_states.has_key(class_id) and study_states[class_id].has_key(face_id):
+                    for course, value in study_states[class_id][face_id].items():
+                        if value >= Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS']:
+                            if not metrics[class_id][face_id].has_key('student_interest'):
+                                metrics[class_id][face_id]['student_interest'] = course
+                            else:
+                                metrics[class_id][face_id]['student_interest'] += ',' + course
 
+        self.__logger.info("Finished to compute student_interest")
         return metrics
-
 
 if __name__ == '__main__':
     doer = EstimateMental()
