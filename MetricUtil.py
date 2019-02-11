@@ -21,6 +21,7 @@ class MetricUtil(object):
         threshold = {}
         if length != 0:
             res.sort(reverse=True)
+            self.__logger.debug(str(res))
             # 不佳
             threshold['study_bad'] = res[int(math.floor(length * Config.STUDY_THREHOLD_BAD['FACE_POSE_NORMAL']))]
             # 非常好
