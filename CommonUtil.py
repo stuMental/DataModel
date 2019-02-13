@@ -36,8 +36,8 @@ class CommonUtil(object):
         res['end_time'] = time.mktime(end_time.timetuple())
 
         # For test
-        # res['start_time'] = 1549584000
-        # res['end_time'] = 1549612797
+        # res['start_time'] = 1549662797
+        # res['end_time'] = 1549682797
 
         return res
 

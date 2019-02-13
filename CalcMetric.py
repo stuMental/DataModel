@@ -154,6 +154,7 @@ class CalcMetric(object):
 
     def count_body_stat(self, start_time, end_time):
         ''''''
+        self.__logger.info("Begin to count by body_stat")
         sql = '''
             SELECT
                 class_id, face_id, body_stat, COUNT(*) AS total
@@ -195,6 +196,7 @@ class CalcMetric(object):
 
     def count_face_emotion(self, start_time, end_time, is_lookback=False):
         ''''''
+        self.__logger.info("Begin to count by face_emotion")
         sql = ''
         if is_lookback:
             sql = '''
@@ -254,6 +256,7 @@ class CalcMetric(object):
     def count_face_pose(self, start_time, end_time, is_lookback = False):
         ''' Compute the count of face pose based on face_id level '''
         # TODO 如何将face_pose_stat考虑到指标计算中
+        self.__logger.info("Begin to count by face_pose")
         sql = ''
         if is_lookback:
             sql = '''
