@@ -29,12 +29,14 @@ class EstimateMental(object):
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
         course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
+        self.__logger.debug(str(course_metrics))
         self.__poster.post_course_metric(course_metrics, times['start_time'])
         self.__logger.info("Finished to compute and post daily course metrics")
 
         self.__logger.info("Begin to compute and post daily metrics")
         metrics = self.__metric.calculate_daily_metrics(times['start_time'], times['end_time'])
         metrics = self.estimate_interest(times['end_time'], metrics)
+        self.__logger.debug(str(metrics))
         self.__poster.post(metrics, times['start_time'])
         self.__logger.info("Finished to compute and post daily metrics")
 

@@ -83,6 +83,7 @@ class CalcCourseMetric(object):
 
     def count_body_stat(self, start_time, end_time):
         ''''''
+        self.__logger.info("Begin to count by body_stat")
         sql = '''
             SELECT
                 class_id, course_name, face_id, body_stat, COUNT(*) AS total
@@ -92,7 +93,9 @@ class CalcCourseMetric(object):
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {} # {'course_name' => {'face_id1' => values, 'face_id2' => values}}
+        count = 0
         for row in self.__db.select(sql):
+            count += 1
             key = row[0].encode('utf-8')
             if not res.has_key(key):
                 res[key] = {}
@@ -119,11 +122,13 @@ class CalcCourseMetric(object):
             else:
                 continue
         self.__logger.debug("count_body_stat: " + str(res))
+        self.__logger.info("Finished to count face_pose, and get total {0} records.".format(count))
 
         return res
 
     def count_face_emotion(self, start_time, end_time):
         ''''''
+        self.__logger.info("Begin to count by face_emotion")
         sql = '''
             SELECT
                 class_id, course_name, face_id, face_emotion, COUNT(*) AS total
@@ -133,7 +138,9 @@ class CalcCourseMetric(object):
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {}
+        count = 0
         for row in self.__db.select(sql):
+            count += 1
             key = row[0].encode('utf-8')
             if not res.has_key(key):
                 res[key] = {}
@@ -155,12 +162,14 @@ class CalcCourseMetric(object):
             else:
                 continue
         self.__logger.debug("count_face_emotion: " + str(res))
+        self.__logger.info("Finished to count face_pose, and get total {0} records.".format(count))
 
         return res
 
     def count_face_pose(self, start_time, end_time):
         ''' Compute the count of face pose based on face_id level '''
         # TODO 考虑如何利用face_pose_stat
+        self.__logger.info("Begin to count by face_pose")
         sql = '''
             SELECT
                 class_id, course_name, face_id, face_pose, COUNT(*) AS total
@@ -170,7 +179,9 @@ class CalcCourseMetric(object):
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {}
+        count = 0
         for row in self.__db.select(sql):
+            count += 1
             key = row[0].encode('utf-8')
             if not res.has_key(key):
                 res[key] = {}
@@ -192,5 +203,6 @@ class CalcCourseMetric(object):
             else:
                 continue
         self.__logger.debug("count_face_pose: " + str(res))
+        self.__logger.info("Finished to count face_pose, and get total {0} records.".format(count))
 
         return res

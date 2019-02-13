@@ -102,10 +102,12 @@ class CalcMetric(object):
         if len(res_low) != 0:
             # 低落
             res_low.sort(reverse=True)
+            self.__logger.debug(str(res_low))
             thresholds['emotion_low'] = res_low[int(math.floor(len(res_low) * Config.EMOTION_THRESHOLD_LOW['SAD_RATIO']))]
         if len(res_happy) != 0:
             # 开心
             res_happy.sort(reverse=True)
+            self.__logger.debug(str(res_happy))
             thresholds['emotion_happy'] = res_happy[int(math.floor(len(res_happy) * Config.EMOTION_THRESHOLD_HAPPY['SMILE_RATIO']))]
 
         return thresholds
@@ -132,15 +134,18 @@ class CalcMetric(object):
         if low_len != 0:
             # face_pose 低头
             lows.sort(reverse=True)
+            self.__logger.debug(str(lows))
             thresholds['solitary_low'] = lows[int(math.floor(low_len * Config.RELATIONSHIP_THRESHOLD_SOLITARY['FACE_POSE_LOW']))]
         if around_len != 0:
             # face_pose 左顾右盼
             arounds.sort(reverse=True)
+            self.__logger.debug(str(arounds))
             thresholds['great_around'] = arounds[int(math.floor(around_len * Config.RELATIONSHIP_THRESHOLD_GREAT['FACE_POSE_AROUND']))]
             thresholds['good_around'] = arounds[int(math.floor(around_len * Config.RELATIONSHIP_THRESHOLD_GOOD['FACE_POSE_AROUND']))]
         if smile_len != 0:
             # emotion 微笑
             smiles.sort(reverse=True)
+            self.__logger.debug(str(smiles))
             thresholds['solitary_smile'] = smiles[int(math.floor(smile_len * Config.RELATIONSHIP_THRESHOLD_SOLITARY['EMOTION_SMILE']))]
             thresholds['great_smile'] = smiles[int(math.floor(smile_len * Config.RELATIONSHIP_THRESHOLD_GREAT['EMOTION_SMILE']))]
             thresholds['good_smile'] = smiles[int(math.floor(smile_len * Config.RELATIONSHIP_THRESHOLD_GOOD['EMOTION_SMILE']))]
@@ -149,6 +154,7 @@ class CalcMetric(object):
 
     def count_body_stat(self, start_time, end_time):
         ''''''
+        self.__logger.info("Begin to count by body_stat")
         sql = '''
             SELECT
                 class_id, face_id, body_stat, COUNT(*) AS total
@@ -190,6 +196,7 @@ class CalcMetric(object):
 
     def count_face_emotion(self, start_time, end_time, is_lookback=False):
         ''''''
+        self.__logger.info("Begin to count by face_emotion")
         sql = ''
         if is_lookback:
             sql = '''
@@ -249,6 +256,7 @@ class CalcMetric(object):
     def count_face_pose(self, start_time, end_time, is_lookback = False):
         ''' Compute the count of face pose based on face_id level '''
         # TODO 如何将face_pose_stat考虑到指标计算中
+        self.__logger.info("Begin to count by face_pose")
         sql = ''
         if is_lookback:
             sql = '''
