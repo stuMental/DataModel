@@ -151,9 +151,55 @@ Middle Table
         - face_pose_stat
         - course_name
 
-Course Info
+School Class Info
+    # dt 表示时间
+    # 班级学生对照表
+    - school_student_class_info
+        - grade_name 年级
+        - class_name 班级
+        - student_number 学号
+        - student_name 学生姓名
+        - dt
+
+    # 摄像头班级对照表
+    - school_camera_class_info
+        - camera_id 摄像头ID
+        - camera_addr 摄像头网络地址
+        - class_id 班级唯一ID 跨年级的ID
+        - class_name 班级
+        - grade_name 年级
+        - dt
+
+    # 课程表
     - school_course_info
+        - id 自增主键
+        - course_id 课程ID
         - course_name 课程名称
-        - start_time 课程开始时间,秒级时间戳
-        - end_time 课程结束时间,秒级时间戳
-        - ds 天维度的日期，例如:20181012
+        - tea_id 任课
+        - tea_name 任课老师
+        - class_name 班级名称
+        - grade_name 年级名称
+        - start_time 开始时间
+        - end_time 结束时间
+        - dt 天维度的日期，例如: 20181012
+
+    # 成绩表
+    - school_performance_info
+        - student_number 学号
+        - student_name 姓名
+        - course_id 课程ID
+        - course_name 课程名称
+        - score 成绩考分
+        - dt
+
+    # 学生获奖信息表
+    - school_award_info
+        - student_number 学号
+        - student_name 姓名
+        - award_type 获奖类别
+        - award_level 获奖等级
+        - award_name 获奖名称
+        - dt
+
+问题:
+    - dt字段是否需要修改为long or int型 sTry类型的在比较的时候是按照字符的顺序比较，容易出错 2 100 (100 < 2)

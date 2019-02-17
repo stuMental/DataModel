@@ -6,7 +6,7 @@ import Logger
 import MetricUtil
 
 class CalcCourseMetric(object):
-    """docstring for CalcCourseMetric"""
+    """docsTry for CalcCourseMetric"""
     def __init__(self):
         super(CalcCourseMetric, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
@@ -41,14 +41,14 @@ class CalcCourseMetric(object):
         """
 
         # Compute the count of each basic metric
-        self.__logger.info("Tring to compute course basic metrics")
+        self.__logger.info("Try to compute course basic metrics")
         body_stat_count = self.count_body_stat(start_time, end_time)
         emotion_count = self.count_face_emotion(start_time, end_time)
         face_pose_count = self.count_face_pose(start_time, end_time)
         self.__logger.info("Finished to compte course basic metrics")
 
 
-        self.__logger.info("Tring to comput the course metrics")
+        self.__logger.info("Try to comput the course metrics")
         metrics = {}
         # Calculate student mental status based on body_stat and emotion
         self.__logger.info("Begin to compute student_mental_stat")
@@ -77,6 +77,8 @@ class CalcCourseMetric(object):
                     for face_id in metrics[class_id]:
                         if face_pose_count[class_id][course_name].has_key(face_id):
                             metrics[class_id][face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrics[class_id][face_id][course_name], face_pose_count[class_id][course_name][face_id], study_stat_thresholds)
+
+        self.__logger.debug(str(metrics))
         self.__logger.info("Finished to compute the course metrics")
 
         return metrics

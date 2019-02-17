@@ -6,7 +6,7 @@ import Config
 import Logger
 
 class CreateTable(object):
-    """docstring for Preprocessor"""
+    """docsTry for Preprocessor"""
     def __init__(self):
         super(CreateTable, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
@@ -78,14 +78,71 @@ class CreateTable(object):
         '''.format(Config.INTERMEDIATE_TABLE_TRAIN)
         self.__db.create(sql)
 
-        sql='''
+        sql = '''
             CREATE TABLE {0} (
+                grade_name char(20),
+                class_name char(20),
+                student_number char(20),
+                student_name char(20),
+                dt char(20)
+            )engine=innodb default charset=utf8
+        '''
+        .format(Config.SCHOOL_STUDENT_CLASS_TABLE)
+        self.__db.create(sql)
+
+        sql = '''
+            CREATE TABLE {0} (
+                camera_id char(20),
+                camera_addr char(20),
+                class_id char(20),
+                class_name char(20),
+                grade_name char(20),
+                dt char(20)
+            )engine=innodb default charset=utf8
+        '''.format(Config.SCHOOL_CAMERA_CLASS_TABLE)
+        self.__db.create(sql)
+
+        sql = '''
+            CREATE TABLE {0} (
+                id int not null auto_increment,
+                course_id char(20),
                 course_name char(20),
+                tea_id char(20),
+                tea_name char(20),
+                class_name char(20),
+                grade_name char(20),
                 start_time char(20),
                 end_time char(20),
-                ds char(10)
-        )engine=innodb default charset=utf8
-        '''.format(Config.COURSE_INFO)
+                dt char(20),
+                primary key(id)
+            )engine=innodb default charset=utf8
+        '''.format(Config.SCHOOL_COURSE_TABLE)
+        self.__db.create(sql)
+
+        sql = '''
+            CREATE TABLE {0} (
+                student_number char(20),
+                student_name char(20),
+                grade_name char(20),
+                class_name char(20),
+                course_id char(20),
+                course_name char(20),
+                score float,
+                dt char(20)
+            )engine=innodb default charset=utf8
+        '''.format(Config.SCHOOL_PERFORMANCE_TABLE)
+        self.__db.create(sql)
+
+        sql = '''
+            CREATE TABLE {0} (
+                student_number char(20),
+                student_name char(20),
+                award_type char(20),
+                award_level char(20),
+                award_name char(20),
+                dt char(20)
+            )engine=innodb default charset=utf8
+        '''.format(Config.SCHOOL_AWARD_TABLE)
         self.__db.create(sql)
         self.__logger.info("Done")
 
@@ -116,4 +173,26 @@ class CreateTable(object):
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_COURSE_TABLE)
         self.__outputDB.create(sql)
+
+        sql = '''
+            CREATE TABLE {0} (
+                student_number char(20) not null,
+                class_id char(20),
+                study_interest char(20),
+                dt char(20)
+            )engine=innodb default charset=utf8
+        '''.format(Config.OUTPUT_UI_INTEREST_TABLE)
+        self.__outputDB.create(sql)
+
+        sql = '''
+            CREATE TABLE {0} (
+                student_number char(20) not null,
+                course_name char(20),
+                grade_level char(10),
+                study_level char(10),
+                dt char(20)
+            )engine=innodb default charset=utf8
+        '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE)
+        self.__outputDB.create(sql)
+
         self.__logger.info("Done")

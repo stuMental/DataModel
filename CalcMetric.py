@@ -8,7 +8,7 @@ from CommonUtil import CommonUtil
 import MetricUtil
 
 class CalcMetric(object):
-    """docstring for CalcMetric"""
+    """docsTry for CalcMetric"""
     def __init__(self):
         super(CalcMetric, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
@@ -31,13 +31,13 @@ class CalcMetric(object):
         """
 
         # Compute the count of each basic metric
-        self.__logger.info("Tring to compute basic metrics")
+        self.__logger.info("Try to compute basic metrics")
         body_stat_count = self.count_body_stat(start_time, end_time)
         emotion_count = self.count_face_emotion(start_time, end_time)
         face_pose_count = self.count_face_pose(start_time, end_time)
         self.__logger.info("Finished to compte basic metrics")
 
-        self.__logger.info("Tring to comput the high-level metrics")
+        self.__logger.info("Try to comput the high-level metrics")
         metrics = {}
 
         # Calculate student mental status based on body_stat and emotion
@@ -82,6 +82,8 @@ class CalcMetric(object):
                 for face_id in values:
                     if emotion_count[class_id].has_key(face_id) and face_pose_count[class_id].has_key(face_id):
                         metrics[class_id][face_id]['student_relationship'] = self.estimate_relationship(emotion_count[class_id][face_id], face_pose_count[class_id][face_id], relationship_thresholds)
+
+        self.__logger.debug(str(metric))
         self.__logger.info("Finished to compute high-level metrics")
 
         return metrics

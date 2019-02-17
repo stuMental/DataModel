@@ -9,9 +9,10 @@ import Logger
 import Config
 import DbUtil
 import CalcCourseMetric
+import AnalyzeGrade
 
 class EstimateMental(object):
-    """docstring for EstimateMental"""
+    """docsTry for EstimateMental"""
     def __init__(self):
         super(EstimateMental, self).__init__()
         self.__logger = Logger.Logger(__name__)
@@ -19,7 +20,9 @@ class EstimateMental(object):
         self.__metric = CalcMetric.CalcMetric()
         self.__poster = PostMetric.PostMetric()
         self.__course = CalcCourseMetric.CalcCourseMetric()
+        self.__analyzer = AnalyzeGrade.AnalyzeGrade()
         self.__db = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
+        self.__interests = {}
 
     def estimate(self):
         times = CommonUtil.get_range_unixtime()
@@ -29,16 +32,23 @@ class EstimateMental(object):
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
         course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
-        self.__logger.debug(str(course_metrics))
         self.__poster.post_course_metric(course_metrics, times['start_time'])
         self.__logger.info("Finished to compute and post daily course metrics")
 
         self.__logger.info("Begin to compute and post daily metrics")
         metrics = self.__metric.calculate_daily_metrics(times['start_time'], times['end_time'])
         metrics = self.estimate_interest(times['end_time'], metrics)
-        self.__logger.debug(str(metrics))
         self.__poster.post(metrics, times['start_time'])
         self.__logger.info("Finished to compute and post daily metrics")
+
+        self.__logger.info("Begin to post Interest")
+        self.__poster.post_interest_metric(self.__interests, times['start_time'])
+        self.__logger.info("Finished to post Interest")
+
+        self.__logger.info("Begin to analyze and post Grade and Study_Status")
+        analysis_metrics = self.__analyzer.Analysis(times['start_time'], times['end_time'])
+        self.__poster.post_grade_study_metr(analysis_metrics, times['start_time'])
+        self.__logger.info("Finished to analyze and post")
 
     def count_interest(self, end_time):
         ''''''
@@ -84,6 +94,14 @@ class EstimateMental(object):
                             else:
                                 metrics[class_id][face_id]['student_interest'] += ',' + course
 
+                            # Keep interest in a seperated table
+                            if not self.__interests.has_key(class_id):
+                                self.__interests[class_id] = {}
+                            if not self.__interests[class_id].has_key(face_id):
+                                self.__interests[class_id][face_id] = []
+                            self.__interests[class_id][face_id].append(course)
+
+        self.__logger.debug(str(self.__interests))
         self.__logger.info("Finished to compute student_interest")
         return metrics
 

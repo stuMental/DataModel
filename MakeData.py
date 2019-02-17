@@ -7,7 +7,7 @@ import Logger
 import random
 
 class MakeData(object):
-    """docstring for Preprocessor"""
+    """docsTry for Preprocessor"""
     def __init__(self):
         super(MakeData, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)

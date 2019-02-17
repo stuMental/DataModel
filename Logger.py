@@ -5,7 +5,7 @@ import Config
 import logging
 
 class Logger(object):
-    """docstring for Logger"""
+    """docsTry for Logger"""
     def __init__(self, class_name):
         super(Logger, self).__init__()
         logging.basicConfig(level = Config.LOGGER_LEVEL, format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
