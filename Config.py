@@ -78,6 +78,9 @@ SCHOOL_PERFORMANCE_TABLE = 'school_performance_info'
 # 学生获奖信息表
 SCHOOL_AWARD_TABLE = 'school_award_info'
 
+#学生考勤信息表
+STUDENT_ATTENDANCE='school_student_attendance_info'
+
 # The config for Metrics
 # The threshold for Emotion
 EMOTION_THRESHOLD_HAPPY = {

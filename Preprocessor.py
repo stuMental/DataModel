@@ -6,7 +6,7 @@ import Config
 import Logger
 
 class Preprocessor(object):
-    """docsTry for Preprocessor"""
+    """docstring for Preprocessor"""
     def __init__(self):
         super(Preprocessor, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
@@ -15,14 +15,15 @@ class Preprocessor(object):
     def preprocessor(self, start_time, end_time, day):
         self.update_face_id(start_time, end_time)
         #self.update_body_id(start_time, end_time)
-        self.update_status(start_time, end_time)
+        self.update_status(start_time, end_time, day)
         self.update_face_pose_state(start_time, end_time)
         #self.do_filter(start_time, end_time) TODO(xufeng)
         self.update_course(start_time, end_time, day)
+	self.stat_attendance(day)
 
     def update_face_id(self, start_time, end_time):
         ''' Update face_id accroding to face_track '''
-        self.__logger.info("Try to update face_id based on face_track")
+        self.__logger.info("Tring to update face_id based on face_track")
 
     #TODO(xufeng):解决同一个track被识别为多个人的问题，目前是将这样的track直接舍弃
         sql = '''
@@ -54,7 +55,7 @@ class Preprocessor(object):
 
     def update_body_id(self, start_time, end_time):
         ''' Update body_id accroding to body_track '''
-        self.__logger.info("Try to udpate body_id based on body_track")
+        self.__logger.info("Tring to udpate body_id based on body_track")
 
     #TODO(xufeng):解决同一个track被识别为多个人的问题，目前是将这样的track直接舍弃
         sql = '''
@@ -76,17 +77,29 @@ class Preprocessor(object):
         self.__db.insert(sql)
         self.__logger("Finish to update body_id")
 
-    def update_status(self, start_time, end_time):
+    #将camera_id转化为class_id, 由于版本问题将class_id写成camera_id
+    def update_status(self, start_time, end_time, day):
         ''' Update body_stat, face_pose and face_emotion by pose_stat_time '''
-        self.__logger.info("Try to choose body_stat, face_pose, face_emotion")
+        self.__logger.info("Tring to choose body_stat, face_pose, face_emotion")
 
         sql = '''
-            INSERT INTO {2} 
+        INSERT INTO {2}
         SELECT camera_id, face_id, pose_stat_time, face_pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
-        FROM {3}
-        WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown'
+	FROM (
+	    SELECT t2.class_id as camera_id, t1.face_id, t1.pose_stat_time, t1.face_pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion
+	    FROM (
+                SELECT camera_id, face_id, pose_stat_time, face_pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
+                FROM {3}
+                WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown'
+                GROUP BY camera_id, face_id, pose_stat_time, face_pose_stat_time
+	    )t1 JOIN (
+	        SELECT camera_id, class_id
+	        FROM {t4}
+	        WHERE dt={t5}
+	    )t2 ON t1.camera_id=t2.camera_id
+	)t3
         GROUP BY camera_id, face_id, pose_stat_time, face_pose_stat_time
-        '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_TRACK_TABLE)
+        '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_TRACK_TABLE, Config.CAMERA_CLASS_INFO, day)
 
         self.__db.insert(sql)
         self.__logger.info("Finish to update")
@@ -97,7 +110,7 @@ class Preprocessor(object):
             Judge if a face pose is normal based on all face pose data
             camera_id stands for a classroom because each classroom has a different camera_id
         '''
-        self.__logger.info("Try to update face_pose_stat")
+        self.__logger.info("Tring to update face_pose_stat")
 
         sql = '''
     INSERT INTO {3}
@@ -138,8 +151,7 @@ class Preprocessor(object):
 
     def update_course(self, start_time, end_time, day):
         ''''''
-        # 需要更新 因为同一个时间段 不同的班级上的课程是不一样的
-        self.__logger.info("Try to insert course according to camera_id and timespan")
+        self.__logger.info("Tring to insert course according to camera_id and timespan")
 
         sql = '''
         INSERT INTO {5}
@@ -152,10 +164,45 @@ class Preprocessor(object):
             )t1 LEFT OUTER JOIN (
             SELECT course_name, start_time, end_time
         FROM {4}
-            WHERE ds={2}
+            WHERE dt={2}
         )t2
         ON t1.pose_stat_time >= t2.start_time AND t1.pose_stat_time <= t2.end_time
         '''.format(start_time, end_time, day, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN)
 
         self.__db.insert(sql)
         self.__logger.info("Finish to update course_name")
+
+    def stat_attendance(self, day):
+        self.__logger.info("Tring to stat attendance")
+
+        sql = '''
+        INSERT INTO {7}
+	SELECT t5.course_name, t5.class_name, t5.grade_name, t5.start_time, t5.end_time, t5.student_number, t5.student_name, {2}
+	FROM (
+	    SELECT t1.course_name, t1.class_name, t1.grade_name, t1.start_time, t1.end_time, t2.student_number, t2.student_name
+	    FROM (
+	        SELECT course_name, class_name, grade_name, start_time, end_time
+	        FROM {4}
+	        WHERE dt={2}
+            )t1 JOIN (
+	        SELECT class_name, grade_name, student_number, student_name
+	        FROM {5}
+	        WHERE dt={2}
+	    )t2 ON t1.class_name=t2.class_name AND t1.grade_name=t2.grade_name
+	)t5 LEFT JOIN (
+	    SELECT t3.face_id, t3.pose_stat_time, t4.class_name, t4.grade_name
+	    FROM (
+                SELECT camera_id, face_id, pose_stat_time
+                FROM {3}
+                WHERE pose_stat_time >= {0} AND pose_stat_time <= {1}
+            )t3 JOIN (
+	        SELECT DISTINCT class_id, class_name, grade_name
+	        FROM {6}
+	        WHERE dt={2}
+	    )t4 ON t3.camera_id=t4.class_id
+	)t6 ON t5.student_number=t6.face_id AND t6.pose_stat_time<=t5.end_time AND t6.pose_stat_time>=t5.start_time AND t5.class_name=t6.class_name AND t5.grade_name=t6.grade_name
+	WHERE t6.face_id IS NULL
+        '''.format(start_time, end_time, day, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.STUDENT_CLASS_INFO, Config.CAMERA_CLASS_INFO, Config.STUDENT_ATTENDANCE)
+
+        self.__db.insert(sql)
+        self.__logger.info("Finish to stat_attendance")
