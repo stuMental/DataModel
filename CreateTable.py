@@ -144,6 +144,20 @@ class CreateTable(object):
             )engine=innodb default charset=utf8
         '''.format(Config.SCHOOL_AWARD_TABLE)
         self.__db.create(sql)
+
+        sql='''
+            CREATE TABLE {0} (
+                course_name char(20),
+                class_name char(20),
+                grade_name char(20),
+                start_time char(20),
+                end_time char(20),
+                student_number char(20),                       
+                student_name char(20),                         
+                dt char(20)
+        )engine=innodb default charset=utf8                    
+        '''.format(Config.STUDENT_ATTENDANCE)                  
+        self.__db.create(sql)
         self.__logger.info("Done")
 
         # 在UI数据库中创建数据表
