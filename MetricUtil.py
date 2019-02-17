@@ -5,7 +5,7 @@ import math
 import Logger
 
 class MetricUtil(object):
-    """docstring for MetricUtil"""
+    """docsTry for MetricUtil"""
     def __init__(self):
         super(MetricUtil, self).__init__()
         self.__logger = Logger.Logger(__name__)

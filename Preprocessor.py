@@ -6,7 +6,7 @@ import Config
 import Logger
 
 class Preprocessor(object):
-    """docstring for Preprocessor"""
+    """docsTry for Preprocessor"""
     def __init__(self):
         super(Preprocessor, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
@@ -22,7 +22,7 @@ class Preprocessor(object):
 
     def update_face_id(self, start_time, end_time):
         ''' Update face_id accroding to face_track '''
-        self.__logger.info("Tring to update face_id based on face_track")
+        self.__logger.info("Try to update face_id based on face_track")
 
     #TODO(xufeng):解决同一个track被识别为多个人的问题，目前是将这样的track直接舍弃
         sql = '''
@@ -54,7 +54,7 @@ class Preprocessor(object):
 
     def update_body_id(self, start_time, end_time):
         ''' Update body_id accroding to body_track '''
-        self.__logger.info("Tring to udpate body_id based on body_track")
+        self.__logger.info("Try to udpate body_id based on body_track")
 
     #TODO(xufeng):解决同一个track被识别为多个人的问题，目前是将这样的track直接舍弃
         sql = '''
@@ -78,7 +78,7 @@ class Preprocessor(object):
 
     def update_status(self, start_time, end_time):
         ''' Update body_stat, face_pose and face_emotion by pose_stat_time '''
-        self.__logger.info("Tring to choose body_stat, face_pose, face_emotion")
+        self.__logger.info("Try to choose body_stat, face_pose, face_emotion")
 
         sql = '''
             INSERT INTO {2} 
@@ -97,7 +97,7 @@ class Preprocessor(object):
             Judge if a face pose is normal based on all face pose data
             camera_id stands for a classroom because each classroom has a different camera_id
         '''
-        self.__logger.info("Tring to update face_pose_stat")
+        self.__logger.info("Try to update face_pose_stat")
 
         sql = '''
     INSERT INTO {3}
@@ -138,7 +138,8 @@ class Preprocessor(object):
 
     def update_course(self, start_time, end_time, day):
         ''''''
-        self.__logger.info("Tring to insert course according to camera_id and timespan")
+        # 需要更新 因为同一个时间段 不同的班级上的课程是不一样的
+        self.__logger.info("Try to insert course according to camera_id and timespan")
 
         sql = '''
         INSERT INTO {5}
@@ -154,7 +155,7 @@ class Preprocessor(object):
             WHERE ds={2}
         )t2
         ON t1.pose_stat_time >= t2.start_time AND t1.pose_stat_time <= t2.end_time
-        '''.format(start_time, end_time, day, Config.INTERMEDIATE_RES_TABLE, Config.COURSE_INFO, Config.INTERMEDIATE_TABLE_TRAIN)
+        '''.format(start_time, end_time, day, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN)
 
         self.__db.insert(sql)
         self.__logger.info("Finish to update course_name")
