@@ -13,7 +13,7 @@ class PostMetric(object):
         self.__outputDB = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
-    def post(self, datas, dt):
+    def post(self, datas, dt, students, classes):
         ''' Post data to UI database '''
         self.__logger.info("Try to post data to UI database [{0}], and the table [{1}].".format(Config.OUTPUT_DB_DATABASE, Config.OUTPUT_UI_TABLE))
         count = 0
@@ -21,7 +21,7 @@ class PostMetric(object):
             first = True
             sql = '''
                 INSERT INTO
-                    {0} (student_number, class_id, student_relationship, student_emotion, student_mental_stat, student_study_stat, student_interest, dt) VALUES 
+                    {0} (student_number, class_id, student_relationship, student_emotion, student_mental_stat, student_study_stat, student_interest, dt, student_name, grade_name, class_name) VALUES 
             '''.format(Config.OUTPUT_UI_TABLE)
 
             valuesSql = ''
@@ -32,8 +32,8 @@ class PostMetric(object):
                         valuesSql += ','
 
                     valuesSql += '''
-                        ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')
-                    '''.format(face_id, class_id, self.get_valid_value(value, 'student_relationship'), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt)
+                        ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}')
+                    '''.format(face_id, class_id, self.get_valid_value(value, 'student_relationship'), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt, students[face_id], classes[class_id][0], classes[class_id][1])
                     first = False
                     count += 1
                     if count % Config.INSERT_BATCH_THRESHOLD == 0:
@@ -46,7 +46,7 @@ class PostMetric(object):
                 self.__outputDB.insert(sql + valuesSql)
         self.__logger.info("Finished to post data, total rows is {0}".format(count))
 
-    def post_course_metric(self, datas, dt):
+    def post_course_metric(self, datas, dt, students, classes):
         ''''''
         self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.OUTPUT_DB_DATABASE, Config.OUTPUT_UI_COURSE_TABLE))
         count = 0
@@ -54,7 +54,7 @@ class PostMetric(object):
             first = True
             sql = '''
                 INSERT INTO
-                    {0} (student_number, class_id, course_name, student_study_stat, student_mental_stat, dt) VALUES 
+                    {0} (student_number, class_id, course_name, student_study_stat, student_mental_stat, dt, student_name, grade_name, class_name) VALUES 
             '''.format(Config.OUTPUT_UI_COURSE_TABLE)
 
             valuesSql = ''
@@ -67,7 +67,7 @@ class PostMetric(object):
 
                         valuesSql +='''
                             ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')
-                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt)
+                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id], classes[class_id][0], classes[class_id][1])
                         first = False
                         count += 1
 
@@ -81,7 +81,7 @@ class PostMetric(object):
                 self.__outputDB.insert(sql + valuesSql)
         self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
 
-    def post_interest_metric(self, datas, dt):
+    def post_interest_metric(self, datas, dt, students, classes):
         ''''''
         self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.OUTPUT_DB_DATABASE, Config.OUTPUT_UI_INTEREST_TABLE))
         count = 0
@@ -89,7 +89,7 @@ class PostMetric(object):
             first = True
             sql = '''
                 INSERT INTO
-                    {0} (student_number, class_id, student_interest, dt) VALUES 
+                    {0} (student_number, class_id, student_interest, dt, student_name, grade_name, class_name) VALUES 
             '''.format(Config.OUTPUT_UI_INTEREST_TABLE)
 
             valuesSql = ''
@@ -102,7 +102,7 @@ class PostMetric(object):
 
                         valuesSql +='''
                             ('{0}', '{1}', '{2}', '{3}')
-                        '''.format(face_id, class_id, course_name, dt)
+                        '''.format(face_id, class_id, course_name, dt, students[face_id], classes[class_id][0], classes[class_id][1])
                         first = False
                         count += 1
 

@@ -29,22 +29,27 @@ class EstimateMental(object):
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_time'], times['end_time']))
         self.__preprocessor.preprocessor(times['start_time'], times['end_time'], CommonUtil.get_date_day())
 
+        # 获得学生信息和班级信息
+        students = self.get_students()
+        classes = self.get_classes()
+
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
         course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
-        self.__poster.post_course_metric(course_metrics, times['start_time'])
+        self.__poster.post_course_metric(course_metrics, times['start_time'], students, classes)
         self.__logger.info("Finished to compute and post daily course metrics")
 
         self.__logger.info("Begin to compute and post daily metrics")
         metrics = self.__metric.calculate_daily_metrics(times['start_time'], times['end_time'])
         metrics = self.estimate_interest(times['end_time'], metrics)
-        self.__poster.post(metrics, times['start_time'])
+        self.__poster.post(metrics, times['start_time'], students, classes)
         self.__logger.info("Finished to compute and post daily metrics")
 
         self.__logger.info("Begin to post Interest")
-        self.__poster.post_interest_metric(self.__interests, times['start_time'])
+        self.__poster.post_interest_metric(self.__interests, times['start_time'], students, classes)
         self.__logger.info("Finished to post Interest")
 
+        # 计算成绩与学习状态之间的四象限分析指标
         self.__logger.info("Begin to analyze and post Grade and Study_Status")
         analysis_metrics = self.__analyzer.Analysis(times['start_time'], times['end_time'])
         self.__poster.post_grade_study_metr(analysis_metrics, times['start_time'])
@@ -104,6 +109,44 @@ class EstimateMental(object):
         self.__logger.debug(str(self.__interests))
         self.__logger.info("Finished to compute student_interest")
         return metrics
+
+    def get_students(self):
+        ''''''
+        self.__logger.info("Get all students")
+        sql = '''
+            SELECT
+                student_number, student_name
+            FROM {2}
+        '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE)
+
+        res = {}
+        for row in self.__db.select(sql):
+            key = row[0].encode('utf-8')
+            if not res.has_key(key):
+                res[key] = ''
+            res[key] = row[1]
+
+        self.__logger.info("Done")
+        return res
+
+    def  get_classes(self):
+        ''''''
+        self.__logger.info("Get all classes")
+        sql = '''
+            SELECT
+                DISTINCT class_id, grade_name, class_name
+            FROM {2}
+        '''.format(Config.SCHOOL_CAMERA_CLASS_TABLE)
+
+        res = {}
+        for row in self.__db.select(sql):
+            key = row[0].encode('utf-8')
+            if not res.has_key(key):
+                res[key] = ''
+            res[key] = [row[1], row[2]]
+
+        self.__logger.info("Done")
+        return res
 
 if __name__ == '__main__':
     doer = EstimateMental()

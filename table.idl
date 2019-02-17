@@ -88,7 +88,10 @@ Table
 Output Table
     - student_mental_status_daily
         - student_number
+        - student_name
         - class_id
+        - grade_name
+        - class_name
         - student_relationship
         - student_emotion
         - student_mental_stat
@@ -98,7 +101,10 @@ Output Table
 
     - student_mental_status_course_daily
         - student_number
+        - student_name
         - class_id
+        - grade_name
+        - class_name
         - course_name
         - student_mental_stat
         - student_study_stat
@@ -106,7 +112,10 @@ Output Table
 
     - student_mental_status_interest_daily
         - student_number
+        - student_name
         - class_id
+        - grade_name
+        - class_name
         - student_interest
         - dt
 

@@ -151,7 +151,10 @@ class CreateTable(object):
         sql = '''
             CREATE TABLE {0} (
                 student_number char(20) not null,
+                student_name char(20),
                 class_id char(20),
+                grade_name char(20),
+                class_name char(20),
                 student_relationship char(10),
                 student_emotion char(10),
                 student_mental_stat char(10),
@@ -165,7 +168,10 @@ class CreateTable(object):
         sql = '''
             CREATE TABLE {0} (
                 student_number char(20) not null,
+                student_name char(20),
                 class_id char(20),
+                grade_name char(20),
+                class_name char(20),
                 course_name char(20),
                 student_mental_stat char(10),
                 student_study_stat char(10),
@@ -177,7 +183,10 @@ class CreateTable(object):
         sql = '''
             CREATE TABLE {0} (
                 student_number char(20) not null,
+                student_name char(20),
                 class_id char(20),
+                grade_name char(20),
+                class_name char(20),
                 study_interest char(20),
                 dt char(20)
             )engine=innodb default charset=utf8
