@@ -83,7 +83,7 @@ class CalcMetric(object):
                     if emotion_count[class_id].has_key(face_id) and face_pose_count[class_id].has_key(face_id):
                         metrics[class_id][face_id]['student_relationship'] = self.estimate_relationship(emotion_count[class_id][face_id], face_pose_count[class_id][face_id], relationship_thresholds)
 
-        self.__logger.debug(str(metric))
+        self.__logger.debug(str(metrics))
         self.__logger.info("Finished to compute high-level metrics")
 
         return metrics

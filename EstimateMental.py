@@ -26,8 +26,9 @@ class EstimateMental(object):
 
     def estimate(self):
         times = CommonUtil.get_range_unixtime()
+        estimate_date = CommonUtil.get_date_day(-1)
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_time'], times['end_time']))
-        self.__preprocessor.preprocessor(times['start_time'], times['end_time'], CommonUtil.get_date_day())
+        self.__preprocessor.preprocessor(times['start_time'], times['end_time'], estimate_date)
 
         # 获得学生信息和班级信息
         students = self.get_students()
@@ -36,23 +37,23 @@ class EstimateMental(object):
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
         course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
-        self.__poster.post_course_metric(course_metrics, times['start_time'], students, classes)
+        self.__poster.post_course_metric(course_metrics, estimate_date, students, classes)
         self.__logger.info("Finished to compute and post daily course metrics")
 
         self.__logger.info("Begin to compute and post daily metrics")
         metrics = self.__metric.calculate_daily_metrics(times['start_time'], times['end_time'])
         metrics = self.estimate_interest(times['end_time'], metrics)
-        self.__poster.post(metrics, times['start_time'], students, classes)
+        self.__poster.post(metrics, estimate_date, students, classes)
         self.__logger.info("Finished to compute and post daily metrics")
 
         self.__logger.info("Begin to post Interest")
-        self.__poster.post_interest_metric(self.__interests, times['start_time'], students, classes)
+        self.__poster.post_interest_metric(self.__interests, estimate_date, students, classes)
         self.__logger.info("Finished to post Interest")
 
         # 计算成绩与学习状态之间的四象限分析指标
         self.__logger.info("Begin to analyze and post Grade and Study_Status")
         analysis_metrics = self.__analyzer.Analysis(times['start_time'], times['end_time'])
-        self.__poster.post_grade_study_metr(analysis_metrics, times['start_time'])
+        self.__poster.post_grade_study_metric(analysis_metrics, estimate_date)
         self.__logger.info("Finished to analyze and post")
 
     def count_interest(self, end_time):
@@ -116,7 +117,7 @@ class EstimateMental(object):
         sql = '''
             SELECT
                 student_number, student_name
-            FROM {2}
+            FROM {0}
         '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE)
 
         res = {}
@@ -135,7 +136,7 @@ class EstimateMental(object):
         sql = '''
             SELECT
                 DISTINCT class_id, grade_name, class_name
-            FROM {2}
+            FROM {0}
         '''.format(Config.SCHOOL_CAMERA_CLASS_TABLE)
 
         res = {}

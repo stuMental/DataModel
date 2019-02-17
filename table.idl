@@ -86,7 +86,7 @@ Table
                 - or 个人证书
 
 Output Table
-    - student_mental_status_daily
+    - student_mental_status_ld
         - student_number
         - student_name
         - class_id

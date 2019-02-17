@@ -151,7 +151,7 @@ LOGGER_LEVEL = logging.INFO
 LOOKBACKWINDOW = -30 # Days
 
 # Lookbackwindow for analysis course and study_status
-ANALYSIS_LOOKBACKWINDOW = 30 # Days
+ANALYSIS_LOOKBACKWINDOW = -30 # Days
 
 # 学习与成绩思维评估中 study_stat的阈值
 ANALYSIS_STUDY_STAT_THRESHOLD = 20 # Days

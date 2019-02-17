@@ -13,13 +13,11 @@ class TestData(object):
         super(TestData, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
-        self.__courses = ['rest', 'math', 'chinese', 'english', 'physic', 'history', 'geography']
-        self.__classes = 101
-        self.__persons = 101
-        self.__students = [['201821210001', '小华'], ['201821210002', '小敏'], ['201821210003', '小李']]
-        self.__course_names = [['2018001','计算机'], ['2018002', '高等数学'], ['2018003', '解析几何']]
-        self.__grades = ['2016', '2017', '2018']
-        self.__class_names = ['1班', '2班', '3班']
+        self.__courses = ['course_1', 'course_2', 'course_2']
+        self.__students = ['201821210001', '201821210002', '201821210003']
+        self.__class_ids = ['2018_1']
+        self.__grades = ['2018']
+        self.__classes = ['1班']
 
 
     def produce(self):
@@ -28,19 +26,22 @@ class TestData(object):
             INSERT INTO  {0} (camera_id, face_id, pose_stat_time, body_stat, face_pose, face_emotion, face_pose_stat, course_name, class_id) VALUES 
         '''.format(Config.INTERMEDIATE_TABLE_TRAIN)
 
-        for k in xrange(1,1000):
-            vSqls = ''
-            first = True
-            for x in xrange(1, self.__classes):
-                for y in xrange(1,self.__persons):
-                    if not first:
-                        vSqls += ','
-                    vSqls += '''
-                        ('{0}', '{1}', '1549682797', '{2}', '{3}', '{4}', '0', '{5}', '{0}')
-                    '''.format(x, (x - 1) * 100 + y, random.randint(0, 5), random.randint(0, 2), random.randint(0, 2), self.__courses[random.randint(0, len(self.__courses) - 1)])
-                    first = False
+        vSqls = ''
+        first = True
+        count = 0
+        for x in xrange(0, 1000):
+            if not first:
+                vSqls += ','
+            vSqls += '''
+                ('{0}', '{1}', '{2}', '{3}', '{4}', {5}, '{6}', '{7}', '{8}')
+            '''.format(1, self.__students[random.randint(0, len(self.__students) - 1)], '1549882797', random.randint(0, 5), random.randint(0, 2), random.randint(0, 2), '0', self.__courses[random.randint(0, len(self.__courses) - 1)], self.__class_ids[random.randint(0, len(self.__class_ids) - 1)])
+            first = False
+            count += 1
+            if count % Config.INSERT_BATCH_THRESHOLD == 0:
+                self.__db.insert(sql + vSqls)
+        if vSqls != '':
             self.__db.insert(sql + vSqls)
-            self.__logger.info("Try to insert 10000 records to the table {0} in the database {1}".format(Config.INTERMEDIATE_TABLE_TRAIN, Config.INPUT_DB_DATABASE))
+        self.__logger.info("Try to insert {2} records to the table {0} in the database {1}".format(Config.INTERMEDIATE_TABLE_TRAIN, Config.INPUT_DB_DATABASE, count))
 
     def stu_class(self):
         ''''''
@@ -53,7 +54,7 @@ class TestData(object):
         stu = 1
         student_number = 201821210001
         for g in self.__grades:
-            for c in self.__class_names:
+            for c in self.__classes:
                 for x in xrange(1, 21):
                     if not first:
                         vSqls += ','
@@ -77,7 +78,7 @@ class TestData(object):
         tea = 1
         cid = 1
         for g in self.__grades:
-            for c in self.__class_names:
+            for c in self.__classes:
                 start_time = 1550299899
                 end_time = 1550300899
                 for x in xrange(1, 21):
@@ -109,4 +110,4 @@ class TestData(object):
 
 if __name__ == '__main__':
     doer = TestData()
-    doer.test_sql()
+    doer.produce()

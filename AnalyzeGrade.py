@@ -17,7 +17,7 @@ class AnalyzeGrade(object):
         ''''''
         self.__logger.info("Begin to analyze grade and study_status")
         grade_levels = self.get_course_grade_level(start_time, end_time)
-        if len(grade_level) == 0: # 这个时间段无考试成绩 无需评估
+        if len(grade_levels) == 0: # 这个时间段无考试成绩 无需评估
             return {}
 
         study_levels = self.get_course_study_status(CommonUtil.get_specific_unixtime(end_time, Config.ANALYSIS_LOOKBACKWINDOW) , end_time)
@@ -25,7 +25,7 @@ class AnalyzeGrade(object):
         metrics = {}
         for stu, courses in study_levels.items():
             for course_name, value in courses.items():
-                if grade_level.has_key(stu) and grade_level[stu].has_key(course_name):
+                if grade_levels.has_key(stu) and grade_levels[stu].has_key(course_name):
                     if not metrics.has_key(stu):
                         metrics[stu] = []
 
