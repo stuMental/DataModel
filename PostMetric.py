@@ -33,7 +33,7 @@ class PostMetric(object):
 
                     valuesSql += '''
                         ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}')
-                    '''.format(face_id, class_id, self.get_valid_value(value, 'student_relationship'), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt, students[face_id], classes[class_id][0], classes[class_id][1])
+                    '''.format(face_id, class_id, self.get_valid_value(value, 'student_relationship'), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
                     first = False
                     count += 1
                     if count % Config.INSERT_BATCH_THRESHOLD == 0:
@@ -66,8 +66,8 @@ class PostMetric(object):
                             valuesSql += ','
 
                         valuesSql +='''
-                            ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')
-                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id], classes[class_id][0], classes[class_id][1])
+                            ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')
+                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
                         first = False
                         count += 1
 
@@ -101,8 +101,8 @@ class PostMetric(object):
                             valuesSql += ','
 
                         valuesSql +='''
-                            ('{0}', '{1}', '{2}', '{3}')
-                        '''.format(face_id, class_id, course_name, dt, students[face_id], classes[class_id][0], classes[class_id][1])
+                            ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')
+                        '''.format(face_id, class_id, course_name, dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
                         first = False
                         count += 1
 

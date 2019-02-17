@@ -36,8 +36,8 @@ class CommonUtil(object):
         res['end_time'] = time.mktime(end_time.timetuple())
 
         # For test
-        # res['start_time'] = 1549662797
-        # res['end_time'] = 1549682797
+        # res['start_time'] = 1549882797
+        # res['end_time'] = 1549882797
 
         return res
 
@@ -54,6 +54,6 @@ class CommonUtil(object):
         return int(time.mktime(ans.timetuple()))
 
     @staticmethod
-    def get_date_day():
+    def get_date_day(days = 0):
         ''''''
-        return datetime.date.today().strftime("%Y%m%d")
+        return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y%m%d")
