@@ -104,6 +104,18 @@ Output Table
         - student_study_stat
         - dt
 
+    - student_mental_status_interest_daily
+        - student_number
+        - class_id
+        - student_interest
+        - dt
+
+    - student_mental_status_grade_study_daily
+        - student_number
+        - course_name
+        - grade_level
+        - study_level
+        - dt
 
 Middle Table
     - person_body_status_face_track
@@ -187,6 +199,8 @@ School Class Info
     - school_performance_info
         - student_number 学号
         - student_name 姓名
+        - grade_name 年级
+        - class_name 班级
         - course_id 课程ID
         - course_name 课程名称
         - score 成绩考分

@@ -8,14 +8,14 @@
 			SELECT
 				class_id, student_emotion, COUNT(*) AS num
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id, student_emotion
 		) t1 JOIN
 		(
 			SELECT
 				class_id, COUNT(*) AS total
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id
 		) t2 ON t1.class_id = t2.class_id;
 		
@@ -33,7 +33,7 @@
 			SELECT
 				DISTINCT student_number AS student_number
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_emotion = 'param'
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_emotion = 'param'
 		) t2 ON t1.student_number = t2.student_number;
 
 		-- 人际关系
@@ -44,14 +44,14 @@
 			SELECT
 				class_id, student_relationship, COUNT(*) AS num
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id, student_relationship
 		) t1 JOIN
 		(
 			SELECT
 				class_id, COUNT(*) AS total
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id
 		) t2 ON t1.class_id = t2.class_id;
 		
@@ -69,7 +69,7 @@
 			SELECT
 				DISTINCT student_number AS student_number
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_relationship = 'param'
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_relationship = 'param'
 		) t2 ON t1.student_number = t2.student_number;
 	
 	-- 今日学业自律性分布
@@ -81,14 +81,14 @@
 			SELECT
 				class_id, student_study_stat, COUNT(*) AS num
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id, student_study_stat
 		) t1 JOIN
 		(
 			SELECT
 				class_id, COUNT(*) AS total
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id
 		) t2 ON t1.class_id = t2.class_id;
 		
@@ -106,7 +106,7 @@
 			SELECT
 				DISTINCT student_number AS student_number
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_study_stat = 'param'
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_study_stat = 'param'
 		) t2 ON t1.student_number = t2.student_number;
 		
 		-- 精神状态
@@ -117,14 +117,14 @@
 			SELECT
 				class_id, student_mental_stat, COUNT(*) AS num
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id, student_mental_stat
 		) t1 JOIN
 		(
 			SELECT
 				class_id, COUNT(*) AS total
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param
 			GROUP BY class_id
 		) t2 ON t1.class_id = t2.class_id;
 		
@@ -142,7 +142,7 @@
 			SELECT
 				DISTINCT student_number AS student_number
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_mental_stat = 'param'
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt = selected_time_param AND student_mental_stat = 'param'
 		) t2 ON t1.student_number = t2.student_number;
 		
 	-- 历史状态信息
@@ -154,14 +154,14 @@
 			SELECT
 				class_id, dt, student_emotion, COUNT(*) AS num
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
 			GROUP BY class_id, dt, student_emotion
 		) t1 JOIN
 		(
 			SELECT
 				class_id, dt, COUNT(*) AS total
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
 			GROUP BY class_id, dt
 		) t2 ON t1.class_id = t2.class_id AND t1.dt = t2.dt
 		ORDER BY dt ASC;
@@ -174,14 +174,14 @@
 			SELECT
 				class_id, dt, student_mental_stat, COUNT(*) AS num
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
 			GROUP BY class_id, dt, student_mental_stat
 		) t1 JOIN
 		(
 			SELECT
 				class_id, dt, COUNT(*) AS total
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
 			GROUP BY class_id, dt
 		) t2 ON t1.class_id = t2.class_id AND t1.dt = t2.dt
 		ORDER BY dt ASC;
@@ -194,14 +194,14 @@
 			SELECT
 				class_id, dt, student_study_stat, COUNT(*) AS num
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
 			GROUP BY class_id, dt, student_study_stat
 		) t1 JOIN
 		(
 			SELECT
 				class_id, dt, COUNT(*) AS total
 			FROM student_mental_status_ld
-			WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
+			WHERE class_id in (SELECT DISTINCT class_id FROM school_camera_class_info WHERE grade_name = 'param' and class_name = 'param') AND dt >= start_time_param AND dt <= end_time_param
 			GROUP BY class_id, dt
 		) t2 ON t1.class_id = t2.class_id AND t1.dt = t2.dt
 		ORDER BY dt ASC;
