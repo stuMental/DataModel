@@ -66,7 +66,7 @@ class CreateTable(object):
 
         sql='''
             CREATE TABLE {0} (
-                camera_id char(20) not null,
+                class_id char(20) not null,
                 face_id char(20),
                 pose_stat_time char(20),
                 body_stat char(10),
@@ -152,11 +152,11 @@ class CreateTable(object):
                 grade_name char(20),
                 start_time char(20),
                 end_time char(20),
-                student_number char(20),                       
-                student_name char(20),                         
+                student_number char(20),
+                student_name char(20),
                 dt char(20)
-        )engine=innodb default charset=utf8                    
-        '''.format(Config.STUDENT_ATTENDANCE)                  
+        )engine=innodb default charset=utf8
+        '''.format(Config.STUDENT_ATTENDANCE)
         self.__db.create(sql)
         self.__logger.info("Done")
 
