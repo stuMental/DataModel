@@ -34,7 +34,7 @@ OUTPUT_DB_PASSWORD = '123456'
 OUTPUT_DB_DATABASE = 'dev_icampusdb'
 
 # Raw input table
-RAW_INPUT_TABLE = 'person_body_status2'
+RAW_INPUT_TABLE = 'person_body_status'
 
 # UI daily status table
 OUTPUT_UI_TABLE = 'student_mental_status_ld'
@@ -148,7 +148,7 @@ FACE_POSE_STAT_ABNORMAL = 0.4
 
 # The level of Logger
 # 0: FATAL 1: ERROR 2: WARNING 3: INFO 4: DEBUG
-LOGGER_LEVEL = logging.INFO
+LOGGER_LEVEL = logging.DEBUG
 
 # Lookbackwindow for Relationship and Interest
 LOOKBACKWINDOW = -30 # Days

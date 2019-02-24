@@ -18,6 +18,7 @@ class DbUtil(object):
         self.execute(query)
 
     def select(self, query):
+        self.__logger.debug(query)
         try:
             self.__cursor.execute(query)
             return self.__cursor.fetchall()
@@ -36,6 +37,7 @@ class DbUtil(object):
         self.execute(query)
 
     def execute(self, query):
+        self.__logger.debug(query)
         try:
             self.__cursor.execute(query)
             self.__db.commit()
