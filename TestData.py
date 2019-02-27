@@ -98,30 +98,40 @@ class TestData(object):
     def test_sql(self):
         ''''''
         sql = '''
-            SELECT t1.camera_id AS class_id, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.face_pose_stat,
-                   (CASE WHEN t2.course_name IS NULL THEN 'rest' ELSE t2.course_name END) AS course_name
+            SELECT
+                ROUND((1.0 * IFNULL(t5.emotion_count, 0)) / t1.total, 2) AS emotion, ROUND((1.0 * IFNULL(t2.study_count, 0)) / t1.total, 2) AS study, ROUND((1.0 * IFNULL(t3.mental_count, 0)) / t1.total, 2) AS mental, ROUND((1.0 * IFNULL(t4.relationship_count, 0)) / t1.total, 2) AS relationship
             FROM
             (
-                SELECT camera_id, face_id, pose_stat_time, body_stat, face_pose, face_emotion, face_pose_stat
-                    FROM {3}
-                    WHERE pose_stat_time >= {0} AND pose_stat_time <= {1}
-            ) t1 LEFT OUTER JOIN (
                 SELECT
-                    t4.class_id, t3.course_name, t3.start_time, t3.end_time
-                FROM
-                (
-                    SELECT grade_name, class_name, course_name, start_time, end_time
-                    FROM {4}
-                    WHERE dt = {2}
-                ) t3 LEFT OUTER JOIN
-                (
-                    SELECT
-                        DISTINCT class_id, class_name, grade_name
-                    FROM {6}
-                    WHERE dt = {2}
-                ) t4 ON t3.grade_name = t4.grade_name AND t3.class_name = t4.class_name
-            ) t2 ON t1.camera_id = t2.class_id AND  t1.pose_stat_time >= t2.start_time AND t1.pose_stat_time <= t2.end_time
-        '''.format('1550676', '1550763', '20190221', Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN, Config.SCHOOL_CAMERA_CLASS_TABLE)
+                    COUNT(*) AS total
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00'
+            ) t1 JOIN
+            (
+                SELECT
+                    COUNT(*) AS study_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_study_stat != '3'
+            ) t2 JOIN
+            (
+                SELECT
+                    COUNT(*) AS mental_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_mental_stat != '2'
+            ) t3 JOIN
+            (
+                SELECT
+                    COUNT(*) AS relationship_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_relationship != '3' AND student_relationship != ''
+            ) t4 JOIN
+            (
+                SELECT
+                    COUNT(*) AS emotion_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_emotion != '2'
+            ) t5;
+        '''#.format('1550676', '1550763', '20190221', Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN, Config.SCHOOL_CAMERA_CLASS_TABLE)
 
         for row in self.__db.select(sql):
             print row

@@ -53,18 +53,17 @@
     FROM
     (
         SELECT
-            dt, student_emotion, COUNT(*) AS num
+            student_emotion, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt, student_emotion
+        GROUP BY student_emotion
     ) t1 JOIN
     (
         SELECT
-            dt, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt
-    ) t2 ON t1.dt = t2.dt;
+    ) t2;
     
     -- 人际关系
     SELECT
@@ -72,18 +71,17 @@
     FROM
     (
         SELECT
-            dt, student_relationship, COUNT(*) AS num
+            student_relationship, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt, student_relationship
+        GROUP BY student_relationship
     ) t1 JOIN
     (
         SELECT
-            dt, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt
-    ) t2 ON t1.dt = t2.dt;
+    ) t2;
     
 -- 今日学业自律性分布
     -- 学习状态
@@ -92,18 +90,17 @@
     FROM
     (
         SELECT
-            dt, student_study_stat, COUNT(*) AS num
+            student_study_stat, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt, student_study_stat
+        GROUP BY student_study_stat
     ) t1 JOIN
     (
         SELECT
-            dt, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt
-    ) t2 ON t1.dt = t2.dt;
+    ) t2;
     
     -- 精神状态
     SELECT
@@ -111,18 +108,17 @@
     FROM
     (
         SELECT
-            dt, student_mental_stat, COUNT(*) AS num
+            student_mental_stat, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt, student_mental_stat
+        GROUP BY student_mental_stat
     ) t1 JOIN
     (
         SELECT
-            dt, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE dt = select_time_param
-        GROUP BY dt
-    ) t2 ON t1.dt = t2.dt;
+    ) t2;
     
 -- 学科兴趣分布
     SELECT

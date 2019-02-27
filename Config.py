@@ -148,7 +148,7 @@ FACE_POSE_STAT_ABNORMAL = 0.4
 
 # The level of Logger
 # 0: FATAL 1: ERROR 2: WARNING 3: INFO 4: DEBUG
-LOGGER_LEVEL = logging.DEBUG
+LOGGER_LEVEL = logging.INFO
 
 # Lookbackwindow for Relationship and Interest
 LOOKBACKWINDOW = -30 # Days

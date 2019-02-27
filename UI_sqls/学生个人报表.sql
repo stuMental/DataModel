@@ -32,18 +32,17 @@
     FROM
     (
         SELECT
-            student_number, student_emotion, COUNT(*) AS num
+            student_emotion, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
-        GROUP BY student_number, student_emotion
+        GROUP BY student_emotion
     ) t1 JOIN
     (
         SELECT
-            student_number, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
-        GROUP BY student_number
-    ) t2 ON t1.student_number = t2.student_number;
+    ) t2;
     
     -- 情绪状态历史趋势图
     SELECT
@@ -59,18 +58,17 @@
     FROM
     (
         SELECT
-            student_number, student_mental_stat, COUNT(*) AS num
+            student_mental_stat, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
-        GROUP BY student_number, student_mental_stat
+        GROUP BY student_mental_stat
     ) t1 JOIN
     (
         SELECT
-            student_number, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
-        GROUP BY student_number
-    ) t2 ON t1.student_number = t2.student_number;
+    ) t2;
     
     -- 精神状态历史趋势图
     SELECT
@@ -85,18 +83,17 @@
     FROM
     (
         SELECT
-            student_number, student_study_stat, COUNT(*) AS num
+            student_study_stat, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
-        GROUP BY student_number, student_study_stat
+        GROUP BY student_study_stat
     ) t1 JOIN
     (
         SELECT
-            student_number, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
-        GROUP BY student_number
-    ) t2 ON t1.student_number = t2.student_number;
+    ) t2;
     
     -- 学习状态历史趋势图
     SELECT
@@ -107,38 +104,38 @@
 
 -- 学生综合状态
     SELECT
-        ROUND((1.0 * IFNULL(t5.emotion_count, 0)) / t1.total, 2) AS emotion, ROUND((1.0 * IFNULL(t1.study_count, 0)) / t1.total, 2) AS study, ROUND((1.0 * IFNULL(t1.mental_count, 0)) / t1.total, 2) AS mental, ROUND((1.0 * IFNULL(t1.relationship_count, 0)) / t1.total, 2) AS relationship
+        ROUND((1.0 * IFNULL(t5.emotion_count, 0)) / t1.total, 2) AS emotion, ROUND((1.0 * IFNULL(t2.study_count, 0)) / t1.total, 2) AS study, ROUND((1.0 * IFNULL(t3.mental_count, 0)) / t1.total, 2) AS mental, ROUND((1.0 * IFNULL(t4.relationship_count, 0)) / t1.total, 2) AS relationship
     FROM
     (
         SELECT
-            student_number, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     ) t1 JOIN
     (
         SELECT
-            student_number, COUNT(*) AS study_count
+            COUNT(*) AS study_count
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param AND student_study_stat != '3'
-    ) t2 ON t1.student_number = t2.student_number JOIN
+    ) t2 JOIN
     (
         SELECT
-            student_number, COUNT(*) AS mental_count
+            COUNT(*) AS mental_count
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param AND student_mental_stat != '2'
-    ) t3 ON t1.student_number = t3.student_number JOIN
+    ) t3 JOIN
     (
         SELECT
-            student_number, COUNT(*) AS relationship_count
+            COUNT(*) AS relationship_count
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param AND student_relationship != '3' AND student_relationship != ''
-    ) t4 ON t1.student_number = t4.student_number JOIN
+    ) t4 JOIN
     (
         SELECT
-            student_number, COUNT(*) AS emotion_count
+            COUNT(*) AS emotion_count
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param AND student_emotion != '2'
-    ) t5 ON t1.student_number = t5.student_number;
+    ) t5;
 
 -- 学习状态分析
     SELECT

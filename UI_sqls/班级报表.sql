@@ -49,18 +49,17 @@
     FROM
     (
         SELECT
-            class_id, student_emotion, COUNT(*) AS num
+            student_emotion, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id, student_emotion
+        GROUP BY student_emotion
     ) t1 JOIN
     (
         SELECT
-            class_id, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id
-    ) t2 ON t1.class_id = t2.class_id;
+    ) t2;
     
     -- 学生名单
     SELECT
@@ -74,18 +73,17 @@
     FROM
     (
         SELECT
-            class_id, student_relationship, COUNT(*) AS num
+            student_relationship, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id, student_relationship
+        GROUP BY student_relationship
     ) t1 JOIN
     (
         SELECT
-            class_id, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id
-    ) t2 ON t1.class_id = t2.class_id;
+    ) t2;
     
     -- 学生名单
     SELECT
@@ -100,18 +98,17 @@
     FROM
     (
         SELECT
-            class_id, student_study_stat, COUNT(*) AS num
+            student_study_stat, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id, student_study_stat
+        GROUP BY student_study_stat
     ) t1 JOIN
     (
         SELECT
-            class_id, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id
-    ) t2 ON t1.class_id = t2.class_id;
+    ) t2;
     
     -- 学生名单
     SELECT
@@ -125,18 +122,17 @@
     FROM
     (
         SELECT
-            class_id, student_mental_stat, COUNT(*) AS num
+            student_mental_stat, COUNT(*) AS num
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id, student_mental_stat
+        GROUP BY student_mental_stat
     ) t1 JOIN
     (
         SELECT
-            class_id, COUNT(*) AS total
+            COUNT(*) AS total
         FROM student_mental_status_ld
         WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
-        GROUP BY class_id
-    ) t2 ON t1.class_id = t2.class_id;
+    ) t2;
     
     -- 学生名单
     SELECT
