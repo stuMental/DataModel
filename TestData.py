@@ -99,15 +99,43 @@ class TestData(object):
         ''''''
         sql = '''
             SELECT
-                student_interest, COUNT(*) AS total
-            FROM student_mental_status_interest_daily
-            WHERE class_id in (SELECT class_id FROM school_camera_class_info WHERE grade_name = '2018') AND dt = 1550309899
-            GROUP BY student_interest;
-        '''
+                ROUND((1.0 * IFNULL(t5.emotion_count, 0)) / t1.total, 2) AS emotion, ROUND((1.0 * IFNULL(t2.study_count, 0)) / t1.total, 2) AS study, ROUND((1.0 * IFNULL(t3.mental_count, 0)) / t1.total, 2) AS mental, ROUND((1.0 * IFNULL(t4.relationship_count, 0)) / t1.total, 2) AS relationship
+            FROM
+            (
+                SELECT
+                    COUNT(*) AS total
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00'
+            ) t1 JOIN
+            (
+                SELECT
+                    COUNT(*) AS study_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_study_stat != '3'
+            ) t2 JOIN
+            (
+                SELECT
+                    COUNT(*) AS mental_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_mental_stat != '2'
+            ) t3 JOIN
+            (
+                SELECT
+                    COUNT(*) AS relationship_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_relationship != '3' AND student_relationship != ''
+            ) t4 JOIN
+            (
+                SELECT
+                    COUNT(*) AS emotion_count
+                FROM student_mental_status_ld
+                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_emotion != '2'
+            ) t5;
+        '''#.format('1550676', '1550763', '20190221', Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN, Config.SCHOOL_CAMERA_CLASS_TABLE)
 
         for row in self.__db.select(sql):
             print row
 
 if __name__ == '__main__':
     doer = TestData()
-    doer.produce()
+    doer.test_sql()

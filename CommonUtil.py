@@ -32,12 +32,12 @@ class CommonUtil(object):
         start_time = (datetime.date.today() + datetime.timedelta(days=-1))
         end_time =datetime.date.today()
 
-        res['start_time'] = time.mktime(start_time.timetuple())
-        res['end_time'] = time.mktime(end_time.timetuple())
+        # res['start_time'] = time.mktime(start_time.timetuple())
+        # res['end_time'] = time.mktime(end_time.timetuple())
 
         # For test
-        # res['start_time'] = 1549882797
-        # res['end_time'] = 1549882797
+        res['start_time'] = 1550678400
+        res['end_time'] = 1550764800
 
         return res
 
@@ -56,4 +56,6 @@ class CommonUtil(object):
     @staticmethod
     def get_date_day(days = 0):
         ''''''
-        return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y%m%d")
+        # return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y%m%d")
+        # For test
+        return '20190221'

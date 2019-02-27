@@ -34,7 +34,7 @@ OUTPUT_DB_PASSWORD = '123456'
 OUTPUT_DB_DATABASE = 'dev_icampusdb'
 
 # Raw input table
-RAW_INPUT_TABLE = 'person_body_status2'
+RAW_INPUT_TABLE = 'person_body_status'
 
 # UI daily status table
 OUTPUT_UI_TABLE = 'student_mental_status_ld'

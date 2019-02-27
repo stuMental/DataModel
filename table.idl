@@ -144,7 +144,7 @@ Middle Table
         - pose_stat_time: max(body_stat\face_ose) group by pose_stat_time
 
     - person_body_status_pose_stat_midlle
-        - camera_id
+        - class_id
         - face_id
         - pose_stat_time
         - face_pose_stat_time
@@ -153,7 +153,7 @@ Middle Table
         - face_emotion
 
     - person_body_status_face_pose_stat
-        - camera_id
+        - class_id
         - face_id
         - pose_stat_time
         - body_stat
@@ -162,7 +162,6 @@ Middle Table
         - face_pose_stat
 
     - person_body_status_course_info
-        - camera_id
         - class_id
         - face_id
         - pose_stat_time
@@ -225,4 +224,4 @@ School Class Info
         - dt
 
 问题:
-    - dt字段是否需要修改为long or int型 sTry类型的在比较的时候是按照字符的顺序比较，容易出错 2 100 (100 < 2)
+    - dt字段是否需要修改为long or int型 string类型的在比较的时候是按照字符的顺序比较，容易出错 2 100 (100 < 2)
