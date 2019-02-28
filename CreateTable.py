@@ -13,6 +13,15 @@ class CreateTable(object):
         self.__outputDB = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
+    def create_database(self):
+        self.__logger.info("Create raw data tables in the database {0}".format(Config.INPUT_DB_DATABASE))
+
+        sql='''
+            CREATE DATABASE {0} DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+        '''.format(Config.INPUT_DB_DATABASE)
+        self.__db.create(sql)
+
+        self.__logger.info("Create raw data tables in the database {0}".format(Config.INPUT_DB_DATABASE))
 
     def create_table(self):
         # 在raw数据库中创建数据表
@@ -267,5 +276,6 @@ class CreateTable(object):
 
 if __name__ == '__main__':
     doer = CreateTable()
+    doer.create_database()
     doer.create_table()
     doer.create_index()
