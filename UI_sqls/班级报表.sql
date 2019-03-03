@@ -200,3 +200,10 @@
         GROUP BY dt
     ) t2 ON t1.dt = t2.dt
     ORDER BY dt ASC;
+    -- 学科兴趣分布
+    SELECT
+        student_interest, COUNT(*) AS total
+    FROM student_mental_status_interest_daily
+    WHERE grade_name = 'param' AND class_name = 'param' AND dt = select_time_param
+    GROUP BY student_interest
+    ORDER BY student_interest ASC;
