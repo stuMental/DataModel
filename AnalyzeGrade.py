@@ -20,7 +20,7 @@ class AnalyzeGrade(object):
         if len(grade_levels) == 0: # 这个时间段无考试成绩 无需评估
             return {}
 
-        study_levels = self.get_course_study_status(CommonUtil.get_specific_unixtime(end_time, Config.ANALYSIS_LOOKBACKWINDOW) , end_time)
+        study_levels = self.get_course_study_status(CommonUtil.get_specific_date(end_time, Config.ANALYSIS_LOOKBACKWINDOW) , end_time)
 
         metrics = {}
         for stu, courses in study_levels.items():
@@ -46,7 +46,7 @@ class AnalyzeGrade(object):
                 SELECT
                     grade_name, class_name, student_number, course_name, score
                 FROM {2}
-                WHERE dt >= {0} AND dt <= {1}
+                WHERE dt >= '{0}' AND dt < '{1}'
             ) t0 JOIN
             (
                 SELECT
@@ -57,14 +57,14 @@ class AnalyzeGrade(object):
                         SELECT
                             grade_name, class_name, course_name, AVG(score) AS avg_score
                         FROM {2}
-                        WHERE dt >= {0} AND dt <= {1}
+                        WHERE dt >= '{0}' AND dt < '{1}'
                         GROUP BY grade_name, class_name, course_name
                     ) t1 JOIN
                     (
                         SELECT
                             grade_name, course_name, MAX(score) AS max_score
                         FROM {2}
-                        WHERE dt >= {0} AND dt <= {1}
+                        WHERE dt >= '{0}' AND dt < '{1}'
                         GROUP BY grade_name, course_name
                     ) t2 ON t1.grade_name = t2.grade_name AND t1.course_name = t2.course_name
                 )
@@ -99,7 +99,7 @@ class AnalyzeGrade(object):
                 SELECT
                     student_number, course_name, COUNT(*) AS total
                 FROM {2}
-                WHERE dt >= {0} AND dt <= {1} AND student_study_stat != '3'
+                WHERE dt >= '{0}' AND dt < '{1}' AND student_study_stat != '3'
                 GROUP BY student_number, course_name
             ) t
         '''.format(start_time, end_time, Config.OUTPUT_UI_COURSE_TABLE, Config.ANALYSIS_STUDY_STAT_THRESHOLD, Config.ANALYSIS_LOOKBACKWINDOW)

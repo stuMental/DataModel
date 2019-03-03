@@ -5,7 +5,7 @@ import DbUtil
 import Config
 import Logger
 import random
-import CommonUtil
+from CommonUtil import CommonUtil
 
 class TestData(object):
     """docsTry for TestData"""
@@ -98,40 +98,20 @@ class TestData(object):
     def test_sql(self):
         ''''''
         sql = '''
-            SELECT
-                ROUND((1.0 * IFNULL(t5.emotion_count, 0)) / t1.total, 2) AS emotion, ROUND((1.0 * IFNULL(t2.study_count, 0)) / t1.total, 2) AS study, ROUND((1.0 * IFNULL(t3.mental_count, 0)) / t1.total, 2) AS mental, ROUND((1.0 * IFNULL(t4.relationship_count, 0)) / t1.total, 2) AS relationship
-            FROM
-            (
-                SELECT
-                    COUNT(*) AS total
-                FROM student_mental_status_ld
-                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00'
-            ) t1 JOIN
-            (
-                SELECT
-                    COUNT(*) AS study_count
-                FROM student_mental_status_ld
-                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_study_stat != '3'
-            ) t2 JOIN
-            (
-                SELECT
-                    COUNT(*) AS mental_count
-                FROM student_mental_status_ld
-                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_mental_stat != '2'
-            ) t3 JOIN
-            (
-                SELECT
-                    COUNT(*) AS relationship_count
-                FROM student_mental_status_ld
-                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_relationship != '3' AND student_relationship != ''
-            ) t4 JOIN
-            (
-                SELECT
-                    COUNT(*) AS emotion_count
-                FROM student_mental_status_ld
-                WHERE student_number = '2323' AND dt >= '2019-02-17 00:00:00' AND dt <= '2019-02-17 00:00:00' AND student_emotion != '2'
-            ) t5;
-        '''#.format('1550676', '1550763', '20190221', Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN, Config.SCHOOL_CAMERA_CLASS_TABLE)
+            SELECT t1.time_gap, t1.grade_name, IF(t2.num IS NULL, 0, t2.num)
+            FROM (
+                SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap,grade_name
+                FROM school_course_info
+                WHERE dt='2019-02-16'
+                GROUP BY start_time,end_time,grade_name
+            )t1 LEFT JOIN (
+                SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap, grade_name, count(*) AS num
+                FROM school_student_attendance_info
+                WHERE dt='2019-02-16'
+                GROUP BY start_time,end_time,grade_name
+            )t2 ON t1.time_gap=t2.time_gap AND t1.grade_name=t2.grade_name
+            ORDER BY grade_name ASC, time_gap ASC;
+        '''# .format(CommonUtil.get_specific_date('2019-03-03', Config.LOOKBACKWINDOW), '2019-03-03', Config.OUTPUT_UI_COURSE_TABLE)
 
         for row in self.__db.select(sql):
             print row

@@ -12,7 +12,7 @@ import CalcCourseMetric
 import AnalyzeGrade
 
 class EstimateMental(object):
-    """docsTry for EstimateMental"""
+    """DataModel的主模块 以及是对应的入口文件"""
     def __init__(self):
         super(EstimateMental, self).__init__()
         self.__logger = Logger.Logger(__name__)
@@ -21,14 +21,14 @@ class EstimateMental(object):
         self.__poster = PostMetric.PostMetric()
         self.__course = CalcCourseMetric.CalcCourseMetric()
         self.__analyzer = AnalyzeGrade.AnalyzeGrade()
-        self.__db = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__interests = {}
 
     def estimate(self):
-        times = CommonUtil.get_range_unixtime()
+        times = CommonUtil.get_range_times()
         estimate_date = CommonUtil.get_date_day(-1)
-        self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_time'], times['end_time']))
-        self.__preprocessor.preprocessor(times['start_time'], times['end_time'], estimate_date)
+        self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
+        self.__preprocessor.preprocessor(times['start_unixtime'], times['end_unixtime'], estimate_date)
 
         # 获得学生信息和班级信息
         students = self.get_students()
@@ -36,13 +36,13 @@ class EstimateMental(object):
 
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
-        course_metrics = self.__course.calculate_course_metrics(times['start_time'], times['end_time'])
+        course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'])
         self.__poster.post_course_metric(course_metrics, estimate_date, students, classes)
         self.__logger.info("Finished to compute and post daily course metrics")
 
         self.__logger.info("Begin to compute and post daily metrics")
-        metrics = self.__metric.calculate_daily_metrics(times['start_time'], times['end_time'])
-        metrics = self.estimate_interest(times['end_time'], metrics)
+        metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'])
+        metrics = self.estimate_interest(times['end_datetime'], metrics)
         self.__poster.post(metrics, estimate_date, students, classes)
         self.__logger.info("Finished to compute and post daily metrics")
 
@@ -52,18 +52,18 @@ class EstimateMental(object):
 
         # 计算成绩与学习状态之间的四象限分析指标
         self.__logger.info("Begin to analyze and post Grade and Study_Status")
-        analysis_metrics = self.__analyzer.Analysis(times['start_time'], times['end_time'])
+        analysis_metrics = self.__analyzer.Analysis(times['start_datetime'], times['end_datetime'])
         self.__poster.post_grade_study_metric(analysis_metrics, estimate_date)
         self.__logger.info("Finished to analyze and post")
 
-    def count_interest(self, end_time):
+    def count_interest(self, end_date):
         ''''''
         sql = '''
             SELECT
                 class_id, student_number, course_name, student_study_stat
             FROM {2}
-            WHERE dt >= {0} AND dt <= {1}
-        '''.format(CommonUtil.get_specific_unixtime(end_time, Config.LOOKBACKWINDOW), end_time, Config.OUTPUT_UI_COURSE_TABLE)
+            WHERE dt >= '{0}' AND dt < '{1}'
+        '''.format(CommonUtil.get_specific_date(end_date, Config.LOOKBACKWINDOW), end_date, Config.OUTPUT_UI_COURSE_TABLE)
 
         res = {}
         for row in self.__db.select(sql):
@@ -86,10 +86,10 @@ class EstimateMental(object):
         self.__logger.debug(str(res))
         return res
 
-    def estimate_interest(self, end_time, metrics):
+    def estimate_interest(self, end_date, metrics):
         ''''''
         self.__logger.info("Begin to compute student_interest")
-        study_states = self.count_interest(end_time)
+        study_states = self.count_interest(end_date)
         for class_id, values in metrics.items():
             for face_id in values:
                 if study_states.has_key(class_id) and study_states[class_id].has_key(face_id):
@@ -116,7 +116,7 @@ class EstimateMental(object):
         self.__logger.info("Get all students")
         sql = '''
             SELECT
-                student_number, student_name
+                DISTINCT student_number, student_name
             FROM {0}
         '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE)
 

@@ -22,16 +22,19 @@ INPUT_DB_CHARSET = 'utf8'
 
 # The config of Output Database
 # Database host
-OUTPUT_DB_HOST = '172.16.14.190'
+# OUTPUT_DB_HOST = '172.16.14.190'
 
 # Database username
-OUTPUT_DB_USERNAME = 'root'
+# OUTPUT_DB_USERNAME = 'root'
 
 # Database password
-OUTPUT_DB_PASSWORD = '123456'
+# OUTPUT_DB_PASSWORD = '123456'
 
 # Database dbname
-OUTPUT_DB_DATABASE = 'dev_icampusdb'
+# OUTPUT_DB_DATABASE = 'dev_icampusdb'
+
+# Database charset
+# OUTPUT_DB_CHARSET = 'utf8'
 
 # Raw input table
 RAW_INPUT_TABLE = 'person_body_status'
@@ -47,9 +50,6 @@ OUTPUT_UI_INTEREST_TABLE = 'student_mental_status_interest_daily'
 
 # Grade and Study 对比分析表
 OUTPUT_UI_GRADE_STUDY_TABLE = 'student_mental_status_grade_study_daily'
-
-# Database charset
-OUTPUT_DB_CHARSET = 'utf8'
 
 #通过人脸track识别检测到的统一个track的人脸
 INTERMEDIATE_TRACK_TABLE = 'person_body_status_face_track'

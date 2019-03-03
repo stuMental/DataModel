@@ -32,18 +32,18 @@ class Preprocessor(object):
             FROM (
                 SELECT *
                 FROM {2}
-                    WHERE face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
+                    WHERE face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                 )t1 JOIN (
                     SELECT t21.camera_id, t21.face_track, t21.face_id
                     FROM (
                         SELECT camera_id, face_track, face_id
                         FROM {2}
-                        WHERE face_id != 'unknown' AND face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
+                        WHERE face_id != 'unknown' AND face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                         GROUP BY camera_id, face_track, face_id
                     )t21 JOIN (
                         SELECT camera_id, face_track, count(distinct face_id) as face_num
                         FROM {2}
-                        WHERE face_id != 'unknown' AND face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
+                        WHERE face_id != 'unknown' AND face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                         GROUP BY camera_id, face_track
                     HAVING face_num = 1
                     )t22 ON t21.camera_id=t22.camera_id AND t21.face_track=t22.face_track
@@ -64,11 +64,11 @@ class Preprocessor(object):
             FROM (
                 SELECT *
                 FROM {2}
-                    WHERE body_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
+                    WHERE body_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                 )t1 JOIN (
                     SELECT camera_id, body_track, face_id, count(*) as face_num
                     FROM {2}
-                    WHERE face_id != 'unknown' AND body_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
+                    WHERE face_id != 'unknown' AND body_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                     GROUP BY camera_id, body_track, face_id
                 HAVING face_num = 1
             )t2 ON t1.camera_id=t2.camera_id AND t1.body_track=t2.body_track
@@ -90,12 +90,12 @@ class Preprocessor(object):
                 FROM (
                         SELECT camera_id, face_id, pose_stat_time, face_pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
                         FROM {3}
-                        WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown'
+                        WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown'
                         GROUP BY camera_id, face_id, pose_stat_time, face_pose_stat_time
                 )t1 JOIN (
                     SELECT camera_id, class_id
                     FROM {4}
-                    WHERE dt={5}
+                    WHERE dt='{5}'
                 )t2 ON t1.camera_id=t2.camera_id
             )t3
             GROUP BY class_id, face_id, pose_stat_time, face_pose_stat_time # 有可能一个教室多个摄像头 所以需要再执行一次GROUP BY语句
@@ -118,7 +118,7 @@ class Preprocessor(object):
             FROM (
                 SELECT class_id, face_id, pose_stat_time, face_pose_stat_time, body_stat, face_pose, face_emotion
                 FROM {2}
-                WHERE pose_stat_time >= {0} AND pose_stat_time <= {1}
+                WHERE pose_stat_time >= {0} AND pose_stat_time < {1}
             )t5 LEFT OUTER JOIN (
                 SELECT class_id, face_pose_stat_time, MIN(face_pose) AS face_pose
                 FROM (
@@ -126,14 +126,14 @@ class Preprocessor(object):
                 FROM (
                     SELECT class_id, face_pose_stat_time, face_pose, COUNT(*) AS num
                     FROM {2}
-                    WHERE face_pose != '-1' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
+                    WHERE face_pose != '-1' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                     GROUP BY class_id, face_pose_stat_time, face_pose
                 )t2 JOIN (
                     SELECT class_id, face_pose_stat_time, MAX(num) AS num
                     FROM (
                     SELECT class_id, face_pose_stat_time, face_pose, COUNT(*) AS num
                     FROM {2}
-                    WHERE face_pose != '-1' AND pose_stat_time >= {0} AND pose_stat_time <= {1}
+                    WHERE face_pose != '-1' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                     GROUP BY class_id, face_pose_stat_time, face_pose
                     )t1 
                     GROUP BY class_id, face_pose_stat_time
@@ -161,7 +161,7 @@ class Preprocessor(object):
             (
                 SELECT class_id, face_id, pose_stat_time, body_stat, face_pose, face_emotion, face_pose_stat
                     FROM {3}
-                    WHERE pose_stat_time >= {0} AND pose_stat_time <= {1}
+                    WHERE pose_stat_time >= {0} AND pose_stat_time < {1}
             ) t1 LEFT OUTER JOIN
             (
                 SELECT
@@ -170,13 +170,13 @@ class Preprocessor(object):
                 (
                     SELECT grade_name, class_name, course_name, start_time, end_time
                     FROM {4}
-                    WHERE dt = {2}
+                    WHERE dt = '{2}'
                 ) t3 LEFT OUTER JOIN
                 (
                     SELECT
                         DISTINCT class_id, class_name, grade_name
                     FROM {6}
-                    WHERE dt = {2}
+                    WHERE dt = '{2}'
                 ) t4 ON t3.grade_name = t4.grade_name AND t3.class_name = t4.class_name
             ) t2 ON t1.class_id = t2.class_id AND  t1.pose_stat_time >= t2.start_time AND t1.pose_stat_time <= t2.end_time
         '''.format(start_time, end_time, day, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN, Config.SCHOOL_CAMERA_CLASS_TABLE)
@@ -195,22 +195,22 @@ class Preprocessor(object):
                 FROM (
                     SELECT course_name, class_name, grade_name, start_time, end_time
                     FROM {4}
-                    WHERE dt={2}
+                    WHERE dt='{2}'
                     )t1 JOIN (
                     SELECT class_name, grade_name, student_number, student_name
                     FROM {5}
-                    WHERE dt={2}
+                    WHERE dt='{2}'
                 )t2 ON t1.class_name=t2.class_name AND t1.grade_name=t2.grade_name
             )t5 LEFT JOIN (
                 SELECT t3.face_id, t3.pose_stat_time, t4.class_name, t4.grade_name
                 FROM (
                         SELECT class_id, face_id, pose_stat_time
                         FROM {3}
-                        WHERE pose_stat_time >= {0} AND pose_stat_time <= {1}
+                        WHERE pose_stat_time >= {0} AND pose_stat_time < {1}
                     )t3 JOIN (
                     SELECT DISTINCT class_id, class_name, grade_name
                     FROM {6}
-                    WHERE dt={2}
+                    WHERE dt='{2}'
                 )t4 ON t3.class_id=t4.class_id
             )t6 ON t5.student_number=t6.face_id AND t6.pose_stat_time<=t5.end_time AND t6.pose_stat_time>=t5.start_time AND t5.class_name=t6.class_name AND t5.grade_name=t6.grade_name
             WHERE t6.face_id IS NULL
