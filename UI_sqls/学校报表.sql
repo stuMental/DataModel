@@ -18,7 +18,7 @@
     FROM (
         SELECT student_number, student_name, grade_name, count(*) as num
         FROM student_mental_status_ld
-        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND face_emotion='2'
+        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND student_emotion='2'
         GROUP BY student_number, student_name, grade_name
         HAVING num>=6
     )t1 
