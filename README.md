@@ -11,5 +11,9 @@ Build a system to train data model
 
 # FQA
 1. Issue 1: 'this is MySQLdb version (1, 2, 5, 'final', 1), but _mysql is version (1, 4, 1, 'final', 0)'.
-   
+
    You can uninstall MySQLdb `sudo pip uninstall mysql-python`, and go to `/usr/local/lib/python2.7/dist-packages/`, then `sudo rm -rf MySQLdb`. Finally, you can re-install mysql-python. It should wrok.
+
+1. Issue2: 'Can't connect to MySQL server on 'x.x.x.x''.
+
+   需要更新 my.cnf of MySQL. 路径在 `/etc/mysql/mysql.conf.d/mysqld.cnf`, 然后注释掉 `bind-address = 127.0.0.1` 即可

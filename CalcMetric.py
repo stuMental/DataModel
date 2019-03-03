@@ -161,7 +161,7 @@ class CalcMetric(object):
             SELECT
                 class_id, face_id, body_stat, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
             GROUP BY class_id, face_id, body_stat
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
@@ -205,7 +205,7 @@ class CalcMetric(object):
                 SELECT
                     t1.class_id, t1.face_id, t1.face_emotion, COUNT(*) AS total
                 FROM {2} t1
-                WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time <= {1} AND t1.face_emotion != '-1' AND t1.course_name = 'rest' AND t1.face_id in
+                WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.face_emotion != '-1' AND t1.course_name = 'rest' AND t1.face_id in
                 (
                     SELECT
                         t2.face_id
@@ -214,7 +214,7 @@ class CalcMetric(object):
                         SELECT
                             face_id, COUNT(*) AS num
                         FROM {2}
-                        WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown' AND course_name = 'rest'
+                        WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
                         GROUP BY face_id
                         HAVING num >= {3}
                     ) t2
@@ -226,7 +226,7 @@ class CalcMetric(object):
                 SELECT
                     class_id, face_id, face_emotion, COUNT(*) AS total
                 FROM {2}
-                WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+                WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
                 GROUP BY class_id, face_id, face_emotion
             '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
@@ -265,7 +265,7 @@ class CalcMetric(object):
                 SELECT
                     t1.class_id, t1.face_id, t1.face_pose, COUNT(*) AS total
                 FROM {2} t1
-                WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time <= {1} AND t1.course_name = 'rest' AND t1.face_pose != '-1' AND t1.face_id in
+                WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.course_name = 'rest' AND t1.face_pose != '-1' AND t1.face_id in
                 (
                     SELECT
                         t2.face_id
@@ -274,7 +274,7 @@ class CalcMetric(object):
                         SELECT
                             face_id, COUNT(*) AS num
                         FROM {2}
-                        WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_id != 'unknown' AND course_name = 'rest'
+                        WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
                         GROUP BY face_id
                         HAVING num >= {3}
                     ) t2
@@ -286,7 +286,7 @@ class CalcMetric(object):
                 SELECT
                     class_id, face_id, face_pose, COUNT(*) AS total
                 FROM {2}
-                WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+                WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
                 GROUP BY class_id, face_id, face_pose
             '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 

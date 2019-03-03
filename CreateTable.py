@@ -10,7 +10,6 @@ class CreateTable(object):
     def __init__(self):
         super(CreateTable, self).__init__()
         self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
-        self.__outputDB = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def create_database(self):
@@ -114,6 +113,7 @@ class CreateTable(object):
             CREATE TABLE {0} (
                 grade_name char(20),
                 class_name char(20),
+                class_id char(20),
                 student_number char(20),
                 student_name char(20),
                 dt char(20)
@@ -178,7 +178,7 @@ class CreateTable(object):
         self.__logger.info("Finished to create table")
 
         # 在UI数据库中创建数据表
-        self.__logger.info("Create tables in output UI database {0}".format(Config.OUTPUT_DB_DATABASE))
+        self.__logger.info("Create tables in output UI database {0}".format(Config.INPUT_DB_DATABASE))
         sql = '''
             CREATE TABLE {0} (
                 student_number char(20) not null,
@@ -194,7 +194,7 @@ class CreateTable(object):
                 dt char(20)
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_TABLE)
-        self.__outputDB.create(sql)
+        self.__db.create(sql)
 
         sql = '''
             CREATE TABLE {0} (
@@ -209,7 +209,7 @@ class CreateTable(object):
                 dt char(20)
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_COURSE_TABLE)
-        self.__outputDB.create(sql)
+        self.__db.create(sql)
 
         sql = '''
             CREATE TABLE {0} (
@@ -222,7 +222,7 @@ class CreateTable(object):
                 dt char(20)
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_INTEREST_TABLE)
-        self.__outputDB.create(sql)
+        self.__db.create(sql)
 
         sql = '''
             CREATE TABLE {0} (
@@ -233,7 +233,7 @@ class CreateTable(object):
                 dt char(20)
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE)
-        self.__outputDB.create(sql)
+        self.__db.create(sql)
 
         sql='''
             CREATE TABLE {0} (
@@ -247,7 +247,7 @@ class CreateTable(object):
                 dt char(20)
         )engine=innodb default charset=utf8
         '''.format(Config.STUDENT_ATTENDANCE)
-        self.__outputDB.create(sql)
+        self.__db.create(sql)
 
         self.__logger.info("Finished to create tables for UI")
 
@@ -271,11 +271,11 @@ class CreateTable(object):
             CREATE INDEX dt_index ON {3} (dt);
             CREATE INDEX dt_index ON {4} (dt);
         '''.format(Config.OUTPUT_UI_TABLE, Config.OUTPUT_UI_COURSE_TABLE, Config.OUTPUT_UI_INTEREST_TABLE, Config.OUTPUT_UI_GRADE_STUDY_TABLE, Config.STUDENT_ATTENDANCE)
-        self.__outputDB.create(sql)
+        self.__db.create(sql)
         self.__logger.info("Finished create index")
 
 if __name__ == '__main__':
     doer = CreateTable()
-    doer.create_database()
+    # doer.create_database()
     doer.create_table()
     doer.create_index()

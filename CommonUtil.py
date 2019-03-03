@@ -26,18 +26,22 @@ class CommonUtil(object):
         return res
 
     @staticmethod
-    def get_range_unixtime():
+    def get_range_times():
         ''''''
         res = {}
         start_time = (datetime.date.today() + datetime.timedelta(days=-1))
         end_time =datetime.date.today()
 
-        # res['start_time'] = time.mktime(start_time.timetuple())
-        # res['end_time'] = time.mktime(end_time.timetuple())
+        res['start_datetime'] = start_time.strftime("%Y-%m-%d")
+        res['end_datetime'] = end_time.strftime("%Y-%m-%d")
+        res['start_unixtime'] = int(time.mktime(start_time.timetuple()))
+        res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
 
         # For test
-        res['start_time'] = 1550678400
-        res['end_time'] = 1550764800
+        # res['start_datetime'] = '2019-03-02'
+        # res['end_datetime'] = '2019-03-03'
+        # res['start_unixtime'] = 1550678400
+        # res['end_unixtime'] = 1550764800
 
         return res
 
@@ -54,8 +58,14 @@ class CommonUtil(object):
         return int(time.mktime(ans.timetuple()))
 
     @staticmethod
+    def get_specific_date(str_date, days = 0):
+        ''''''
+        dt = datetime.datetime.strptime(str_date, "%Y-%m-%d")
+        return dt.date() + datetime.timedelta(days)
+
+    @staticmethod
     def get_date_day(days = 0):
         ''''''
-        # return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y%m%d")
+        return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
         # For test
-        return '20190221'
+        # return '2019-03-03'

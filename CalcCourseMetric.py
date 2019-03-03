@@ -90,7 +90,7 @@ class CalcCourseMetric(object):
             SELECT
                 class_id, course_name, face_id, body_stat, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
             GROUP BY class_id, course_name, face_id, body_stat
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
@@ -135,7 +135,7 @@ class CalcCourseMetric(object):
             SELECT
                 class_id, course_name, face_id, face_emotion, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
             GROUP BY class_id, course_name, face_id, face_emotion
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
@@ -176,7 +176,7 @@ class CalcCourseMetric(object):
             SELECT
                 class_id, course_name, face_id, face_pose, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time <= {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
             GROUP BY class_id, course_name, face_id, face_pose
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 

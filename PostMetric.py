@@ -10,12 +10,12 @@ class PostMetric(object):
     """docsTry for PostMetric"""
     def __init__(self):
         super(PostMetric, self).__init__()
-        self.__outputDB = DbUtil.DbUtil(Config.OUTPUT_DB_HOST, Config.OUTPUT_DB_USERNAME, Config.OUTPUT_DB_PASSWORD, Config.OUTPUT_DB_DATABASE, Config.OUTPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def post(self, datas, dt, students, classes):
         ''' Post data to UI database '''
-        self.__logger.info("Try to post data to UI database [{0}], and the table [{1}].".format(Config.OUTPUT_DB_DATABASE, Config.OUTPUT_UI_TABLE))
+        self.__logger.info("Try to post data to UI database [{0}], and the table [{1}].".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
             first = True
@@ -38,17 +38,17 @@ class PostMetric(object):
                     count += 1
                     if count % Config.INSERT_BATCH_THRESHOLD == 0:
                         self.__logger.info("Try to insert {0} records to table {1}".format(Config.INSERT_BATCH_THRESHOLD, Config.OUTPUT_UI_TABLE))
-                        self.__outputDB.insert(sql + valuesSql)
+                        self.__db.insert(sql + valuesSql)
                         valuesSql = ''
                         first = True
 
             if valuesSql != '':
-                self.__outputDB.insert(sql + valuesSql)
+                self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post data, total rows is {0}".format(count))
 
     def post_course_metric(self, datas, dt, students, classes):
         ''''''
-        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.OUTPUT_DB_DATABASE, Config.OUTPUT_UI_COURSE_TABLE))
+        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_COURSE_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
             first = True
@@ -73,17 +73,17 @@ class PostMetric(object):
 
                         if count % Config.INSERT_BATCH_THRESHOLD == 0:
                             self.__logger.info("Try to insert {0} records to table {1}".format(Config.INSERT_BATCH_THRESHOLD, Config.OUTPUT_UI_COURSE_TABLE))
-                            self.__outputDB.insert(sql + valuesSql)
+                            self.__db.insert(sql + valuesSql)
                             valuesSql = ''
                             first = True
 
             if valuesSql != '':
-                self.__outputDB.insert(sql + valuesSql)
+                self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
 
     def post_interest_metric(self, datas, dt, students, classes):
         ''''''
-        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.OUTPUT_DB_DATABASE, Config.OUTPUT_UI_INTEREST_TABLE))
+        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_INTEREST_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
             first = True
@@ -108,17 +108,17 @@ class PostMetric(object):
 
                         if count % Config.INSERT_BATCH_THRESHOLD == 0:
                             self.__logger.info("Try to insert {0} records to table {1}".format(Config.INSERT_BATCH_THRESHOLD, Config.OUTPUT_UI_INTEREST_TABLE))
-                            self.__outputDB.insert(sql + valuesSql)
+                            self.__db.insert(sql + valuesSql)
                             valuesSql = ''
                             first = True
 
             if valuesSql != '':
-                self.__outputDB.insert(sql + valuesSql)
+                self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
 
     def post_grade_study_metric(self, datas, dt):
         ''''''
-        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.OUTPUT_DB_DATABASE, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
+        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
             first = True
@@ -142,12 +142,12 @@ class PostMetric(object):
 
                     if count % Config.INSERT_BATCH_THRESHOLD == 0:
                         self.__logger.info("Try to insert {0} records to table {1}".format(Config.INSERT_BATCH_THRESHOLD, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
-                        self.__outputDB.insert(sql + valuesSql)
+                        self.__db.insert(sql + valuesSql)
                         valuesSql = ''
                         first = True
 
             if valuesSql != '':
-                self.__outputDB.insert(sql + valuesSql)
+                self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
 
     def get_valid_value(self, data, key):
