@@ -113,7 +113,6 @@ class CreateTable(object):
             CREATE TABLE {0} (
                 grade_name char(20),
                 class_name char(20),
-                class_id char(20),
                 student_number char(20),
                 student_name char(20),
                 dt char(20)
