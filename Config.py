@@ -6,32 +6,32 @@ import logging
 
 # The config for Input Database
 # Database host
-INPUT_DB_HOST = '172.16.14.190'
+INPUT_DB_HOST = 'ip_address'
 
 # Database username
-INPUT_DB_USERNAME = 'root'
+INPUT_DB_USERNAME = 'username'
 
 # Database password
-INPUT_DB_PASSWORD = '123456'
+INPUT_DB_PASSWORD = 'password'
 
 # Database dbname
-INPUT_DB_DATABASE = 'dev_icampusdb'
+INPUT_DB_DATABASE = 'database_name'
 
 # Database charset
 INPUT_DB_CHARSET = 'utf8'
 
 # The config of Output Database
 # Database host
-# OUTPUT_DB_HOST = '172.16.14.190'
+# OUTPUT_DB_HOST = 'ip_address'
 
 # Database username
-# OUTPUT_DB_USERNAME = 'root'
+# OUTPUT_DB_USERNAME = 'username'
 
 # Database password
-# OUTPUT_DB_PASSWORD = '123456'
+# OUTPUT_DB_PASSWORD = 'password'
 
 # Database dbname
-# OUTPUT_DB_DATABASE = 'dev_icampusdb'
+# OUTPUT_DB_DATABASE = 'database_name'
 
 # Database charset
 # OUTPUT_DB_CHARSET = 'utf8'
