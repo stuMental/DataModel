@@ -9,6 +9,11 @@ Build a system to train data model
 1. Install MySQLdb module: `sudo apt-get install libmysqlclient-dev`, and `sudo pip install mysql-python`
 1. Create some tables. Please execute the file CreateTable.py: `python CreateTable.py`
 
+# Update config before running the model
+1. Modify Config.py to update Database's info.
+2. If you want to run the specific date data, you can modify the function `get_range_times` and `get_date_day` in this file `CommonUtil.py`.
+3. If you want to output debug info, you can update the **LOGGER_LEVEL** of Config.py to DEBUG.
+
 # FQA
 1. Issue 1: 'this is MySQLdb version (1, 2, 5, 'final', 1), but _mysql is version (1, 4, 1, 'final', 0)'.
 
