@@ -115,7 +115,7 @@ class CreateTable(object):
                 class_name char(20),
                 student_number char(20),
                 student_name char(20),
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE)
         self.__db.create(sql)
@@ -127,7 +127,7 @@ class CreateTable(object):
                 class_id char(20),
                 class_name char(20),
                 grade_name char(20),
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.SCHOOL_CAMERA_CLASS_TABLE)
         self.__db.create(sql)
@@ -143,7 +143,7 @@ class CreateTable(object):
                 grade_name char(20),
                 start_time char(20),
                 end_time char(20),
-                dt char(20),
+                dt date,
                 primary key(id)
             )engine=innodb default charset=utf8
         '''.format(Config.SCHOOL_COURSE_TABLE)
@@ -158,7 +158,7 @@ class CreateTable(object):
                 course_id char(20),
                 course_name char(20),
                 score float,
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.SCHOOL_PERFORMANCE_TABLE)
         self.__db.create(sql)
@@ -170,7 +170,7 @@ class CreateTable(object):
                 award_type char(20),
                 award_level char(20),
                 award_name char(20),
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.SCHOOL_AWARD_TABLE)
         self.__db.create(sql)
@@ -190,7 +190,7 @@ class CreateTable(object):
                 student_mental_stat char(10),
                 student_study_stat char(10),
                 student_interest char(255),
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_TABLE)
         self.__db.create(sql)
@@ -205,7 +205,7 @@ class CreateTable(object):
                 course_name char(20),
                 student_mental_stat char(10),
                 student_study_stat char(10),
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_COURSE_TABLE)
         self.__db.create(sql)
@@ -218,7 +218,7 @@ class CreateTable(object):
                 grade_name char(20),
                 class_name char(20),
                 study_interest char(20),
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_INTEREST_TABLE)
         self.__db.create(sql)
@@ -229,7 +229,7 @@ class CreateTable(object):
                 course_name char(20),
                 grade_level char(10),
                 study_level char(10),
-                dt char(20)
+                dt date
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE)
         self.__db.create(sql)
@@ -243,7 +243,7 @@ class CreateTable(object):
                 end_time char(20),
                 student_number char(20),
                 student_name char(20),
-                dt char(20)
+                dt date
         )engine=innodb default charset=utf8
         '''.format(Config.STUDENT_ATTENDANCE)
         self.__db.create(sql)

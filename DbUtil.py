@@ -21,6 +21,7 @@ class DbUtil(object):
         self.__logger.debug(query)
         try:
             self.__cursor.execute(query)
+            self.__logger.info("Impacted record count: {0}".format(self.__cursor.rowcount))
             return self.__cursor.fetchall()
         except Exception as e:
             self.__logger.warning('Fail to select data with the query. Message: ['+str(e)+']' +' ['+ query +']')
@@ -36,11 +37,15 @@ class DbUtil(object):
     def create(self, query):
         self.execute(query)
 
+    def truncate(self, query):
+        self.execute(query)
+
     def execute(self, query):
         self.__logger.debug(query)
         try:
             self.__cursor.execute(query)
             self.__db.commit()
+            self.__logger.info("Impacted record count: {0}".format(self.__cursor.rowcount))
         except Exception as e:
             self.__db.rollback()
             self.__logger.warning('Fail to execute the query. Message: ['+str(e)+']' +' ['+ query +']')

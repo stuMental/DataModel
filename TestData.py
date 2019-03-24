@@ -98,21 +98,16 @@ class TestData(object):
     def test_sql(self):
         ''''''
         sql = '''
-            SELECT t1.time_gap, t1.grade_name, IF(t2.num IS NULL, 0, t2.num)
+            SELECT class_name, GROUP_CONCAT(student_name separator ',')
             FROM (
-                SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap,grade_name
-                FROM school_course_info
-                WHERE dt='2019-02-16'
-                GROUP BY start_time,end_time,grade_name
-            )t1 LEFT JOIN (
-                SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap, grade_name, count(*) AS num
-                FROM school_student_attendance_info
-                WHERE dt='2019-02-16'
-                GROUP BY start_time,end_time,grade_name
-            )t2 ON t1.time_gap=t2.time_gap AND t1.grade_name=t2.grade_name
-            ORDER BY grade_name ASC, time_gap ASC;
+                SELECT student_number, student_name, class_name, count(*) as num
+                FROM student_mental_status_ld
+                WHERE dt>='2019-02-10' AND dt<='2019-02-16' AND student_mental_stat='2' AND grade_name='2018'
+                GROUP BY student_number, student_name, class_name
+                HAVING num>=6
+            )t1 
+            GROUP BY class_name
         '''# .format(CommonUtil.get_specific_date('2019-03-03', Config.LOOKBACKWINDOW), '2019-03-03', Config.OUTPUT_UI_COURSE_TABLE)
-
         for row in self.__db.select(sql):
             print row
 
