@@ -98,15 +98,12 @@ class TestData(object):
     def test_sql(self):
         ''''''
         sql = '''
-            SELECT class_name, GROUP_CONCAT(student_name separator ',')
-            FROM (
-                SELECT student_number, student_name, class_name, count(*) as num
-                FROM student_mental_status_ld
-                WHERE dt>='2019-02-10' AND dt<='2019-02-16' AND student_mental_stat='2' AND grade_name='2018'
-                GROUP BY student_number, student_name, class_name
-                HAVING num>=6
-            )t1 
-            GROUP BY class_name
+            SELECT
+                student_interest, COUNT(*) AS total
+            FROM student_mental_status_interest_daily
+            WHERE grade_name = '2018' AND class_name = '1班' AND dt = '2019-02-16'
+            GROUP BY student_interest
+            ORDER BY student_interest ASC;
         '''# .format(CommonUtil.get_specific_date('2019-03-03', Config.LOOKBACKWINDOW), '2019-03-03', Config.OUTPUT_UI_COURSE_TABLE)
         for row in self.__db.select(sql):
             print row

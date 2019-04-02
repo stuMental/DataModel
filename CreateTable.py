@@ -141,8 +141,8 @@ class CreateTable(object):
                 tea_name char(20),
                 class_name char(20),
                 grade_name char(20),
-                start_time char(20),
-                end_time char(20),
+                start_time time,
+                end_time time,
                 dt date,
                 primary key(id)
             )engine=innodb default charset=utf8
