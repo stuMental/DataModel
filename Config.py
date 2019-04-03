@@ -6,16 +6,16 @@ import logging
 
 # The config for Input Database
 # Database host
-INPUT_DB_HOST = '172.18.30.222'
+INPUT_DB_HOST = 'ip_address'
 
 # Database username
-INPUT_DB_USERNAME = 'root'
+INPUT_DB_USERNAME = 'username'
 
 # Database password
-INPUT_DB_PASSWORD = '123456'
+INPUT_DB_PASSWORD = 'password'
 
 # Database dbname
-INPUT_DB_DATABASE = 'dev_icampusdb'
+INPUT_DB_DATABASE = 'database_name'
 
 # Database charset
 INPUT_DB_CHARSET = 'utf8'
