@@ -73,10 +73,17 @@ class CalcCourseMetric(object):
         for class_id, raws in face_pose_count.items():
             for course_name, values in raws.items():
                 study_stat_thresholds = self.__utils.calculate_study_threshold(face_pose_count[class_id][course_name])
-                if metrics.has_key(class_id):
-                    for face_id in metrics[class_id]:
-                        if face_pose_count[class_id][course_name].has_key(face_id):
-                            metrics[class_id][face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrics[class_id][face_id][course_name], face_pose_count[class_id][course_name][face_id], study_stat_thresholds)
+                for face_id, value in values.items():
+                    if not metrics.has_key(class_id):
+                        metrics[class_id] = {}
+                    
+                    if not metrics[class_id].has_key(face_id):
+                        metrics[class_id][face_id] = {}
+                    
+                    if not metrics[class_id][face_id].has_key(course_name):
+                        metrics[class_id][face_id][course_name] = {}
+
+                    metrics[class_id][face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrics[class_id][face_id][course_name], face_pose_count[class_id][course_name][face_id], study_stat_thresholds)
 
         self.__logger.debug(str(metrics))
         self.__logger.info("Finished to compute the course metrics")

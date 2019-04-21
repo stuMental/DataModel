@@ -6,6 +6,9 @@ import logging
 
 # The config for Input Database
 # Database host
+# INPUT_DB_HOST = 'ip_address'
+
+# Database host for local test
 INPUT_DB_HOST = 'ip_address'
 
 # Database username
@@ -117,24 +120,30 @@ MENTAL_THRESHOLD_TIRED = {
 }
 
 MENTAL_THRESHOLD_POSITIVE = {
-    'BODY_STAT' : 2,
-    'EMOTION_SMILE' : 10
+    'BODY_STAT' : 10,
+    'EMOTION_SMILE' : 50
 }
 
 # The threshold for Study Status
 STUDY_THREHOLD_BAD = {
     'MENTAL' : 2, # 疲惫
-    'FACE_POSE_NORMAL' : 0.9 # <=
+    'FACE_POSE_NORMAL' : 0.9, # <=
+    'FACE_POSE_AROUND' : 0.9, # <=
+    'FACE_POSE_AROUND_CNT': 30, # >=
+    'FACE_POSE_LOW' : 0.9, # <=
+    'FACE_POSE_LOW_CNT': 300 # >=
 }
 
 STUDY_THREHOLD_GREAT= {
     'MENTAL' : 0, # 积极
-    'FACE_POSE_NORMAL' : 0.1 # >=
+    'FACE_POSE_NORMAL' : 0.1, # >=
+    'FACE_POSE_NORMAL_CNT': 50 # >=
 }
 
 STUDY_THREHOLD_GOOD = {
     'MENTAL' : [0, 1], # 积极 正常
-    'FACE_POSE_NORMAL' : 0.4 # >=
+    'FACE_POSE_NORMAL' : 0.3, # >=
+    'FACE_POSE_NORMAL_CNT': 30 # >=
 }
 
 # The degree threshold for course interest
@@ -148,7 +157,7 @@ FACE_POSE_STAT_ABNORMAL = 0.4
 
 # The level of Logger
 # 0: FATAL 1: ERROR 2: WARNING 3: INFO 4: DEBUG
-LOGGER_LEVEL = logging.INFO
+LOGGER_LEVEL = logging.DEBUG
 
 # Lookbackwindow for Relationship and Interest
 LOOKBACKWINDOW = -30 # Days
@@ -164,3 +173,6 @@ DETECTED_LOWEST_LIMIT = 500
 
 # 批量插入的阈值
 INSERT_BATCH_THRESHOLD = 10000
+
+# 分隔计算时间的阈值
+DATETIME_THRESHOLD = 16

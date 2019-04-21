@@ -3,6 +3,7 @@
 
 import datetime
 import time
+import Config
 
 class CommonUtil(object):
     """Define some common functions"""
@@ -29,8 +30,19 @@ class CommonUtil(object):
     def get_range_times():
         ''''''
         res = {}
-        start_time = (datetime.date.today() + datetime.timedelta(days=-1))
-        end_time =datetime.date.today()
+
+        now = datetime.datetime.now()
+        start_days = 0
+        end_days = 0
+        if (now.hour <= Config.DATETIME_THRESHOLD): # 小于每天16时 表示当天的数据还没有完全产生 所以需要跑前一天的数据
+            start_days = -1
+            end_days = 0
+        else: # 当天数据已经产生 可以跑当天的数据
+            start_days = 0
+            end_days = 1
+
+        start_time = (datetime.date.today() + datetime.timedelta(days=start_days))
+        end_time = (datetime.date.today() + datetime.timedelta(days=end_days))
 
         res['start_datetime'] = start_time.strftime("%Y-%m-%d")
         res['end_datetime'] = end_time.strftime("%Y-%m-%d")
@@ -38,10 +50,10 @@ class CommonUtil(object):
         res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
 
         # For test
-        # res['start_datetime'] = '2019-03-02'
-        # res['end_datetime'] = '2019-03-03'
-        # res['start_unixtime'] = 257993581
-        # res['end_unixtime'] = 257993610
+        # res['start_datetime'] = '2019-04-18'
+        # res['end_datetime'] = '2019-04-19'
+        # res['start_unixtime'] = 1555516800
+        # res['end_unixtime'] = 1555603200
 
         return res
 
@@ -68,4 +80,4 @@ class CommonUtil(object):
         ''''''
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
         # For test
-        # return '2019-03-03'
+        # return '2019-04-18'

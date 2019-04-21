@@ -99,11 +99,17 @@ class TestData(object):
         ''''''
         sql = '''
             SELECT
-                student_interest, COUNT(*) AS total
-            FROM student_mental_status_interest_daily
-            WHERE grade_name = '2018' AND class_name = '1班' AND dt = '2019-02-16'
-            GROUP BY student_interest
-            ORDER BY student_interest ASC;
+                    t4.class_id, t3.course_name, t3.start_time, t3.end_time, t3.weekday
+                FROM
+                (
+                    SELECT grade_name, class_name, course_name, start_time, end_time, weekday
+                    FROM school_course_info
+                ) t3 LEFT OUTER JOIN
+                (
+                    SELECT
+                        DISTINCT class_id, class_name, grade_name
+                    FROM school_camera_class_info
+                ) t4 ON t3.grade_name = t4.grade_name AND t3.class_name = t4.class_name
         '''# .format(CommonUtil.get_specific_date('2019-03-03', Config.LOOKBACKWINDOW), '2019-03-03', Config.OUTPUT_UI_COURSE_TABLE)
         for row in self.__db.select(sql):
             print row

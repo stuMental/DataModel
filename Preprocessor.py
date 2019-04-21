@@ -15,10 +15,10 @@ class Preprocessor(object):
     def preprocessor(self, start_time, end_time, day):
         self.truncate_data()
         self.update_face_id(start_time, end_time)
-        #self.update_body_id(start_time, end_time)
+        # self.update_body_id(start_time, end_time)
         self.update_status(start_time, end_time)
         self.update_face_pose_state(start_time, end_time)
-        #self.do_filter(start_time, end_time) TODO(xufeng)
+        # self.do_filter(start_time, end_time) TODO(xufeng)
         self.update_course(start_time, end_time)
         self.stat_attendance(start_time, end_time, day)
 
@@ -182,10 +182,10 @@ class Preprocessor(object):
             ) t1 LEFT OUTER JOIN
             (
                 SELECT
-                    t4.class_id, t3.course_name, t3.start_time, t3.end_time
+                    t4.class_id, t3.course_name, t3.start_time, t3.end_time, t3.weekday
                 FROM
                 (
-                    SELECT grade_name, class_name, course_name, start_time, end_time
+                    SELECT grade_name, class_name, course_name, start_time, end_time, weekday
                     FROM {3}
                 ) t3 LEFT OUTER JOIN
                 (
@@ -193,7 +193,7 @@ class Preprocessor(object):
                         DISTINCT class_id, class_name, grade_name
                     FROM {5}
                 ) t4 ON t3.grade_name = t4.grade_name AND t3.class_name = t4.class_name
-            ) t2 ON t1.class_id = t2.class_id AND  from_unixtime(t1.pose_stat_time,'%H:%i') >= t2.start_time AND from_unixtime(t1.pose_stat_time,'%H:%i') <= t2.end_time
+            ) t2 ON t1.class_id = t2.class_id AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) >= t2.start_time AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) <= t2.end_time AND dayofweek(from_unixtime(t1.pose_stat_time)) = t2.weekday
         '''.format(start_time, end_time, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN, Config.SCHOOL_CAMERA_CLASS_TABLE)
 
         self.__db.insert(sql)
@@ -206,9 +206,9 @@ class Preprocessor(object):
             INSERT INTO {6}
             SELECT t5.course_name, t5.class_name, t5.grade_name, t5.start_time, t5.end_time, t5.student_number, t5.student_name, '{7}'
             FROM (
-                SELECT t1.course_name, t1.class_name, t1.grade_name, t1.start_time, t1.end_time, t2.student_number, t2.student_name
+                SELECT t1.course_name, t1.class_name, t1.grade_name, t1.start_time, t1.end_time, t1.weekday, t2.student_number, t2.student_name
                 FROM (
-                    SELECT course_name, class_name, grade_name, start_time, end_time
+                    SELECT course_name, class_name, grade_name, start_time, end_time, weekday
                     FROM {3}
                     )t1 JOIN (
                     SELECT class_name, grade_name, student_number, student_name
@@ -224,7 +224,7 @@ class Preprocessor(object):
                     SELECT DISTINCT class_id, class_name, grade_name
                     FROM {5}
                 )t4 ON t3.class_id=t4.class_id
-            )t6 ON t5.student_number=t6.face_id AND from_unixtime(t6.pose_stat_time,'%H:%i')<=t5.end_time AND from_unixtime(t6.pose_stat_time,'%H:%i')>=t5.start_time AND t5.class_name=t6.class_name AND t5.grade_name=t6.grade_name
+            )t6 ON t5.student_number=t6.face_id AND cast(from_unixtime(t6.pose_stat_time,'%H:%i') as time) <= t5.end_time AND cast(from_unixtime(t6.pose_stat_time,'%H:%i') as time) >= t5.start_time AND dayofweek(from_unixtime(t6.pose_stat_time)) = t5.weekday AND t5.class_name=t6.class_name AND t5.grade_name=t6.grade_name
             WHERE t6.face_id IS NULL
         '''.format(start_time, end_time, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_COURSE_TABLE, Config.SCHOOL_STUDENT_CLASS_TABLE, Config.SCHOOL_CAMERA_CLASS_TABLE, Config.STUDENT_ATTENDANCE, day)
 
