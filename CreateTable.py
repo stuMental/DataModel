@@ -41,8 +41,8 @@ class CreateTable(object):
                 face_pose_stat_time char(10),
                 face_emotion char(10),
                 yawn char(10),
-                unix_timestamp char(20),
-                pose_stat_time char(20),
+                unix_timestamp bigint,
+                pose_stat_time bigint,
                 primary key(id)
             )engine=innodb default charset=utf8
         '''.format(Config.RAW_INPUT_TABLE)
@@ -62,8 +62,8 @@ class CreateTable(object):
                 face_pose_stat_time char(10),
                 face_emotion char(10),
                 yawn char(10),
-                unix_timestamp char(20),
-                pose_stat_time char(20)
+                unix_timestamp bigint,
+                pose_stat_time bigint
             )engine=innodb default charset=utf8
         '''.format(Config.INTERMEDIATE_TRACK_TABLE)
         self.__db.create(sql)
@@ -73,8 +73,8 @@ class CreateTable(object):
             CREATE TABLE {0} (
                 class_id char(20),
                 face_id char(20),
-                pose_stat_time char(20),
-                face_pose_stat_time char(20),
+                pose_stat_time bigint,
+                face_pose_stat_time bigint,
                 body_stat char(10),
                 face_pose char(10),
                 face_emotion char(10)
@@ -86,7 +86,7 @@ class CreateTable(object):
             CREATE TABLE {0} (
                 class_id char(20) not null,
                 face_id char(20),
-                pose_stat_time char(20),
+                pose_stat_time bigint,
                 body_stat char(10),
                 face_pose char(10),
                 face_emotion char(10),
@@ -99,7 +99,7 @@ class CreateTable(object):
             CREATE TABLE {0} (
                 class_id char(20) not null,
                 face_id char(20),
-                pose_stat_time char(20),
+                pose_stat_time bigint,
                 body_stat char(10),
                 face_pose char(10),
                 face_emotion char(10),

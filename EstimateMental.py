@@ -10,6 +10,7 @@ import Config
 import DbUtil
 import CalcCourseMetric
 import AnalyzeGrade
+import datetime
 
 class EstimateMental(object):
     """DataModel的主模块 以及是对应的入口文件"""
@@ -26,7 +27,9 @@ class EstimateMental(object):
 
     def estimate(self):
         times = CommonUtil.get_range_times()
-        estimate_date = CommonUtil.get_date_day(-1)
+        diff_days = -1 if datetime.datetime.now().hour <= Config.DATETIME_THRESHOLD else 0
+        estimate_date = CommonUtil.get_date_day(diff_days)
+        self.__logger.info("Begin to analyze the student data of {0}".format(estimate_date))
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
         self.__preprocessor.preprocessor(times['start_unixtime'], times['end_unixtime'], estimate_date)
 

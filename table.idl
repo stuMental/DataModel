@@ -10,24 +10,33 @@ Table
         - face_track
         - face_pose  -1: unknown 0： 平视 1: 左顾右盼 2: 低头
         - face_pose_stat 0： 表示正常 1: 表示不正常
-        - face_pose_stat_time
+        - face_pose_stat_time： 3 mins
         - face_emotion -1: unknown 0: 正常 1: 开心 2: 低落
         - yawn 0: 没有 1: 打哈欠
         - unix_timestamp
         - pose_stat_time: max(body_stat\face_ose) group by pose_stat_time
         - course_name: 学科
 
+
+        - 人脸检测次数 (检测次数越多说明抬头次数较多，一定程度上展示学生的认真程度)
+        - face_pose
+        - face_emotion
+        - 对于强调课堂互动性的科目，可以考虑出一个 课堂活跃度 的指标 (face_pose动作的多样性、face_emotion积极的情绪占比、body_stat的动作多样性)
+
         精神状态 （课堂）
             - 疲惫
                 body_stat
-                    - body_stat 4， 5 次数 >= 10
+                     - body_stat 4， 5 次数 >= 10
                 emotion
                     - 开心 <= 3 or 低落 >= 10
             - 积极
                 body_stat
-                    - 1 >= 2 or 2 >= 2
+                    - 1 >= 10 or 2 >= 10
+                    - 假设：精神状态好 意味着在课堂上愿意沟通 交流 举止比较多样
+                    - body_statu 多样性
+                    - face_pose 多样性
                 emotion
-                    - 微笑 >= 10
+                    - 微笑 >= 50
             - 正常
                 else
 
@@ -37,16 +46,22 @@ Table
                     - 疲惫
                 face_pose
                     - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 最后 10% === <= 90%
+
+                or 
+
+                face_pose 低头次数 >= 300 && 低头次数降序排 Top 10%
+                face_pose 左顾右盼 >= 30 && 左顾右盼降序 Top 10%
+
             - 非常好
                 精神状态
                     - 积极
                 face_pose
-                    - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 Top 10%
+                    - 平视次数 >= 50 && 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 Top 10%
             - 良好
                 精神状态
                     - 积极 或者 正常
                 face_pose
-                    - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 Top 40%
+                    - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 Top 30% 平视次数 >= 30
             - 正常
                 else
 

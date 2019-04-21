@@ -10,40 +10,68 @@ class MetricUtil(object):
         super(MetricUtil, self).__init__()
         self.__logger = Logger.Logger(__name__)
 
+    def threshold_index(self, index):
+        if index < 0:
+            return 0;
+
+        return index if index == 0 else index - 1
+
     def calculate_study_threshold(self, data):
         ''''''
-        res = []
+        normals = []
+        arounds = []
+        lows = []
         for key, value in data.items():
             if value.has_key('face_pose_normal'):
-                res.append(value['face_pose_normal'])
+                normals.append(value['face_pose_normal'])
+            if value.has_key('face_pose_around'):
+                arounds.append(value['face_pose_around'])
+            if value.has_key('face_pose_low'):
+                lows.append(value['face_pose_low'])
 
-        length = len(res)
-        threshold = {}
-        if length != 0:
-            res.sort(reverse=True)
-            self.__logger.debug(str(res))
+        normal_len = len(normals)
+        thresholds = {}
+        if normal_len != 0:
+            normals.sort(reverse=True)
+            self.__logger.debug(str(normals))
             # 不佳
-            threshold['study_bad'] = res[int(math.floor(length * Config.STUDY_THREHOLD_BAD['FACE_POSE_NORMAL']))]
+            thresholds['study_bad'] = normals[self.threshold_index(int(math.floor(normal_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_NORMAL'])))]
             # 非常好
-            threshold['study_great'] = res[int(math.floor(length * Config.STUDY_THREHOLD_GREAT['FACE_POSE_NORMAL']))]
+            thresholds['study_great'] = normals[self.threshold_index(int(math.floor(normal_len * Config.STUDY_THREHOLD_GREAT['FACE_POSE_NORMAL'])))]
             # 良好
-            threshold['study_good'] = res[int(math.floor(length * Config.STUDY_THREHOLD_GOOD['FACE_POSE_NORMAL']))]
+            thresholds['study_good'] = normals[self.threshold_index(int(math.floor(normal_len * Config.STUDY_THREHOLD_GOOD['FACE_POSE_NORMAL'])))]
 
-        return threshold
+        arounds_len = len(arounds)
+        if arounds_len != 0:
+            arounds.sort(reverse=True)
+            self.__logger.debug(str(arounds))
+            thresholds['study_bad_around'] = arounds[self.threshold_index(int(math.floor(arounds_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND'])))]
+
+        lows_len = len(lows)
+        if lows_len != 0:
+            lows.sort(reverse=True)
+            self.__logger.debug(str(lows))
+            thresholds['study_bad_low'] = arounds[self.threshold_index(int(math.floor(arounds_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW'])))]
+
+        self.__logger.debug("Study Thresholds: " + str(thresholds))
+
+        return thresholds
 
     def estimate_study_stat(self, mentals, face_poses, thresholds):
         ''''''
         self.__logger.debug("Mentals: " + str(mentals))
         self.__logger.debug("Face_pose: " + str(face_poses))
         self.__logger.debug("Thresholds: " + str(thresholds))
-        if mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'])\
-        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_bad') and (face_poses['face_pose_normal'] <= thresholds['study_bad']): # 学习状态 -- 不佳
+        if (mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'])\
+        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_bad') and (face_poses['face_pose_normal'] <= thresholds['study_bad'])) \
+        or (face_poses.has_key('face_pose_around') and thresholds.has_key('study_bad_around') and (face_poses['face_pose_around'] >= thresholds['study_bad_around']) and (face_poses['face_pose_around'] >= Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_CNT'] )\
+        and face_poses.has_key('face_pose_low') and thresholds.has_key('study_bad_low') and (face_poses['face_pose_low'] >= thresholds['study_bad_low']) and (face_poses['face_pose_low'] >= Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_CNT'])): # 学习状态 -- 不佳
             return 3
         elif mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_GREAT['MENTAL'])\
-        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_great') and (face_poses['face_pose_normal'] >= thresholds['study_great']): # 学习状态 -- 非常好
+        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_great') and (face_poses['face_pose_normal'] >= thresholds['study_great']) and (face_poses['face_pose_normal'] >= Config.STUDY_THREHOLD_GREAT['FACE_POSE_NORMAL_CNT']): # 学习状态 -- 非常好
             return 0
         elif mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] in Config.STUDY_THREHOLD_GOOD['MENTAL'])\
-        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_good') and (face_poses['face_pose_normal'] >= thresholds['study_good']): # 学习状态 -- 良好
+        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_good') and (face_poses['face_pose_normal'] >= thresholds['study_good']) and (face_poses['face_pose_normal'] >= Config.STUDY_THREHOLD_GOOD['FACE_POSE_NORMAL_CNT']): # 学习状态 -- 良好
             return 1
         else: # 学习状态 -- 正常
             return 2
