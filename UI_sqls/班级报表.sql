@@ -2,11 +2,11 @@
     -- 今日考勤
     SELECT t1.time_gap, t1.course_name, IF(t2.num IS NULL, 0, t2.num), IF(t2.name IS NULL, '', t2.name)
     FROM (
-        SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap, course_name
+        SELECT CONCAT(start_time,'_',end_time) as time_gap, course_name
         FROM school_course_info
-        WHERE dt={day} AND grade_name={grade_name} AND class_name={class_name}
+        WHERE weekday=dayofweek(date_format({day}, "%y-%m-%d")) AND grade_name={grade_name} AND class_name={class_name}
     )t1 LEFT JOIN (
-        SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap, course_name, GROUP_CONCAT(student_name separator ',') as name, count(*) AS num
+        SELECT CONCAT(start_time,'_',end_time) as time_gap, course_name, GROUP_CONCAT(student_name separator ',') as name, count(*) AS num
         FROM school_student_attendance_info
         WHERE dt={day} AND grade_name={grade_name} AND class_name={class_name}
         GROUP BY start_time,end_time,course_name
@@ -18,7 +18,7 @@
     FROM (
         SELECT student_number, student_name, count(*) as num
         FROM student_mental_status_ld
-        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND student_emotion='2' AND grade_name={grade_name} AND class_name={class_name}
+        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y-%m-%d') AND dt<={day} AND student_emotion='2' AND grade_name={grade_name} AND class_name={class_name}
         GROUP BY student_number, student_name
         HAVING num>=6
     )t1
@@ -28,7 +28,7 @@
     FROM (
         SELECT student_number, student_name, count(*) as num
         FROM student_mental_status_ld
-        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND student_mental_stat='2' AND grade_name={grade_name} AND class_name={class_name}
+        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y-%m-%d') AND dt<={day} AND student_mental_stat='2' AND grade_name={grade_name} AND class_name={class_name}
         GROUP BY student_number, student_name
         HAVING num>=6
     )t1 
@@ -38,7 +38,7 @@
     FROM (
         SELECT student_number, student_name, count(*) as num
         FROM student_mental_status_ld
-        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND student_study_stat='3' AND grade_name={grade_name} AND class_name={class_name}
+        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y-%m-%d') AND dt<={day} AND student_study_stat='3' AND grade_name={grade_name} AND class_name={class_name}
         GROUP BY student_number, student_name
         HAVING num>=6
     )t1 

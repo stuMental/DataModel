@@ -1,12 +1,12 @@
 --今日考勤
     SELECT t1.time_gap, t1.grade_name, IF(t2.num IS NULL, 0, t2.num)
     FROM (
-        SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap,grade_name
+        SELECT CONCAT(start_time,'_',end_time) as time_gap,grade_name
         FROM school_course_info
-        WHERE dt={day}
+        WHERE weekday=dayofweek(date_format({day}, "%y-%m-%d"))
         GROUP BY start_time,end_time,grade_name
     )t1 LEFT JOIN (
-        SELECT CONCAT(from_unixtime(start_time,'%H:%i'),'_',from_unixtime(end_time,'%H:%i')) as time_gap, grade_name, count(*) AS num
+        SELECT CONCAT(start_time,'_',end_time) as time_gap, grade_name, count(*) AS num
         FROM school_student_attendance_info
         WHERE dt={day}
         GROUP BY start_time,end_time,grade_name
@@ -18,7 +18,7 @@
     FROM (
         SELECT student_number, student_name, grade_name, count(*) as num
         FROM student_mental_status_ld
-        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND student_emotion='2'
+        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y-%m-%d') AND dt<={day} AND student_emotion='2'
         GROUP BY student_number, student_name, grade_name
         HAVING num>=6
     )t1 
@@ -29,7 +29,7 @@
     FROM (
         SELECT student_number, student_name, grade_name, count(*) as num
         FROM student_mental_status_ld
-        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND student_mental_stat='2'
+        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y-%m-%d') AND dt<={day} AND student_mental_stat='2'
         GROUP BY student_number, student_name, grade_name
         HAVING num>=6
     )t1 
@@ -40,7 +40,7 @@
     FROM (
         SELECT student_number, student_name, count(*) as num
         FROM student_mental_status_ld
-        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y%m%d') AND dt<={day} AND student_study_stat='3'
+        WHERE dt>=date_format(date_add({day}, interval -15 day), '%Y-%m-%d') AND dt<={day} AND student_study_stat='3'
         GROUP BY student_number, student_name, grade_name
         HAVING num>=6
     )t1 
