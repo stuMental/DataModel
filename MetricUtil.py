@@ -64,8 +64,8 @@ class MetricUtil(object):
         self.__logger.debug("Thresholds: " + str(thresholds))
         if (mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'])\
         and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_bad') and (face_poses['face_pose_normal'] <= thresholds['study_bad'])) \
-        or (face_poses.has_key('face_pose_around') and thresholds.has_key('study_bad_around') and (face_poses['face_pose_around'] >= thresholds['study_bad_around']) and (face_poses['face_pose_around'] >= Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_CNT'] )\
-        and face_poses.has_key('face_pose_low') and thresholds.has_key('study_bad_low') and (face_poses['face_pose_low'] >= thresholds['study_bad_low']) and (face_poses['face_pose_low'] >= Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_CNT'])): # 学习状态 -- 不佳
+        or (face_poses.has_key('face_pose_around') and thresholds.has_key('study_bad_around') and (face_poses['face_pose_around'] >= thresholds['study_bad_around']) and (face_poses['face_pose_around'] >= Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_CNT'] ))\
+        or (face_poses.has_key('face_pose_low') and thresholds.has_key('study_bad_low') and (face_poses['face_pose_low'] >= thresholds['study_bad_low']) and (face_poses['face_pose_low'] >= Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_CNT'])): # 学习状态 -- 不佳
             return 3
         elif mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_GREAT['MENTAL'])\
         and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_great') and (face_poses['face_pose_normal'] >= thresholds['study_great']) and (face_poses['face_pose_normal'] >= Config.STUDY_THREHOLD_GREAT['FACE_POSE_NORMAL_CNT']): # 学习状态 -- 非常好

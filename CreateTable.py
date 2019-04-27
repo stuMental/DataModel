@@ -217,7 +217,7 @@ class CreateTable(object):
                 class_id char(20),
                 grade_name char(20),
                 class_name char(20),
-                study_interest char(20),
+                student_interest char(50),
                 dt date
             )engine=innodb default charset=utf8
         '''.format(Config.OUTPUT_UI_INTEREST_TABLE)

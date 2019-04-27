@@ -98,18 +98,17 @@ class TestData(object):
     def test_sql(self):
         ''''''
         sql = '''
-            SELECT
-                    t4.class_id, t3.course_name, t3.start_time, t3.end_time, t3.weekday
-                FROM
-                (
-                    SELECT grade_name, class_name, course_name, start_time, end_time, weekday
-                    FROM school_course_info
-                ) t3 LEFT OUTER JOIN
-                (
-                    SELECT
-                        DISTINCT class_id, class_name, grade_name
-                    FROM school_camera_class_info
-                ) t4 ON t3.grade_name = t4.grade_name AND t3.class_name = t4.class_name
+            SELECT t1.time_gap, t1.course_name, IF(t2.num IS NULL, 0, t2.num), IF(t2.name IS NULL, '', t2.name)
+            FROM (
+                SELECT CONCAT(start_time,'_',end_time) as time_gap, course_name
+                FROM school_course_info
+                WHERE weekday=dayofweek(date_format('2019-04-26', "%y-%m-%d")) AND grade_name='2017' AND class_name='17动漫'
+            )t1 LEFT JOIN (
+                SELECT CONCAT(start_time,'_',end_time) as time_gap, course_name, GROUP_CONCAT(student_name separator ',') as name, count(*) AS num
+                FROM school_student_attendance_info
+                WHERE dt='2019-04-26' AND grade_name='2017' AND class_name='17动漫'
+                GROUP BY start_time,end_time,course_name
+            )t2 ON t1.time_gap=t2.time_gap AND t1.course_name=t2.course_name
         '''# .format(CommonUtil.get_specific_date('2019-03-03', Config.LOOKBACKWINDOW), '2019-03-03', Config.OUTPUT_UI_COURSE_TABLE)
         for row in self.__db.select(sql):
             print row

@@ -210,6 +210,7 @@ class Preprocessor(object):
                 FROM (
                     SELECT course_name, class_name, grade_name, start_time, end_time, weekday
                     FROM {3}
+                    WHERE dayofweek(from_unixtime({0})) = weekday
                     )t1 JOIN (
                     SELECT class_name, grade_name, student_number, student_name
                     FROM {4}
