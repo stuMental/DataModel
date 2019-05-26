@@ -27,6 +27,7 @@ class EstimateMental(object):
 
     def estimate(self):
         times = CommonUtil.get_range_times()
+        self.__logger.info("Current hour: {}".format(datetime.datetime.now().hour))
         diff_days = -1 if datetime.datetime.now().hour <= Config.DATETIME_THRESHOLD else 0
         estimate_date = CommonUtil.get_date_day(diff_days)
         self.__logger.info("Begin to analyze the student data of {0}".format(estimate_date))

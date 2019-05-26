@@ -4,6 +4,7 @@
 import DbUtil
 import Config
 import Logger
+from CommonUtil import CommonUtil
 
 class Preprocessor(object):
     """docsTry for Preprocessor"""
@@ -13,7 +14,7 @@ class Preprocessor(object):
         self.__logger = Logger.Logger(__name__)
 
     def preprocessor(self, start_time, end_time, day):
-        self.truncate_data()
+        self.truncate_data(start_time, end_time)
         self.update_face_id(start_time, end_time)
         # self.update_body_id(start_time, end_time)
         self.update_status(start_time, end_time)
@@ -22,11 +23,11 @@ class Preprocessor(object):
         self.update_course(start_time, end_time)
         self.stat_attendance(start_time, end_time, day)
 
-    def truncate_data(self):
+    def truncate_data(self, start_time, end_time):
         '''Truncate all data of intermediate tables'''
         self.__logger.info("Try to truncate all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
 
-        m_tables = [Config.INTERMEDIATE_TRACK_TABLE, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_RES_TABLE, Config.INTERMEDIATE_TABLE_TRAIN]
+        m_tables = [Config.INTERMEDIATE_TRACK_TABLE, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_RES_TABLE]
 
         for table_name in m_tables:
             self.__logger.info("Begin to truncate {0}".format(table_name))
@@ -36,7 +37,15 @@ class Preprocessor(object):
             self.__db.truncate(sql)
             self.__logger.info("End to truncate {0}".format(table_name))
 
-        self.__logger.info("End to truncate all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
+        # 对于Config.INTERMEDIATE_TABLE_TRAIN，我们需要保留厉害数据(半年) 便于计算人际关系和课堂兴趣
+        self.__logger.info("Begin to delete unnecessary data for the table {0}.".format(Config.INTERMEDIATE_TABLE_TRAIN))
+        sql = '''
+            DELETE FROM {0} WHERE (pose_stat_time >= {1} AND pose_stat_time < {2}) OR (pose_stat_time < {3})
+        '''.format(Config.INTERMEDIATE_TABLE_TRAIN, start_time, end_time, CommonUtil.get_specific_unixtime(start_time, Config.DATA_RESERVED_WINDOW))
+        self.__db.delete(sql)
+        self.__logger.info("End to delete unnecessary data for the table {0}.".format(Config.INTERMEDIATE_TABLE_TRAIN))
+
+        self.__logger.info("End to truncate/delete all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
 
 
     def update_face_id(self, start_time, end_time):
