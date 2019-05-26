@@ -9,16 +9,16 @@ import logging
 # INPUT_DB_HOST = 'ip_address'
 
 # Database host for local test
-INPUT_DB_HOST = 'ip_address'
+INPUT_DB_HOST = '172.16.14.190'
 
 # Database username
-INPUT_DB_USERNAME = 'username'
+INPUT_DB_USERNAME = 'root'
 
 # Database password
-INPUT_DB_PASSWORD = 'password'
+INPUT_DB_PASSWORD = '123456'
 
 # Database dbname
-INPUT_DB_DATABASE = 'database_name'
+INPUT_DB_DATABASE = 'dev_icampusdb'
 
 # Database charset
 INPUT_DB_CHARSET = 'utf8'
@@ -131,7 +131,8 @@ STUDY_THREHOLD_BAD = {
     'FACE_POSE_AROUND' : 0.9, # <=
     'FACE_POSE_AROUND_CNT': 30, # >=
     'FACE_POSE_LOW' : 0.9, # <=
-    'FACE_POSE_LOW_CNT': 300 # >=
+    'FACE_POSE_LOW_CNT': 300, # >=
+    'FACE_POSE_PERCENTAGE': 0.2 # 计算动态阈值时，去掉高低各20%的数据
 }
 
 STUDY_THREHOLD_GREAT= {
@@ -175,4 +176,7 @@ DETECTED_LOWEST_LIMIT = 500
 INSERT_BATCH_THRESHOLD = 10000
 
 # 分隔计算时间的阈值
-DATETIME_THRESHOLD = 16
+DATETIME_THRESHOLD = -1
+
+# 保留INTERMEDIATE_TABLE_TRAIN表中历史数据的天数
+DATA_RESERVED_WINDOW = -180 # 180 天

@@ -50,10 +50,10 @@ class CommonUtil(object):
         res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
 
         # For test
-        # res['start_datetime'] = '2019-04-26'
-        # res['end_datetime'] = '2019-04-27'
-        # res['start_unixtime'] = 1556208000
-        # res['end_unixtime'] = 1556294400
+        # res['start_datetime'] = '2019-05-13'
+        # res['end_datetime'] = '2019-05-14'
+        # res['start_unixtime'] = 1557676800
+        # res['end_unixtime'] = 1557763200
 
         return res
 
@@ -80,4 +80,4 @@ class CommonUtil(object):
         ''''''
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
         # For test
-        # return '2019-04-26'
+        # return '2019-05-13'
