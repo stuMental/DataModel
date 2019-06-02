@@ -4,6 +4,7 @@
 import datetime
 import time
 import Config
+import argparse
 
 class CommonUtil(object):
     """Define some common functions"""
@@ -81,3 +82,27 @@ class CommonUtil(object):
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
         # For test
         # return '2019-05-13'
+    
+    '''
+    解析命令行参数
+    '''
+    @staticmethod
+    def parse_arguments():
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--dbhost', type=str, help='database host ip')
+        parser.add_argument('--dbuser', type=str, help='database username')
+        parser.add_argument('--dbpassword', type=str, help='database user password')
+        parser.add_argument('--dbname', type=str, help='database name')
+        
+        args = parser.parse_args()
+        if not args.dbhost or not args.dbuser or not args.dbpassword or not args.dbname:
+            print "请在执行命令的时候传递正确格式的参数，比如: sudo python EstimateMental.py --dbhost xx --dbuser xx --dbpassword xx --dbname xx"
+            raise Exception("Please add necessary parameters (such as sudo python EstimateMental.py --dbhost xx --dbuser xx --dbpassword xx --dbname xx) in the command line.")
+        
+        configs = {}
+        configs['dbhost'] = args.dbhost
+        configs['username'] = args.dbuser
+        configs['password'] = args.dbpassword
+        configs['database'] = args.dbname
+
+        return configs

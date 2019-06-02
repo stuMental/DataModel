@@ -8,9 +8,9 @@ import Logger
 
 class PostMetric(object):
     """docsTry for PostMetric"""
-    def __init__(self):
+    def __init__(self, configs):
         super(PostMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], configs['username'], configs['password'], configs['database'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def post(self, datas, dt, students, classes):

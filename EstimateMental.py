@@ -17,12 +17,13 @@ class EstimateMental(object):
     def __init__(self):
         super(EstimateMental, self).__init__()
         self.__logger = Logger.Logger(__name__)
-        self.__preprocessor = Preprocessor.Preprocessor()
-        self.__metric = CalcMetric.CalcMetric()
-        self.__poster = PostMetric.PostMetric()
-        self.__course = CalcCourseMetric.CalcCourseMetric()
-        self.__analyzer = AnalyzeGrade.AnalyzeGrade()
-        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__configs = CommonUtil.parse_arguments()
+        self.__preprocessor = Preprocessor.Preprocessor(self.__configs)
+        self.__metric = CalcMetric.CalcMetric(self.__configs)
+        self.__poster = PostMetric.PostMetric(self.__configs)
+        self.__course = CalcCourseMetric.CalcCourseMetric(self.__configs)
+        self.__analyzer = AnalyzeGrade.AnalyzeGrade(self.__configs)
+        self.__db = DbUtil.DbUtil(self.__configs['dbhost'], self.__configs['username'], self.__configs['password'], self.__configs['database'], Config.INPUT_DB_CHARSET)
         self.__interests = {}
 
     def estimate(self):
