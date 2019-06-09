@@ -4,12 +4,14 @@
 import DbUtil
 import Config
 import Logger
+from CommonUtil import CommonUtil
 
 class CreateTable(object):
     """docsTry for Preprocessor"""
     def __init__(self):
         super(CreateTable, self).__init__()
-        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__configs = CommonUtil.parse_arguments()
+        self.__db = DbUtil.DbUtil(self.__configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def create_database(self):

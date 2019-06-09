@@ -8,9 +8,9 @@ import Logger
 
 class PostMetric(object):
     """docsTry for PostMetric"""
-    def __init__(self):
+    def __init__(self, configs):
         super(PostMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def post(self, datas, dt, students, classes):
@@ -18,6 +18,15 @@ class PostMetric(object):
         self.__logger.info("Try to post data to UI database [{0}], and the table [{1}].".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
+            # 如果表中已经存在dt对应的数据，应先删除
+            self.__logger.info("Delete data of date {0} in the table {1}.".format(dt, Config.OUTPUT_UI_TABLE))
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_UI_TABLE, dt)
+            self.__db.delete(sql)
+            self.__logger.info("Done")
+
+            # 插入dt对应的最新的计算结果
             first = True
             sql = '''
                 INSERT INTO
@@ -33,7 +42,7 @@ class PostMetric(object):
 
                     valuesSql += '''
                         ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}')
-                    '''.format(face_id, class_id, self.get_valid_value(value, 'student_relationship'), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
+                    '''.format(face_id, class_id, self.get_default_value(self.get_valid_value(value, 'student_relationship')), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
                     first = False
                     count += 1
                     if count % Config.INSERT_BATCH_THRESHOLD == 0:
@@ -51,6 +60,15 @@ class PostMetric(object):
         self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_COURSE_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
+            # 如果表中已经存在dt对应的数据，应先删除
+            self.__logger.info("Delete data of date {0} in the table {1}.".format(dt, Config.OUTPUT_UI_COURSE_TABLE))
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_UI_COURSE_TABLE, dt)
+            self.__db.delete(sql)
+            self.__logger.info("Done")
+
+            # 插入dt对应的最新的计算结果
             first = True
             sql = '''
                 INSERT INTO
@@ -86,6 +104,15 @@ class PostMetric(object):
         self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_INTEREST_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
+            # 如果表中已经存在dt对应的数据，应先删除
+            self.__logger.info("Delete data of date {0} in the table {1}.".format(dt, Config.OUTPUT_UI_INTEREST_TABLE))
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_UI_INTEREST_TABLE, dt)
+            self.__db.delete(sql)
+            self.__logger.info("Done")
+
+            # 插入dt对应的最新的计算结果
             first = True
             sql = '''
                 INSERT INTO
@@ -121,6 +148,15 @@ class PostMetric(object):
         self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
+            # 如果表中已经存在dt对应的数据，应先删除
+            self.__logger.info("Delete data of date {0} in the table {1}.".format(dt, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE, dt)
+            self.__db.delete(sql)
+            self.__logger.info("Done")
+
+            # 插入dt对应的最新的计算结果
             first = True
             sql = '''
                 INSERT INTO
@@ -156,3 +192,8 @@ class PostMetric(object):
             return data[key]
         else:
             return ''
+
+    def get_default_value(self, data):
+        '''对于人际关系 无数据时设置正常（2）为默认值'''
+        if data == '':
+            return 2 # 正常

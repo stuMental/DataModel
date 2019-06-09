@@ -9,9 +9,9 @@ import MetricUtil
 
 class CalcMetric(object):
     """docsTry for CalcMetric"""
-    def __init__(self):
+    def __init__(self, configs):
         super(CalcMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__util = MetricUtil.MetricUtil()
         self.__logger = Logger.Logger(__name__)
 

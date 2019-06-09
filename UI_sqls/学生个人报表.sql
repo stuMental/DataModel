@@ -1,15 +1,19 @@
 -- 个性发展
     -- 学科兴趣
     SELECT
-        GROUP_CONCAT(DISTINCT student_interest) AS student_interest
+        CONCAT('- ', student_interest) AS student_interest
     FROM student_mental_status_interest_daily
     WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
+    GROUP BY student_interest
+    ORDER BY student_interest ASC;
     
     -- 体艺发展
     SELECT
-        GROUP_CONCAT(DISTINCT award_type) AS award_type
+        CONCAT('- ', award_type) AS award_type
     FROM school_award_info
     WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
+    GROUP BY award_type
+    ORDER BY award_type ASC;
     
 -- 心理健康状态
     -- 人际关系
