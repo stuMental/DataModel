@@ -23,7 +23,7 @@ class EstimateMental(object):
         self.__poster = PostMetric.PostMetric(self.__configs)
         self.__course = CalcCourseMetric.CalcCourseMetric(self.__configs)
         self.__analyzer = AnalyzeGrade.AnalyzeGrade(self.__configs)
-        self.__db = DbUtil.DbUtil(self.__configs['dbhost'], self.__configs['username'], self.__configs['password'], self.__configs['database'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(self.__configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__interests = {}
 
     def estimate(self):

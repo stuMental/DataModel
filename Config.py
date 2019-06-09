@@ -4,21 +4,21 @@
 
 import logging
 
-# The config for Input Database
+# The config for Input Database 作为参数传递
 # Database host
 # INPUT_DB_HOST = 'ip_address'
 
-# Database host for local test
-INPUT_DB_HOST = 'IP_Address'
+# Database host for local test 仅local测试
+INPUT_DB_HOST = '172.16.14.190'
 
 # Database username
-INPUT_DB_USERNAME = 'username'
+INPUT_DB_USERNAME = 'root'
 
 # Database password
-INPUT_DB_PASSWORD = 'password'
+INPUT_DB_PASSWORD = '123456'
 
 # Database dbname
-INPUT_DB_DATABASE = 'database_name'
+INPUT_DB_DATABASE = 'dev_icampusdb'
 
 # Database charset
 INPUT_DB_CHARSET = 'utf8'
@@ -149,7 +149,8 @@ STUDY_THREHOLD_GOOD = {
 
 # The degree threshold for course interest
 INTEREST_THRESHOLD = {
-    'STUDY_STATUS_DAYS': 18, # 30 * 0.6 = 18
+    # 'STUDY_STATUS_DAYS': 18, # 30 * 0.6 = 18
+    'STUDY_STATUS_DAYS': 1, # For demo, 考虑有即感兴趣
     'GTRADE' : 80
 }
 
@@ -166,7 +167,7 @@ LOOKBACKWINDOW = -30 # Days
 # Lookbackwindow for analysis course and study_status
 ANALYSIS_LOOKBACKWINDOW = -30 # Days
 
-# 学习与成绩思维评估中 study_stat的阈值
+# 学习与成绩四维评估中 study_stat的阈值
 ANALYSIS_STUDY_STAT_THRESHOLD = 20 # Days
 
 # The detected count threshold of each face_id

@@ -27,7 +27,7 @@ Table
             - 疲惫
                 body_stat
                      - body_stat 4， 5 次数 >= 10
-                 emotion
+                emotion
                     - 开心 <= 3 or 低落 >= 10
             - 积极
                 body_stat
@@ -35,7 +35,7 @@ Table
                     - 假设：精神状态好 意味着在课堂上愿意沟通 交流 举止比较多样
                     - body_statu 多样性
                     - face_pose 多样性
-                 emotion
+                emotion
                    - 微笑 >= 50
             - 正常
                 else

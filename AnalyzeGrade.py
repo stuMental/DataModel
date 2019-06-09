@@ -10,7 +10,7 @@ class AnalyzeGrade(object):
     """Analyze grade with course ans study_status"""
     def __init__(self, configs):
         super(AnalyzeGrade, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], configs['username'], configs['password'], configs['database'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def Analysis(self, start_time, end_time):

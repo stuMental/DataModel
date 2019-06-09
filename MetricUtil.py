@@ -51,20 +51,26 @@ class MetricUtil(object):
             deleteNumber = 1 if deleteNumber == 0 else deleteNumber # 避免deleteNumber等于0
             self.__logger.debug("DeleteNumber of face_pose_around: " + str(deleteNumber))
             around_data = arounds[deleteNumber:-deleteNumber]
-            thresholds['study_bad_around_count'] = math.floor(np.mean(around_data) + 5 * np.std(around_data, ddof=1))
-            thresholds['study_bad_around_count'] = 0 if np.isnan(thresholds['study_bad_around_count']) else thresholds['study_bad_around_count']
+            if len(around_data) != 0:
+                thresholds['study_bad_around_count'] = math.floor(np.mean(around_data) + 5 * np.std(around_data, ddof=1))
+                thresholds['study_bad_around_count'] = 0 if np.isnan(thresholds['study_bad_around_count']) else thresholds['study_bad_around_count']
+            else:
+                thresholds['study_bad_around_count'] = 0
 
         lows_len = len(lows)
         if lows_len != 0:
             lows.sort(reverse=True)
             self.__logger.debug(str(lows))
-            thresholds['study_bad_low'] = arounds[self.threshold_index(int(math.floor(arounds_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW'])))]
+            thresholds['study_bad_low'] = lows[self.threshold_index(int(math.floor(arounds_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW'])))]
             deleteNumber = int(math.floor(lows_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_PERCENTAGE']))
             deleteNumber = 1 if deleteNumber == 0 else deleteNumber # 避免deleteNumber等于0
             self.__logger.debug("DeleteNumber of face_pose_low: " + str(deleteNumber))
             low_data = lows[deleteNumber:-deleteNumber]
-            thresholds['study_bad_low_count'] = math.floor(np.mean(low_data) + 5 * np.std(low_data, ddof=1))
-            thresholds['study_bad_low_count'] = 0 if np.isnan(thresholds['study_bad_low_count']) else thresholds['study_bad_low_count']
+            if len(low_data) != 0:
+                thresholds['study_bad_low_count'] = math.floor(np.mean(low_data) + 5 * np.std(low_data, ddof=1))
+                thresholds['study_bad_low_count'] = 0 if np.isnan(thresholds['study_bad_low_count']) else thresholds['study_bad_low_count']
+            else:
+                thresholds['study_bad_low_count'] = 0
 
         self.__logger.debug("Study Thresholds: " + str(thresholds))
 
@@ -77,8 +83,14 @@ class MetricUtil(object):
         self.__logger.debug("Thresholds: " + str(thresholds))
 
         # 去动态阈值和固定阈值中最大值，作为最后的阈值
-        low_count_threshold = max(thresholds['study_bad_low_count'], Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_CNT'])
-        around_count_threshold = max(thresholds['study_bad_around_count'], Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_CNT'])
+        low_count_threshold = Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_CNT']
+        if thresholds.has_key('study_bad_low_count'):
+            low_count_threshold = max(thresholds['study_bad_low_count'], Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_CNT'])
+
+        around_count_threshold = Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_CNT']
+        if thresholds.has_key('study_bad_around_count'):
+            around_count_threshold = max(thresholds['study_bad_around_count'], Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_CNT'])
+
         self.__logger.debug("low_count_threshold: {0}, around_count_threshold: {1}.".format(low_count_threshold, around_count_threshold))
 
         if (mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'])\
