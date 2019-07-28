@@ -9,13 +9,17 @@ import logging
 # INPUT_DB_HOST = 'ip_address'
 
 # Database host for local test 仅local测试
-INPUT_DB_HOST = '172.16.14.190'
+# INPUT_DB_HOST = 'localhost'
+# Database host for BiGuiYuan server
+INPUT_DB_HOST = 'localhost'
 
 # Database username
 INPUT_DB_USERNAME = 'root'
 
 # Database password
 INPUT_DB_PASSWORD = '123456'
+# Database password for ALiYun server
+# INPUT_DB_PASSWORD = '190608'
 
 # Database dbname
 INPUT_DB_DATABASE = 'dev_icampusdb'
@@ -87,7 +91,7 @@ STUDENT_ATTENDANCE='school_student_attendance_info'
 # The config for Metrics
 # The threshold for Emotion
 EMOTION_THRESHOLD_HAPPY = {
-    'SMILE_FREQUENCY' : 50,
+    'SMILE_FREQUENCY' : 100,
     'SMILE_RATIO' : 0.3 # >=
 }
 
@@ -99,29 +103,31 @@ EMOTION_THRESHOLD_LOW = {
 # The threshold for Relationship
 RELATIONSHIP_THRESHOLD_GREAT = {
     'FACE_POSE_AROUND' : 0.3,
-    'EMOTION_SMILE' : 0.1
+    'EMOTION_SMILE' : 0.1,
+    'EMOTION_STATUS' : 0 # 开心
 }
 
 RELATIONSHIP_THRESHOLD_GOOD = {
     'FACE_POSE_AROUND' : 0.15,
-    'EMOTION_SMILE' : 0.5
+    'EMOTION_SMILE' : 0.5,
+    'EMOTION_STATUS' : [0, 1] # 开心, 正常
 }
 
 RELATIONSHIP_THRESHOLD_SOLITARY = {
     'FACE_POSE_LOW' : 0.6,
-    'EMOTION_SMILE' : 0.99
+    'EMOTION_SMILE' : 0.99,
+    'EMOTION_STATUS' : 2 # 低落
 }
 
 # The threshold for Mental
 MENTAL_THRESHOLD_TIRED = {
-    'BODY_STAT' : 10,
-    'EMOTION_SMILE' : 3,
-    'EMOTION_LOW' : 10
+    'BODY_STAT' : 3,
+    'EMOTION_STATUS' : 2 # 低落
 }
 
 MENTAL_THRESHOLD_POSITIVE = {
-    'BODY_STAT' : 10,
-    'EMOTION_SMILE' : 50
+    'BODY_STAT' : 3,
+    'EMOTION_STATUS' : 0 # 开心
 }
 
 # The threshold for Study Status
@@ -131,20 +137,19 @@ STUDY_THREHOLD_BAD = {
     'FACE_POSE_AROUND' : 0.9, # <=
     'FACE_POSE_AROUND_CNT': 30, # >=
     'FACE_POSE_LOW' : 0.9, # <=
-    'FACE_POSE_LOW_CNT': 300, # >=
-    'FACE_POSE_PERCENTAGE': 0.2 # 计算动态阈值时，去掉高低各20%的数据
+    'FACE_POSE_LOW_CNT': 300 # >=
 }
 
 STUDY_THREHOLD_GREAT= {
     'MENTAL' : 0, # 积极
     'FACE_POSE_NORMAL' : 0.1, # >=
-    'FACE_POSE_NORMAL_CNT': 50 # >=
+    'FACE_POSE_NORMAL_CNT': 200 # >=
 }
 
 STUDY_THREHOLD_GOOD = {
     'MENTAL' : [0, 1], # 积极 正常
     'FACE_POSE_NORMAL' : 0.3, # >=
-    'FACE_POSE_NORMAL_CNT': 30 # >=
+    'FACE_POSE_NORMAL_CNT': 100 # >=
 }
 
 # The degree threshold for course interest
@@ -181,3 +186,12 @@ DATETIME_THRESHOLD = -1
 
 # 保留INTERMEDIATE_TABLE_TRAIN表中历史数据的天数
 DATA_RESERVED_WINDOW = -180 # 180 天
+
+# Dynamic threshold
+DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的数据
+
+# The mininum limitation each face_track.
+FACETRACK_MININUM_LIMITATION = 200 # 以face_track作为face_id的数据，要求face_track的数据量需要满足这个条件，才是有效的face_track.
+
+# 嘉宾Id
+PREFIX_GUEST = '嘉宾_' # 所有嘉宾的name都是以这个Prefix为前缀

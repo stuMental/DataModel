@@ -14,16 +14,15 @@ import datetime
 
 class EstimateMental(object):
     """DataModel的主模块 以及是对应的入口文件"""
-    def __init__(self):
+    def __init__(self, configs):
         super(EstimateMental, self).__init__()
         self.__logger = Logger.Logger(__name__)
-        self.__configs = CommonUtil.parse_arguments()
-        self.__preprocessor = Preprocessor.Preprocessor(self.__configs)
-        self.__metric = CalcMetric.CalcMetric(self.__configs)
-        self.__poster = PostMetric.PostMetric(self.__configs)
-        self.__course = CalcCourseMetric.CalcCourseMetric(self.__configs)
-        self.__analyzer = AnalyzeGrade.AnalyzeGrade(self.__configs)
-        self.__db = DbUtil.DbUtil(self.__configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__preprocessor = Preprocessor.Preprocessor(configs)
+        self.__metric = CalcMetric.CalcMetric(configs)
+        self.__poster = PostMetric.PostMetric(configs)
+        self.__course = CalcCourseMetric.CalcCourseMetric(configs)
+        self.__analyzer = AnalyzeGrade.AnalyzeGrade(configs)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__interests = {}
 
     def estimate(self):
@@ -42,17 +41,16 @@ class EstimateMental(object):
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
         course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'])
-        self.__poster.post_course_metric(course_metrics, estimate_date, students, classes)
+        students = self.__poster.post_course_metric(course_metrics, estimate_date, students, classes)
         self.__logger.info("Finished to compute and post daily course metrics")
-
         self.__logger.info("Begin to compute and post daily metrics")
         metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'])
         metrics = self.estimate_interest(times['end_datetime'], metrics)
-        self.__poster.post(metrics, estimate_date, students, classes)
+        students = self.__poster.post(metrics, estimate_date, students, classes)
         self.__logger.info("Finished to compute and post daily metrics")
 
         self.__logger.info("Begin to post Interest")
-        self.__poster.post_interest_metric(self.__interests, estimate_date, students, classes)
+        students = self.__poster.post_interest_metric(self.__interests, estimate_date, students, classes)
         self.__logger.info("Finished to post Interest")
 
         # 计算成绩与学习状态之间的四象限分析指标
@@ -132,6 +130,7 @@ class EstimateMental(object):
                 res[key] = ''
             res[key] = row[1]
 
+        self.__logger.debug(str(res))
         self.__logger.info("Done")
         return res
 
@@ -154,6 +153,6 @@ class EstimateMental(object):
         self.__logger.info("Done")
         return res
 
-if __name__ == '__main__':
-    doer = EstimateMental()
-    doer.estimate()
+# if __name__ == '__main__':
+#     doer = EstimateMental()
+#     doer.estimate()
