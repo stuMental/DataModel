@@ -6,7 +6,7 @@
         FROM school_course_info
         WHERE weekday=dayofweek(date_format({day}, "%y-%m-%d")) AND grade_name={grade_name} AND class_name={class_name}
     )t1 LEFT JOIN (
-        SELECT CONCAT(SUBSTR(start_time,1,5),'_',SUBSTR(end_time,1,5)) as time_gap, course_name, GROUP_CONCAT(student_name separator ',') as name, count(*) AS num
+        SELECT CONCAT(SUBSTR(start_time,1,5),'_',SUBSTR(end_time,1,5)) as time_gap, course_name, count(*) AS num, GROUP_CONCAT(student_name separator ',') as name
         FROM school_student_attendance_info
         WHERE dt={day} AND grade_name={grade_name} AND class_name={class_name}
         GROUP BY start_time,end_time,course_name

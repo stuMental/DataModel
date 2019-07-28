@@ -97,21 +97,13 @@ class TestData(object):
 
     def test_sql(self):
         ''''''
-        sql = '''
-            SELECT IF(names IS NULL, '无', names) as names
-            FROM (
-                SELECT GROUP_CONCAT(student_name separator ',') as names
-                FROM (
-                    SELECT student_number, student_name, count(*) as num
-                    FROM student_mental_status_ld
-                    WHERE dt>=date_add('2019-05-30', interval -15 day) AND dt<='2019-05-30' AND student_emotion='2' AND grade_name='2017' AND class_name='17动漫'
-                    GROUP BY student_number, student_name
-                    HAVING num>=6
-                ) t1
-            ) t2
-        '''# .format(CommonUtil.get_specific_date('2019-03-03', Config.LOOKBACKWINDOW), '2019-03-03', Config.OUTPUT_UI_COURSE_TABLE)
-        for row in self.__db.select(sql):
-            print row
+        courses = ['动漫设计', '美术基础', '德育', '数学']
+        for x in xrange(1,2):
+            if x != 11:
+                sql = '''
+                    INSERT INTO student_mental_status_grade_study_daily VALUES ('{0}', '{1}', {2}, {3}, '2019-05-19');
+                '''.format(x, courses[random.randint(0, 3)], round(-1 + 2 * random.random(), 2), round(-1 + 2 * random.random(), 2))
+                self.__db.insert(sql)
 
 if __name__ == '__main__':
     doer = TestData()

@@ -40,16 +40,26 @@ class CalcMetric(object):
         self.__logger.info("Try to comput the high-level metrics")
         metrics = {}
 
+        # Calculate student emotion based on emotions
+        # Calculate threshold
+        self.__logger.info("Begin to compute student_emotion")
+        for class_id, values in emotion_count.items():
+            emotion_thresholds = self.__util.calculate_emotion_threshold(emotion_count[class_id])
+            for face_id in values:
+                if not metrics.has_key(class_id):
+                    metrics[class_id] = {}
+                if not metrics[class_id].has_key(face_id):
+                    metrics[class_id][face_id] = {}
+                metrics[class_id][face_id]['student_emotion'] = self.__util.estimate_emotion(emotion_count[class_id][face_id], emotion_thresholds)
+
         # Calculate student mental status based on body_stat and emotion
         self.__logger.info("Begin to compute student_mental_stat")
-        for class_id, values in emotion_count.items():
+        for class_id, values in metrics.items():
+            body_stat_thresholds = self.__util.calculate_mental_threshold(body_stat_count[class_id])
             if body_stat_count.has_key(class_id):
-                for face_id, value in values.items():
-                    if not metrics.has_key(class_id):
-                        metrics[class_id] = {}
-                    if not metrics[class_id].has_key(face_id):
-                        metrics[class_id][face_id] = {}
-                    metrics[class_id][face_id]['student_mental_stat'] = self.__util.estimate_mental_stat(value, body_stat_count[class_id][face_id])
+                for face_id in values:
+                    if body_stat_count[class_id].has_key(face_id):
+                        metrics[class_id][face_id]['student_mental_stat'] = self.__util.estimate_mental_stat(metrics[class_id][face_id], body_stat_count[class_id][face_id], body_stat_thresholds)
 
         # Calculate student study status based on student mental and face_pose
         # Calculate threshold
@@ -61,16 +71,6 @@ class CalcMetric(object):
                     if face_pose_count[class_id].has_key(face_id):
                         metrics[class_id][face_id]['student_study_stat'] = self.__util.estimate_study_stat(metrics[class_id][face_id], face_pose_count[class_id][face_id], study_stat_thresholds)
 
-        # Calculate student emotion based on emotions
-        # Calculate threshold
-        self.__logger.info("Begin to compute student_emotion")
-        for class_id, values in metrics.items():
-            if emotion_count.has_key(class_id):
-                emotion_thresholds = self.calculate_emotion_threshold(emotion_count[class_id])
-                for face_id in values:
-                    if emotion_count[class_id].has_key(face_id):
-                        metrics[class_id][face_id]['student_emotion'] = self.estimate_emotion(emotion_count[class_id][face_id], emotion_thresholds)
-
         # Calculate student relationship based on emotions, facePoses
         # Calculate threshold
         self.__logger.info("Begin to compute student_relationship")
@@ -81,39 +81,12 @@ class CalcMetric(object):
                 relationship_thresholds = self.calculate_relationship_threshold(emotion_count[class_id], face_pose_count[class_id])
                 for face_id in values:
                     if emotion_count[class_id].has_key(face_id) and face_pose_count[class_id].has_key(face_id):
-                        metrics[class_id][face_id]['student_relationship'] = self.estimate_relationship(emotion_count[class_id][face_id], face_pose_count[class_id][face_id], relationship_thresholds)
+                        metrics[class_id][face_id]['student_relationship'] = self.estimate_relationship(metrics[class_id][face_id], emotion_count[class_id][face_id], face_pose_count[class_id][face_id], relationship_thresholds)
 
         self.__logger.debug(str(metrics))
         self.__logger.info("Finished to compute high-level metrics")
 
         return metrics
-
-    def calculate_emotion_threshold(self, data):
-        ''''''
-        res_happy = []
-        for key, value in data.items():
-            if value.has_key('emotion_happy'):
-                res_happy.append(value['emotion_happy'])
-
-        res_low = []
-        for key, value in data.items():
-            if value.has_key('emotion_low'):
-                res_low.append(value['emotion_low'])
-
-        thresholds = {}
-        if len(res_low) != 0:
-            # 低落
-            res_low.sort(reverse=True)
-            self.__logger.debug(str(res_low))
-            thresholds['emotion_low'] = res_low[self.__util.threshold_index(int(math.floor(len(res_low) * Config.EMOTION_THRESHOLD_LOW['SAD_RATIO'])))]
-        if len(res_happy) != 0:
-            # 开心
-            res_happy.sort(reverse=True)
-            self.__logger.debug(str(res_happy))
-            thresholds['emotion_happy'] = res_happy[self.__util.threshold_index(int(math.floor(len(res_happy) * Config.EMOTION_THRESHOLD_HAPPY['SMILE_RATIO'])))]
-
-        self.__logger.debug("Emotion threshold: " + str(thresholds))
-        return thresholds
 
     def calculate_relationship_threshold(self, emotions, face_poses):
         ''''''
@@ -317,30 +290,22 @@ class CalcMetric(object):
         self.__logger.info("Finished to count face_pose, and get total {0} records.".format(count))
         return res
 
-    def estimate_relationship(self, emotions, face_poses, thresholds):
+    def estimate_relationship(self, metrics, emotions, face_poses, thresholds):
         ''' Estimate the relationship based on threshold and top k'''
         self.__logger.debug("Emotions: " + str(emotions))
         self.__logger.debug("Face_poses: " + str(face_poses))
         self.__logger.debug("Thresholds: " + str(thresholds))
-        if emotions.has_key('emotion_happy') and thresholds.has_key('solitary_smile') and (emotions['emotion_happy'] <= thresholds['solitary_smile'])\
+        if metrics.has_key('student_emotion') and metrics['student_emotion'] == Config.RELATIONSHIP_THRESHOLD_SOLITARY['EMOTION_STATUS']\
+        and emotions.has_key('emotion_happy') and thresholds.has_key('solitary_smile') and (emotions['emotion_happy'] <= thresholds['solitary_smile'])\
         and face_poses.has_key('face_pose_low') and thresholds.has_key('solitary_low') and (face_poses['face_pose_low'] >= thresholds['solitary_low']): # 人际关系 -- 孤僻
             return 3
-        elif emotions.has_key('emotion_happy') and thresholds.has_key('great_smile') and (emotions['emotion_happy'] >= thresholds['great_smile'])\
+        elif metrics.has_key('student_emotion') and metrics['student_emotion'] == Config.RELATIONSHIP_THRESHOLD_GREAT['EMOTION_STATUS']\
+        and emotions.has_key('emotion_happy') and thresholds.has_key('great_smile') and (emotions['emotion_happy'] >= thresholds['great_smile'])\
         and face_poses.has_key('face_pose_around') and thresholds.has_key('great_around') and (face_poses['face_pose_around'] >= thresholds['great_around']): # 人际关系 -- 非常好
             return 0
-        elif emotions.has_key('emotion_happy') and thresholds.has_key('good_smile') and (emotions['emotion_happy'] >= thresholds['good_smile'])\
+        elif metrics.has_key('student_emotion') and metrics['student_emotion'] in Config.RELATIONSHIP_THRESHOLD_GOOD['EMOTION_STATUS']\
+        and emotions.has_key('emotion_happy') and thresholds.has_key('good_smile') and (emotions['emotion_happy'] >= thresholds['good_smile'])\
         and face_poses.has_key('face_pose_around') and thresholds.has_key('good_around') and (face_poses['face_pose_around'] >= thresholds['good_around']): # 人际关系 -- 良好
             return 1
         else: # 人际关系 -- 正常
             return 2
-
-    def estimate_emotion(self, emotions, thresholds):
-        ''''''
-        self.__logger.debug("Emotions: " + str(emotions))
-        self.__logger.debug("Thresholds: " + str(thresholds))
-        if emotions.has_key('emotion_low') and thresholds.has_key('emotion_low') and (emotions['emotion_low'] >= Config.EMOTION_THRESHOLD_LOW['SAD_FREQUENCY']) and (emotions['emotion_low'] >= thresholds['emotion_low']): # 情绪 -- 低落
-            return 2
-        elif emotions.has_key('emotion_happy') and thresholds.has_key('emotion_happy') and (emotions['emotion_happy'] >= Config.EMOTION_THRESHOLD_HAPPY['SMILE_FREQUENCY']) and (emotions['emotion_happy'] >= thresholds['emotion_happy']): # 情绪 -- 开心
-            return 0
-        else: # 情绪 -- 正常
-            return 1

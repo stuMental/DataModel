@@ -5,6 +5,7 @@ import DbUtil
 import Config
 from CommonUtil import CommonUtil
 import Logger
+import datetime
 
 class PostMetric(object):
     """docsTry for PostMetric"""
@@ -40,6 +41,9 @@ class PostMetric(object):
                     if not first:
                         valuesSql += ','
 
+                    if not students.has_key(face_id):
+                        students[face_id] = self.get_student_name(face_id, classes, class_id, dt).decode('utf-8')
+
                     valuesSql += '''
                         ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}')
                     '''.format(face_id, class_id, self.get_default_value(self.get_valid_value(value, 'student_relationship')), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
@@ -54,6 +58,8 @@ class PostMetric(object):
             if valuesSql != '':
                 self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post data, total rows is {0}".format(count))
+
+        return students
 
     def post_course_metric(self, datas, dt, students, classes):
         ''''''
@@ -83,6 +89,9 @@ class PostMetric(object):
                         if not first:
                             valuesSql += ','
 
+                        if not students.has_key(face_id):
+                            students[face_id] = self.get_student_name(face_id, classes, class_id, dt).decode('utf-8')
+
                         valuesSql +='''
                             ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')
                         '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
@@ -98,6 +107,8 @@ class PostMetric(object):
             if valuesSql != '':
                 self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
+
+        return students
 
     def post_interest_metric(self, datas, dt, students, classes):
         ''''''
@@ -127,6 +138,9 @@ class PostMetric(object):
                         if not first:
                             valuesSql += ','
 
+                        if not students.has_key(face_id):
+                            students[face_id] = self.get_student_name(face_id, classes, class_id, dt).decode('utf-8')
+
                         valuesSql +='''
                             ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')
                         '''.format(face_id, class_id, course_name, dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
@@ -142,6 +156,8 @@ class PostMetric(object):
             if valuesSql != '':
                 self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
+
+        return students
 
     def post_grade_study_metric(self, datas, dt):
         ''''''
@@ -197,3 +213,23 @@ class PostMetric(object):
         '''对于人际关系 无数据时设置正常（2）为默认值'''
         if data == '':
             return 2 # 正常
+        else:
+            return data
+
+    def get_student_name(self, face_id, classes, class_id, dt):
+        '''
+            针对这次演示，如果学生信息表中无该face_id对应的数据 就以'嘉宾_'+face_id插入一条数据到学生信息表中
+        '''
+        self.__logger.debug("发现嘉宾数据，往数据表{0}中插入一条新数据。".format(Config.SCHOOL_STUDENT_CLASS_TABLE))
+        data = face_id.split("_")
+        student_name = Config.PREFIX_GUEST + self.get_time_from_unixtimestamp(float(data[0]) / 1000) + "_" + data[1]
+        sql = '''
+            INSERT INTO {0} (grade_name, class_name, student_number, student_name, dt) VALUES ('{1}', '{2}', '{3}', '{4}', '{5}');
+        '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE, classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'), face_id, student_name, dt)
+        self.__db.insert(sql)
+        self.__logger.debug("已插入一条嘉宾数据， 嘉宾ID是 {0}.".format(face_id))
+        return student_name
+
+    def get_time_from_unixtimestamp(self, timestamp):
+        ''''''
+        return datetime.datetime.fromtimestamp(timestamp).strftime("%H:%M:%S")

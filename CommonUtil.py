@@ -51,10 +51,10 @@ class CommonUtil(object):
         res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
 
         # For test
-        # res['start_datetime'] = '2019-05-29'
-        # res['end_datetime'] = '2019-05-30'
-        # res['start_unixtime'] = 1559059200
-        # res['end_unixtime'] = 1559145600
+        # res['start_datetime'] = '2019-05-08'
+        # res['end_datetime'] = '2019-05-09'
+        # res['start_unixtime'] = 1557244800
+        # res['end_unixtime'] = 1557331200
 
         return res
 
@@ -81,7 +81,7 @@ class CommonUtil(object):
         ''''''
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
         # For test
-        # return '2019-05-29'
+        # return '2019-05-08'
     
     '''
     解析命令行参数
@@ -96,8 +96,8 @@ class CommonUtil(object):
         
         args = parser.parse_args()
         if not args.dbhost:
-            print "请在执行命令的时候传递正确格式的参数，比如: sudo python EstimateMental.py --dbhost xx"
-            raise Exception("Please add necessary parameters (such as sudo python EstimateMental.py --dbhost xx) in the command line.")
+            print "请在执行命令的时候传递正确格式的参数，比如: sudo python Main.py --dbhost xx"
+            raise Exception("Please add necessary parameters (such as sudo python Main.py --dbhost xx) in the command line.")
         
         configs = {}
         configs['dbhost'] = args.dbhost

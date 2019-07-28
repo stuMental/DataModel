@@ -14,8 +14,9 @@ class Preprocessor(object):
         self.__logger = Logger.Logger(__name__)
 
     def preprocessor(self, start_time, end_time, day):
-        self.truncate_data(start_time, end_time)
+        self.truncate_data(start_time, end_time, day)
         self.update_face_id(start_time, end_time)
+        self.update_face_id_step2(start_time, end_time)
         # self.update_body_id(start_time, end_time)
         self.update_status(start_time, end_time)
         self.update_face_pose_state(start_time, end_time)
@@ -23,7 +24,7 @@ class Preprocessor(object):
         self.update_course(start_time, end_time)
         self.stat_attendance(start_time, end_time, day)
 
-    def truncate_data(self, start_time, end_time):
+    def truncate_data(self, start_time, end_time, day):
         '''Truncate all data of intermediate tables'''
         self.__logger.info("Try to truncate all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
 
@@ -37,7 +38,7 @@ class Preprocessor(object):
             self.__db.truncate(sql)
             self.__logger.info("End to truncate {0}".format(table_name))
 
-        # 对于Config.INTERMEDIATE_TABLE_TRAIN，我们需要保留厉害数据(半年) 便于计算人际关系和课堂兴趣
+        # 对于Config.INTERMEDIATE_TABLE_TRAIN，我们需要保留历史数据(半年) 便于计算人际关系和课堂兴趣
         self.__logger.info("Begin to delete unnecessary data for the table {0}.".format(Config.INTERMEDIATE_TABLE_TRAIN))
         sql = '''
             DELETE FROM {0} WHERE (pose_stat_time >= {1} AND pose_stat_time < {2}) OR (pose_stat_time < {3})
@@ -45,7 +46,21 @@ class Preprocessor(object):
         self.__db.delete(sql)
         self.__logger.info("End to delete unnecessary data for the table {0}.".format(Config.INTERMEDIATE_TABLE_TRAIN))
 
-        self.__logger.info("End to truncate/delete all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
+        # 删除学生出勤表中的数据
+        self.__logger.info("Begin to delete unnecessary data from the table {0}.".format(Config.STUDENT_ATTENDANCE))
+        sql = '''
+            DELETE FROM {0} WHERE dt = '{1}'
+        '''.format(Config.STUDENT_ATTENDANCE, day)
+        self.__db.delete(sql)
+        self.__logger.info("End to delete unnecessary data from the table {0}.".format(Config.STUDENT_ATTENDANCE))
+
+        # 清空Config.SCHOOL_STUDENT_CLASS_TABLE中所有student_name中带有嘉宾符号的数据
+        sql = '''
+            DELETE FROM {0} WHERE student_name LIKE '%{1}%'
+        '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE, Config.PREFIX_GUEST)
+        self.__db.delete(sql)
+        self.__logger.info("End to delete all 嘉宾 records");
+        self.__logger.info("End to truncate or delete all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
 
 
     def update_face_id(self, start_time, end_time):
@@ -78,7 +93,37 @@ class Preprocessor(object):
         '''.format(start_time, end_time, Config.RAW_INPUT_TABLE, Config.INTERMEDIATE_TRACK_TABLE)
 
         self.__db.insert(sql)
-        self.__logger.info("Finish to update face_id")
+        self.__logger.info("[Step1] Finish to update face_id")
+
+    def update_face_id_step2(self, start_time, end_time):
+        '''
+            用face_track去更新对应的face_id
+            针对嘉宾的特殊处理
+        '''
+        self.__logger.info("[Step2] Begin to update face_id with face_track.")
+        sql = '''
+            INSERT INTO {3}
+            SELECT t1.camera_id, t1.frame_id, t1.body_id, t1.body_stat, t1.body_track, t1.face_track AS face_id, t1.face_track, t1.face_pose, t1.face_pose_stat, t1.face_pose_stat_time, t1.face_emotion, t1.yawn, t1.unix_timestamp, t1.pose_stat_time
+            FROM
+            (
+                SELECT * FROM {2}
+                WHERE face_track != 'unknown' AND face_id = 'unknown' and pose_stat_time >= {0} and pose_stat_time < {1}
+            ) t1 JOIN (
+                SELECT t21.camera_id, t21.face_track FROM
+                (
+                    SELECT camera_id, face_track FROM {2}
+                    WHERE face_track != 'unknown' AND face_id = 'unknown' and pose_stat_time >= {0} and pose_stat_time < {1}
+                ) t21 LEFT OUTER JOIN (
+                    SELECT camera_id, face_track FROM {3}
+                    GROUP BY camera_id, face_track
+                ) t22 ON t21.camera_id = t22.camera_id AND t21.face_track = t22.face_track
+                WHERE t22.face_track IS NULL
+                GROUP BY camera_id, face_track
+                HAVING COUNT(*) >= {4}
+            ) t2 ON t1.camera_id = t2.camera_id AND t1.face_track = t2.face_track
+        '''.format(start_time, end_time, Config.RAW_INPUT_TABLE, Config.INTERMEDIATE_TRACK_TABLE, Config.FACETRACK_MININUM_LIMITATION)
+        self.__db.insert(sql)
+        self.__logger.info("[Step2] Finish to update face_id with face_track.")
 
     def update_body_id(self, start_time, end_time):
         ''' Update body_id accroding to body_track '''

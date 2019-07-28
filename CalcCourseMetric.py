@@ -47,25 +47,42 @@ class CalcCourseMetric(object):
         face_pose_count = self.count_face_pose(start_time, end_time)
         self.__logger.info("Finished to compte course basic metrics")
 
-
         self.__logger.info("Try to comput the course metrics")
         metrics = {}
-        # Calculate student mental status based on body_stat and emotion
-        self.__logger.info("Begin to compute student_mental_stat")
+
+        # Calculate student emotion based on emotion
+        self.__logger.info("Begin to compute student_emotion")
         for class_id, raws in emotion_count.items():
             for course_name, values in raws.items():
+                emotion_thresholds = self.__utils.calculate_emotion_threshold(emotion_count[class_id][course_name])
                 for face_id, value in values.items():
-                    if body_stat_count.has_key(class_id) and body_stat_count[class_id].has_key(course_name) and body_stat_count[class_id][course_name].has_key(face_id):
-                        if not metrics.has_key(class_id):
-                            metrics[class_id] = {}
+                    if not metrics.has_key(class_id):
+                        metrics[class_id] = {}
 
-                        if not metrics[class_id].has_key(face_id):
-                            metrics[class_id][face_id] = {}
+                    if not metrics[class_id].has_key(face_id):
+                        metrics[class_id][face_id] = {}
 
-                        if not metrics[class_id][face_id].has_key(course_name):
-                            metrics[class_id][face_id][course_name] = {}
+                    if not metrics[class_id][face_id].has_key(course_name):
+                        metrics[class_id][face_id][course_name] = {}
 
-                        metrics[class_id][face_id][course_name]['student_mental_stat'] = self.__utils.estimate_mental_stat(value, body_stat_count[class_id][course_name][face_id])
+                    metrics[class_id][face_id][course_name]['student_emotion'] = self.__utils.estimate_emotion(value, emotion_thresholds)
+
+        # Calculate student mental status based on body_stat and emotion
+        self.__logger.info("Begin to compute student_mental_stat")
+        for class_id, raws in body_stat_count.items():
+            for course_name, values in raws.items():
+                body_stat_thresholds = self.__utils.calculate_mental_threshold(body_stat_count[class_id][course_name])
+                for face_id, value in values.items():
+                    if not metrics.has_key(class_id):
+                        metrics[class_id] = {}
+
+                    if not metrics[class_id].has_key(face_id):
+                        metrics[class_id][face_id] = {}
+
+                    if not metrics[class_id][face_id].has_key(course_name):
+                        metrics[class_id][face_id][course_name] = {}
+
+                    metrics[class_id][face_id][course_name]['student_mental_stat'] = self.__utils.estimate_mental_stat(metrics[class_id][face_id][course_name], value, body_stat_thresholds)
 
         # Calculate student study status based on student mental and face_pose
         # Calculate threshold
@@ -83,7 +100,7 @@ class CalcCourseMetric(object):
                     if not metrics[class_id][face_id].has_key(course_name):
                         metrics[class_id][face_id][course_name] = {}
 
-                    metrics[class_id][face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrics[class_id][face_id][course_name], face_pose_count[class_id][course_name][face_id], study_stat_thresholds)
+                    metrics[class_id][face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrics[class_id][face_id][course_name], value, study_stat_thresholds)
 
         self.__logger.debug(str(metrics))
         self.__logger.info("Finished to compute the course metrics")
