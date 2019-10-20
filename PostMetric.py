@@ -78,7 +78,7 @@ class PostMetric(object):
             first = True
             sql = '''
                 INSERT INTO
-                    {0} (student_number, class_id, course_name, student_study_stat, student_mental_stat, dt, student_name, grade_name, class_name) VALUES 
+                    {0} (student_number, class_id, course_name, student_emotion, student_study_stat, student_mental_stat, dt, student_name, grade_name, class_name) VALUES 
             '''.format(Config.OUTPUT_UI_COURSE_TABLE)
 
             valuesSql = ''
@@ -93,8 +93,8 @@ class PostMetric(object):
                             students[face_id] = self.get_student_name(face_id, classes, class_id, dt).decode('utf-8')
 
                         valuesSql +='''
-                            ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')
-                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
+                            ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}')
+                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_emotion'), self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
                         first = False
                         count += 1
 

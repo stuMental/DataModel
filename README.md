@@ -1,6 +1,10 @@
 # DataModel
 Build a system to train data model
 
+# Necessary steps
+1. 开启MySQL的binlog服务，方便数据的备份以及恢复等操作。
+2. docker需要设置日志的大小限制等，避免占满磁盘的空间。
+
 # Install Steps (已验证)
 1. Update package source: `sudo apt-get update`
 1. Install mysql server: `sudo apt-get install mysql-server`. // 如果安装的是5.7的版本就不会再安装过程中提醒设置root密码 此时需要利用/etc/mysql/debian.cnf文件中的用户和密码登录 然后执行 `update mysql.user set authentication_string=password('your password') where user='root'and Host = 'localhost';`命令reset root的密码

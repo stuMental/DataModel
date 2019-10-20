@@ -27,13 +27,13 @@ class MetricUtil(object):
 
     def DynamicThreshold(self, data, percentage = 0.2, is_upper = True):
         '''
-            Method: Average_Value + 5 * Standard Deviation
+            Method: Average_Value + Config.DYNAMIC_MULTI_FACT * Standard Deviation
             percentage: 去掉高低各该百分比的数据，默认值是20%
             is_upper: True将返回上界阈值，False将返回下界阈值
         '''
-        multi_fact = 5;
+        multi_fact = Config.DYNAMIC_MULTI_FACT;
         if not is_upper:
-            multi_fact = -5
+            multi_fact = -1 * multi_fact
 
         deleteNumber = int(math.floor(len(data) * percentage))
         deleteNumber = 1 if deleteNumber == 0 else deleteNumber # 避免deleteNumber等于0
@@ -241,3 +241,12 @@ class MetricUtil(object):
             return 0
         else: # 情绪 -- 正常
             return 1
+
+    def calculate_teacher_emotion_threshold(self, data):
+        pass
+
+    def estimate_teacher_emotion(self, emotions, thresholds):
+        pass
+
+    def estimate_teacher_attitude(self, emotion, ethics, ontimes, body_stats, activities):
+        pass

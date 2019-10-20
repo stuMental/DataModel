@@ -15,26 +15,26 @@ class CalcCourseMetric(object):
 
     def calculate_course_metrics(self, start_time, end_time):
         """
-            Calculate 2 metrics, including student_study_stat and student_mental_stat for each course for each student.
+            Calculate 2 metrics, including student_emotion, student_study_stat and student_mental_stat for each course for each student.
             return {
                 'class_id1' => {
                     'face_id1' => {
-                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
-                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                        'course_name1' => {'student_emotion' => value, student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_emotion' => value, student_study_stat' => value, 'student_mental_stat' => value}
                     },
                     'face_id2' => {
-                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
-                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}
                     }
                 },
                 'class_id2' => {
                     'face_id1' => {
-                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
-                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}
                     },
                     'face_id2' => {
-                        'course_name1' => {'student_study_stat' => value, 'student_mental_stat' => value}, 
-                        'course_name2' => {'student_study_stat' => value, 'student_mental_stat' => value}
+                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}
                     }
                 }
             }

@@ -189,9 +189,107 @@ DATA_RESERVED_WINDOW = -180 # 180 天
 
 # Dynamic threshold
 DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的数据
+DYNAMIC_MULTI_FACT = 5 # 计算动态阈值时，标准差的偏离程度
 
 # The mininum limitation each face_track.
 FACETRACK_MININUM_LIMITATION = 200 # 以face_track作为face_id的数据，要求face_track的数据量需要满足这个条件，才是有效的face_track.
 
 # 嘉宾Id
 PREFIX_GUEST = '嘉宾_' # 所有嘉宾的name都是以这个Prefix为前缀
+
+# 教师模块的参数配置
+INTERMEDIATE_TEACHER_TABLE_TRAIN = ''
+INTERMEDIATE_TABLE_ONTIME = ''
+
+
+TEACHER_EMOTION_THRESHOLD = {
+    'EMOTION_ANGRY': 0.3, # >=
+    'EMOTION_BAD': 0.3, # >=
+    'EMOTION_HAPPY': 0.6 # >=
+}
+
+TEACHER_ETHICS_BAD_THRESHOLD = {
+    "TEACHER_EMOTION": [2,3], # 愤怒 低落
+    "CLOTHING_STATUS": 1 # 不佳
+}
+
+TEACHER_ETHICS_GOOD_THRESHOLD = {
+    "TEACHER_EMOTION": [0,1], # 正常 开心
+    "CLOTHING_STATUS": 0 # 正常
+}
+
+TEACHER_ETHICS_GREAT_THRESHOLD = {
+    "TEACHER_EMOTION": [1], # 开心
+    "CLOTHING_STATUS": 0 # 正常
+}
+
+TEACHER_TEACHING_BAD_THRESHOLD = {
+    'TEACHER_EMOTION': [2,3], # 愤怒 低落
+    'ONTIME': 1, # 不准时
+    'ETHICS_STATUS': [3], # 不佳
+    'SITTING_TIME': 0.5, # >
+    'FACING_STUDENT_TIME': 0.5 # <
+}
+
+TEACHER_TEACHING_GOOD_THRESHOLD = {
+    'TEACHER_EMOTION': [0], # 开心
+    'ONTIME': 0, # 准时
+    'ETHICS_STATUS': [1], # 良好 
+    'STANDING_TIME': 0.6, # >
+    'FACING_STUDENT_TIME': 0.6 # >
+}
+
+TEACHER_TEACHING_GREAT_THRESHOLD = {
+    'TEACHER_EMOTION': [0], # 开心
+    'ONTIME': 0, # 准时
+    'ETHICS_STATUS': [0], # 优秀
+    'STANDING_TIME': 0.4, # >
+    'FACING_STUDENT_TIME': 0.4 # >
+}
+
+# 课堂
+CLASS_POSITIVITY_BAD_THRESHOLD = {
+    'TEACHER_EMOTION': [2, 3], # 低落，愤怒
+    'STUDENT_EMOTION_LOW': 0.5, # >
+    'STUDENT_HAND_STAND': 0.05, # <
+    'FACING_STUDENT_TIME': 0.2 # < 
+}
+
+CLASS_POSITIVITY_GREAT_THRESHOLD = {
+    'TEACHER_EMOTION': [0], # 低落，愤怒
+    'STUDENT_EMOTION_HAPPY': 0.6, # >
+    'STUDENT_HAND_STAND': 0.2, # >
+    'FACING_STUDENT_TIME': 0.5 # > 
+}
+
+CLASS_CONCENTRATION_HIGH_THRESHOLD = {
+    'STUDENT_EMTION': 0.7, # > 学生情绪正常及以上占比超过70%
+    'STUDENT_METAL': 0.5, # > 学生精神状态积极的占比超过50%
+    'STUDENT_HEAD_POSE': 0.6, # > 学生平视次数超过60%
+    'STUDENT_HAND_STAND': 0.2 # > 学生举手和站立的总次数超过20%
+}
+
+CLASS_CONCENTRATION_LOW_THRESHOLD = {
+    'STUDENT_EMTION': 0.5, # > 学生情绪低落占比超过50%
+    'STUDENT_METAL': 0.5, # > 学生精神状态疲惫的占比超过50%
+    'STUDENT_HEAD_POSE': 0.3, # > 学生低头或左顾右盼的次数超过30%
+    'STUDENT_TZTK_PZTK': 0.3 # > 学生手托着听课和趴着听课的总次数超过30%
+}
+
+CLASS_INTERACTIVITY_BAD_THRESHOLD = {
+    'FACING_STUDENT_TIME': 0.2, # <
+    'STUDENT_HEAD_POSE': 0.9, # > 学生平视总次数占比超过90%
+    'HEAD_POSE_AROUND': 0.1 # < 同时左顾右盼的学生人数低于 10%
+}
+
+CLASS_INTERACTIVITY_GOOD_THRESHOLD = {
+    'FACING_STUDENT_TIME': 0.6, # >
+    'STUDENT_HAND_STAND': 0.3, # > 学生举手或站立总次数占比超过30%
+    'HEAD_POSE_AROUND': 0.5 # > 同时左顾右盼的学生人数超过50%
+}
+
+CLASS_INTERACTIVITY_GREAT_THRESHOLD = {
+    'FACING_STUDENT_TIME': 0.5, # >
+    'STUDENT_HAND_STAND': 0.2, # > 学生举手或站立总次数占比超过20%
+    'HEAD_POSE_AROUND': 0.3 # > 同时左顾右盼的学生人数超过30%
+}
