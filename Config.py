@@ -9,9 +9,9 @@ import logging
 # INPUT_DB_HOST = 'ip_address'
 
 # Database host for local test 仅local测试
-# INPUT_DB_HOST = 'localhost'
+INPUT_DB_HOST = '172.16.14.190'
 # Database host for BiGuiYuan server
-INPUT_DB_HOST = 'localhost'
+# INPUT_DB_HOST = 'localhost'
 
 # Database username
 INPUT_DB_USERNAME = 'root'
@@ -91,12 +91,12 @@ STUDENT_ATTENDANCE='school_student_attendance_info'
 # The config for Metrics
 # The threshold for Emotion
 EMOTION_THRESHOLD_HAPPY = {
-    'SMILE_FREQUENCY' : 100,
+    'SMILE_FREQUENCY' : 0.25,
     'SMILE_RATIO' : 0.3 # >=
 }
 
 EMOTION_THRESHOLD_LOW = {
-    'SAD_FREQUENCY' : 50,
+    'SAD_FREQUENCY' : 0.1,
     'SAD_RATIO' : 0.1 # >=
 }
 
@@ -121,12 +121,12 @@ RELATIONSHIP_THRESHOLD_SOLITARY = {
 
 # The threshold for Mental
 MENTAL_THRESHOLD_TIRED = {
-    'BODY_STAT' : 3,
+    'BODY_STAT' : 0.05,
     'EMOTION_STATUS' : 2 # 低落
 }
 
 MENTAL_THRESHOLD_POSITIVE = {
-    'BODY_STAT' : 3,
+    'BODY_STAT' : 0.05,
     'EMOTION_STATUS' : 0 # 开心
 }
 
@@ -135,21 +135,21 @@ STUDY_THREHOLD_BAD = {
     'MENTAL' : 2, # 疲惫
     'FACE_POSE_NORMAL' : 0.9, # <=
     'FACE_POSE_AROUND' : 0.9, # <=
-    'FACE_POSE_AROUND_CNT': 30, # >=
+    'FACE_POSE_AROUND_FEQ': 0.1, # >=
     'FACE_POSE_LOW' : 0.9, # <=
-    'FACE_POSE_LOW_CNT': 300 # >=
+    'FACE_POSE_LOW_FEQ': 0.6 # >=
 }
 
 STUDY_THREHOLD_GREAT= {
     'MENTAL' : 0, # 积极
     'FACE_POSE_NORMAL' : 0.1, # >=
-    'FACE_POSE_NORMAL_CNT': 200 # >=
+    'FACE_POSE_NORMAL_FEQ': 0.6 # >=
 }
 
 STUDY_THREHOLD_GOOD = {
     'MENTAL' : [0, 1], # 积极 正常
     'FACE_POSE_NORMAL' : 0.3, # >=
-    'FACE_POSE_NORMAL_CNT': 100 # >=
+    'FACE_POSE_NORMAL_FEQ': 0.4 # >=
 }
 
 # The degree threshold for course interest
@@ -170,10 +170,13 @@ LOGGER_LEVEL = logging.DEBUG
 LOOKBACKWINDOW = -30 # Days
 
 # Lookbackwindow for analysis course and study_status
-ANALYSIS_LOOKBACKWINDOW = -30 # Days
+ANALYSIS_LOOKBACKWINDOW = -60 # Days
+
+# 过滤科目
+FILTER_COURSES = ['体育']
 
 # 学习与成绩四维评估中 study_stat的阈值
-ANALYSIS_STUDY_STAT_THRESHOLD = 20 # Days
+ANALYSIS_STUDY_STAT_THRESHOLD = 0.4 # 职教不同于K12，可以降低阈值。
 
 # The detected count threshold of each face_id
 DETECTED_LOWEST_LIMIT = 500
@@ -189,7 +192,6 @@ DATA_RESERVED_WINDOW = -180 # 180 天
 
 # Dynamic threshold
 DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的数据
-DYNAMIC_MULTI_FACT = 5 # 计算动态阈值时，标准差的偏离程度
 
 # The mininum limitation each face_track.
 FACETRACK_MININUM_LIMITATION = 200 # 以face_track作为face_id的数据，要求face_track的数据量需要满足这个条件，才是有效的face_track.
@@ -201,6 +203,8 @@ PREFIX_GUEST = '嘉宾_' # 所有嘉宾的name都是以这个Prefix为前缀
 INTERMEDIATE_TEACHER_TABLE_TRAIN = ''
 INTERMEDIATE_TABLE_ONTIME = ''
 
+OUTPUT_UI_TEA_DAILY_TABLE = ''
+OUTPUT_UI_TEA_COURSE_TABLE = ''
 
 TEACHER_EMOTION_THRESHOLD = {
     'EMOTION_ANGRY': 0.3, # >=
@@ -210,17 +214,17 @@ TEACHER_EMOTION_THRESHOLD = {
 
 TEACHER_ETHICS_BAD_THRESHOLD = {
     "TEACHER_EMOTION": [2,3], # 愤怒 低落
-    "CLOTHING_STATUS": 1 # 不佳
+    "CLOTHING_STATUS": 0.6 # >=
 }
 
 TEACHER_ETHICS_GOOD_THRESHOLD = {
     "TEACHER_EMOTION": [0,1], # 正常 开心
-    "CLOTHING_STATUS": 0 # 正常
+    "CLOTHING_STATUS": 0.6 # >=
 }
 
 TEACHER_ETHICS_GREAT_THRESHOLD = {
     "TEACHER_EMOTION": [1], # 开心
-    "CLOTHING_STATUS": 0 # 正常
+    "CLOTHING_STATUS": 0.6 # >=
 }
 
 TEACHER_TEACHING_BAD_THRESHOLD = {
@@ -231,7 +235,7 @@ TEACHER_TEACHING_BAD_THRESHOLD = {
     'FACING_STUDENT_TIME': 0.5 # <
 }
 
-TEACHER_TEACHING_GOOD_THRESHOLD = {
+TEACHER_TEACHING_GREAT_THRESHOLD = {
     'TEACHER_EMOTION': [0], # 开心
     'ONTIME': 0, # 准时
     'ETHICS_STATUS': [1], # 良好 
@@ -239,7 +243,7 @@ TEACHER_TEACHING_GOOD_THRESHOLD = {
     'FACING_STUDENT_TIME': 0.6 # >
 }
 
-TEACHER_TEACHING_GREAT_THRESHOLD = {
+TEACHER_TEACHING_GOOD_THRESHOLD = {
     'TEACHER_EMOTION': [0], # 开心
     'ONTIME': 0, # 准时
     'ETHICS_STATUS': [0], # 优秀
@@ -256,40 +260,42 @@ CLASS_POSITIVITY_BAD_THRESHOLD = {
 }
 
 CLASS_POSITIVITY_GREAT_THRESHOLD = {
-    'TEACHER_EMOTION': [0], # 低落，愤怒
+    'TEACHER_EMOTION': [0], # 开心
     'STUDENT_EMOTION_HAPPY': 0.6, # >
     'STUDENT_HAND_STAND': 0.2, # >
     'FACING_STUDENT_TIME': 0.5 # > 
 }
 
 CLASS_CONCENTRATION_HIGH_THRESHOLD = {
-    'STUDENT_EMTION': 0.7, # > 学生情绪正常及以上占比超过70%
+    'TEACHER_ATTRITUDE': [0, 1], # 教师态度非常好 良好
+    'STUDENT_STUDY': 0.5, # > 学习状态良好及以上占比超过50%
     'STUDENT_METAL': 0.5, # > 学生精神状态积极的占比超过50%
-    'STUDENT_HEAD_POSE': 0.6, # > 学生平视次数超过60%
+    'STUDENT_HEAD_POSE': 0.5, # > 学生平视次数超过60%
     'STUDENT_HAND_STAND': 0.2 # > 学生举手和站立的总次数超过20%
 }
 
 CLASS_CONCENTRATION_LOW_THRESHOLD = {
-    'STUDENT_EMTION': 0.5, # > 学生情绪低落占比超过50%
+    'TEACHER_ATTRITUDE': [3], # 教师态度不佳
+    'STUDENT_STUDY': 0.5, # > 学习状态不佳占比超过50%
     'STUDENT_METAL': 0.5, # > 学生精神状态疲惫的占比超过50%
     'STUDENT_HEAD_POSE': 0.3, # > 学生低头或左顾右盼的次数超过30%
     'STUDENT_TZTK_PZTK': 0.3 # > 学生手托着听课和趴着听课的总次数超过30%
 }
 
 CLASS_INTERACTIVITY_BAD_THRESHOLD = {
-    'FACING_STUDENT_TIME': 0.2, # <
+    'FACING_STUDENT_TIME': 0.2, # < 面向学生低于20%
     'STUDENT_HEAD_POSE': 0.9, # > 学生平视总次数占比超过90%
     'HEAD_POSE_AROUND': 0.1 # < 同时左顾右盼的学生人数低于 10%
 }
 
 CLASS_INTERACTIVITY_GOOD_THRESHOLD = {
-    'FACING_STUDENT_TIME': 0.6, # >
+    'FACING_STUDENT_TIME': 0.4, # > 面向学生超过40%
     'STUDENT_HAND_STAND': 0.3, # > 学生举手或站立总次数占比超过30%
     'HEAD_POSE_AROUND': 0.5 # > 同时左顾右盼的学生人数超过50%
 }
 
 CLASS_INTERACTIVITY_GREAT_THRESHOLD = {
-    'FACING_STUDENT_TIME': 0.5, # >
+    'FACING_STUDENT_TIME': 0.6, # > 面向学生超过60%
     'STUDENT_HAND_STAND': 0.2, # > 学生举手或站立总次数占比超过20%
     'HEAD_POSE_AROUND': 0.3 # > 同时左顾右盼的学生人数超过30%
 }

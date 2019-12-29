@@ -12,21 +12,21 @@ class DbUtil(object):
         super(DbUtil, self).__init__()
         self.__logger = Logger.Logger(__name__)
         self.__db = MySQLdb.connect(hostname, user, password, database, charset=charset)
-        self.__cursor = self.__db.cursor()
 
     def insert(self, query):
         self.execute(query)
 
     def select(self, query):
         self.__logger.debug(query)
+        cursor = self.__db.cursor()
         try:
-            self.__cursor.execute(query)
-            self.__logger.info("Impacted record count: {0}".format(self.__cursor.rowcount))
-            return self.__cursor.fetchall()
+            cursor.execute(query)
+            self.__logger.info("Impacted record count: {0}".format(cursor.rowcount))
+            return cursor.fetchall()
         except Exception as e:
             self.__logger.warning('Fail to select data with the query. Message: ['+str(e)+']' +' ['+ query +']')
         finally:
-            pass
+            cursor.close()
 
     def update(self, query):
         self.execute(query)
@@ -42,15 +42,16 @@ class DbUtil(object):
 
     def execute(self, query):
         self.__logger.debug(query)
+        cursor = self.__db.cursor()
         try:
-            self.__cursor.execute(query)
+            cursor.execute(query)
             self.__db.commit()
-            self.__logger.info("Impacted record count: {0}".format(self.__cursor.rowcount))
+            self.__logger.info("Impacted record count: {0}".format(cursor.rowcount))
         except Exception as e:
             self.__db.rollback()
             self.__logger.warning('Fail to execute the query. Message: ['+str(e)+']' +' ['+ query +']')
         finally:
-            pass
+            cursor.close()
 
     def __del__(self):
         self.__db.close()
