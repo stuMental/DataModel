@@ -78,7 +78,7 @@ class PostMetric(object):
             first = True
             sql = '''
                 INSERT INTO
-                    {0} (student_number, class_id, course_name, student_study_stat, student_mental_stat, dt, student_name, grade_name, class_name) VALUES 
+                    {0} (student_number, class_id, course_name, student_emotion, student_study_stat, student_mental_stat, dt, student_name, grade_name, class_name) VALUES 
             '''.format(Config.OUTPUT_UI_COURSE_TABLE)
 
             valuesSql = ''
@@ -93,8 +93,8 @@ class PostMetric(object):
                             students[face_id] = self.get_student_name(face_id, classes, class_id, dt).decode('utf-8')
 
                         valuesSql +='''
-                            ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}')
-                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
+                            ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}')
+                        '''.format(face_id, class_id, course_name, self.get_valid_value(course_value, 'student_emotion'), self.get_valid_value(course_value, 'student_study_stat'), self.get_valid_value(course_value, 'student_mental_stat'), dt, students[face_id].encode('utf-8'), classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'))
                         first = False
                         count += 1
 
@@ -159,47 +159,49 @@ class PostMetric(object):
 
         return students
 
-    def post_grade_study_metric(self, datas, dt):
+    def post_grade_study_metric(self, datas):
         ''''''
         self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
-            # 如果表中已经存在dt对应的数据，应先删除
-            self.__logger.info("Delete data of date {0} in the table {1}.".format(dt, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
-            sql = '''
-                DELETE FROM {0} WHERE dt = '{1}'
-            '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE, dt)
-            self.__db.delete(sql)
-            self.__logger.info("Done")
+            for dt in datas.keys():
+                self.__logger.info("Begin to insert data on {0}".format(dt))
+                # 如果表中已经存在dt对应的数据，应先删除
+                self.__logger.info("Delete data of date {0} in the table {1}.".format(dt, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
+                sql = '''
+                    DELETE FROM {0} WHERE dt = '{1}'
+                '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE, dt)
+                self.__db.delete(sql)
+                self.__logger.info("Done")
 
-            # 插入dt对应的最新的计算结果
-            first = True
-            sql = '''
-                INSERT INTO
-                    {0} (student_number, course_name, grade_level, study_level, dt) VALUES 
-            '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE)
+                # 插入dt对应的最新的计算结果
+                first = True
+                sql = '''
+                    INSERT INTO
+                        {0} (student_number, course_name, grade_level, study_level, dt) VALUES 
+                '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE)
 
-            valuesSql = ''
+                valuesSql = ''
 
-            for stu_id, values in datas.items():
-                for row in values:
-                    if not first:
-                        valuesSql += ','
+                for stu_id, values in datas[dt].items():
+                    for row in values:
+                        if not first:
+                            valuesSql += ','
 
-                    valuesSql +='''
-                        ('{0}', '{1}', '{2}', '{3}', '{4}')
-                    '''.format(stu_id, row[0], row[1], row[2], dt)
-                    first = False
-                    count += 1
+                        valuesSql +='''
+                            ('{0}', '{1}', '{2}', '{3}', '{4}')
+                        '''.format(stu_id, row[0], row[1], row[2], dt)
+                        first = False
+                        count += 1
 
-                    if count % Config.INSERT_BATCH_THRESHOLD == 0:
-                        self.__logger.info("Try to insert {0} records to table {1}".format(Config.INSERT_BATCH_THRESHOLD, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
-                        self.__db.insert(sql + valuesSql)
-                        valuesSql = ''
-                        first = True
+                        if count % Config.INSERT_BATCH_THRESHOLD == 0:
+                            self.__logger.info("Try to insert {0} records to table {1}".format(Config.INSERT_BATCH_THRESHOLD, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
+                            self.__db.insert(sql + valuesSql)
+                            valuesSql = ''
+                            first = True
 
-            if valuesSql != '':
-                self.__db.insert(sql + valuesSql)
+                if valuesSql != '':
+                    self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
 
     def get_valid_value(self, data, key):

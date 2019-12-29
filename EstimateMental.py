@@ -9,6 +9,9 @@ import Logger
 import Config
 import DbUtil
 import CalcCourseMetric
+import CalcTeaCourseMetric
+import CalcTeacherMetric
+import CalcClassMetric
 import AnalyzeGrade
 import datetime
 
@@ -24,6 +27,15 @@ class EstimateMental(object):
         self.__analyzer = AnalyzeGrade.AnalyzeGrade(configs)
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__interests = {}
+        self.__is_teacher = configs['teacher']
+        if self.__is_teacher:
+            self.__teacher_course = CalcTeaCourseMetric.CalcTeaCourseMetric(configs)
+            self.__teacher = CalcTeacherMetric.CalcTeacherMetric(configs)
+        self.__is_classroom = configs['classroom']
+        if self.__is_classroom:
+            if not self.__is_teacher:
+                raise ValueError("启动班级评估功能，需要同时开启教师评估功能")
+            self.__classroom = CalcClassMetric.CalcClassMetric(configs)
 
     def estimate(self):
         times = CommonUtil.get_range_times()
@@ -34,6 +46,7 @@ class EstimateMental(object):
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
         self.__preprocessor.preprocessor(times['start_unixtime'], times['end_unixtime'], estimate_date)
 
+        # 评估学生
         # 获得学生信息和班级信息
         students = self.get_students()
         classes = self.get_classes()
@@ -55,9 +68,20 @@ class EstimateMental(object):
 
         # 计算成绩与学习状态之间的四象限分析指标
         self.__logger.info("Begin to analyze and post Grade and Study_Status")
-        analysis_metrics = self.__analyzer.Analysis(times['start_datetime'], times['end_datetime'])
-        self.__poster.post_grade_study_metric(analysis_metrics, estimate_date)
+        analysis_metrics = self.__analyzer.Analysis(estimate_date)
+        self.__poster.post_grade_study_metric(analysis_metrics)
         self.__logger.info("Finished to analyze and post")
+
+        # 评估教师
+        if self.__is_teacher:
+            self.__logger.info("Begin to analyze the status of teacher")
+            tea_course_metrics = self.__teacher_course.calculate_teacher_metrics(times['start_unixtime'], times['end_unixtime'])
+            tea_metrics = self.__teacher.calculate_teacher_metrics(times['start_unixtime'], times['end_unixtime'])
+
+        # 评估课堂
+        if self.__is_classroom:
+            self.__logger.info("Begin to analyze the status of classroom")
+            classroom_metrics = self.__classroom.calculate_class_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
 
     def count_interest(self, end_date):
         ''''''

@@ -1,16 +1,9 @@
 --今日考勤
-    SELECT t1.time_gap, t1.grade_name, IF(t2.num IS NULL, 0, t2.num)
-    FROM (
-        SELECT CONCAT(SUBSTR(start_time,1,5),'_',SUBSTR(end_time,1,5)) as time_gap,grade_name
-        FROM school_course_info
-        WHERE weekday=dayofweek(date_format({day}, "%y-%m-%d"))
-        GROUP BY start_time,end_time,grade_name
-    )t1 LEFT JOIN (
-        SELECT CONCAT(SUBSTR(start_time,1,5),'_',SUBSTR(end_time,1,5)) as time_gap, grade_name, count(*) AS num
-        FROM school_student_attendance_info
-        WHERE dt={day}
-        GROUP BY start_time,end_time,grade_name
-    )t2 ON t1.time_gap=t2.time_gap AND t1.grade_name=t2.grade_name
+    SELECT CONCAT(SUBSTR(start_time,1,5),'_',SUBSTR(end_time,1,5)) as time_gap, grade_name, count(*) AS num
+    FROM school_student_attendance_info
+    WHERE dt={day}
+    GROUP BY start_time,end_time,grade_name
+    ORDER BY time_gap ASC;
 
 --校园安全预警 
     --情绪不佳

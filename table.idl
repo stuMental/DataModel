@@ -26,7 +26,7 @@ Table
         精神状态 （课堂）
             - 疲惫
                 body_stat
-                     - body_stat 4 or 5 次数 >= 3
+                    - body_stat 4 or 5 次数 >= 3
                 情绪状态
                     - 低落
             - 积极
@@ -250,7 +250,7 @@ School Class Info
         - 1: 正常
         - 2: 低落
 
-    # 心理状态
+    # 精神状态
         - 0: 积极
         - 1: 正常
         - 2: 疲惫

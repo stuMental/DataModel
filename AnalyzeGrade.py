@@ -4,6 +4,7 @@
 import Config
 import DbUtil
 import Logger
+import math
 from CommonUtil import CommonUtil
 
 class AnalyzeGrade(object):
@@ -13,31 +14,53 @@ class AnalyzeGrade(object):
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
-    def Analysis(self, start_time, end_time):
+    def Analysis(self, dt):
         ''''''
         self.__logger.info("Begin to analyze grade and study_status")
-        grade_levels = self.get_course_grade_level(start_time, end_time)
-        if len(grade_levels) == 0: # 这个时间段无考试成绩 无需评估
+        dates = self.get_calc_dates(dt)
+        if not dates:
+            self.__logger.info("No dates that needs to be computed")
             return {}
 
-        study_levels = self.get_course_study_status(CommonUtil.get_specific_date(end_time, Config.ANALYSIS_LOOKBACKWINDOW) , end_time)
-
         metrics = {}
-        for stu, courses in study_levels.items():
-            for course_name, value in courses.items():
-                if grade_levels.has_key(stu) and grade_levels[stu].has_key(course_name):
-                    if not metrics.has_key(stu):
-                        metrics[stu] = []
+        for dt in dates:
+            metrics[dt] = {}
+            grade_levels = self.get_course_grade_level(dt)
+            study_levels = self.get_course_study_status(CommonUtil.get_specific_date(dt, Config.ANALYSIS_LOOKBACKWINDOW) , dt)
 
-                    metrics[stu].append([course_name, grade_levels[stu][course_name], value])
+            for stu, courses in study_levels.items():
+                for course_name, value in courses.items():
+                    if course_name not in Config.FILTER_COURSES and grade_levels.has_key(stu) and grade_levels[stu].has_key(course_name):
+                        if not metrics[dt].has_key(stu):
+                            metrics[dt][stu] = []
+
+                        metrics[dt][stu].append([course_name, grade_levels[stu][course_name], value])
 
         self.__logger.debug(str(metrics))
         self.__logger.info("Finished to analyze grade and study_status")
         return metrics
 
-    def get_course_grade_level(self, start_time, end_time):
+    def get_calc_dates(self, dt):
+        """"""
+        self.__logger.info("Try to get all dates to compute grade and study_status")
+        sql = '''
+            SELECT
+                DISTINCT dt
+            FROM {0}
+            WHERE dt <= '{1}' dt NOT IN (SELECT DISTINCT dt FROM {2})
+        '''.format(Config.SCHOOL_PERFORMANCE_TABLE, dt, Config.OUTPUT_UI_GRADE_STUDY_TABLE)
+
+        res = []
+        for row in self.__db.select(sql):
+            res.append(str(row[0]))
+        
+        self.__logger.info("Need to compute dates: {}".format(res))
+
+        return res
+
+    def get_course_grade_level(self, dt):
         ''''''
-        self.__logger.info("Try to get all course_names from {0} between {1} and {2}".format(Config.SCHOOL_PERFORMANCE_TABLE, start_time, end_time))
+        self.__logger.info("Try to get all course_names from {0} on {1}".format(Config.SCHOOL_PERFORMANCE_TABLE, dt))
         sql = '''
             SELECT
                 t0.grade_name, t0.class_name, t0.student_number, t0.course_name, ROUND(1.0 * (t0.score - t3.avg_score) / (IF(t0.score <= t3.avg_score, t3.avg_score, t3.high_score)), 2) AS grade_level
@@ -45,8 +68,8 @@ class AnalyzeGrade(object):
             (
                 SELECT
                     grade_name, class_name, student_number, course_name, score
-                FROM {2}
-                WHERE dt >= '{0}' AND dt < '{1}'
+                FROM {1}
+                WHERE dt = '{0}'
             ) t0 JOIN
             (
                 SELECT
@@ -56,22 +79,20 @@ class AnalyzeGrade(object):
                     (
                         SELECT
                             grade_name, class_name, course_name, AVG(score) AS avg_score
-                        FROM {2}
-                        WHERE dt >= '{0}' AND dt < '{1}'
+                        FROM {1}
+                        WHERE dt = '{0}'
                         GROUP BY grade_name, class_name, course_name
                     ) t1 JOIN
                     (
                         SELECT
                             grade_name, course_name, MAX(score) AS max_score
-                        FROM {2}
-                        WHERE dt >= '{0}' AND dt < '{1}'
+                        FROM {1}
+                        WHERE dt = '{0}'
                         GROUP BY grade_name, course_name
                     ) t2 ON t1.grade_name = t2.grade_name AND t1.course_name = t2.course_name
                 )
             ) t3 ON t0.grade_name = t3.grade_name AND t0.class_name = t3.class_name AND t0.course_name = t3.course_name;
-
-
-        '''.format(start_time, end_time, Config.SCHOOL_PERFORMANCE_TABLE)
+        '''.format(dt, Config.SCHOOL_PERFORMANCE_TABLE)
 
         res = {}
         for row in self.__db.select(sql):
@@ -91,18 +112,24 @@ class AnalyzeGrade(object):
     def get_course_study_status(self, start_time, end_time):
         ''''''
         self.__logger.info("Try to get all study_status from {0} between {1} and {2}".format(Config.OUTPUT_UI_COURSE_TABLE, start_time, end_time))
+        self.__logger.info("Begin to compute study level for all student, and all course")
         sql = '''
             SELECT
-                t.student_number, t.course_name, ROUND(1.0 * (total - {3}) / IF(total <= {3}, {3}, {4} - {3}), 2) AS study_level
-            FROM
-            (
+                t1.student_number, t1.course_name, ROUND(1.0 * (t1.num - t2.threshold) / IF(t1.num <= t2.threshold, t2.threshold, t2.total - t2.threshold), 2) AS study_level
+            FROM (
                 SELECT
-                    student_number, course_name, COUNT(*) AS total
+                    student_number, course_name, SUM(IF(student_study_stat != '3', 1, 0)) AS num
                 FROM {2}
-                WHERE dt >= '{0}' AND dt < '{1}' AND student_study_stat != '3'
+                WHERE dt >= '{0}' AND dt < '{1}'
                 GROUP BY student_number, course_name
-            ) t
-        '''.format(start_time, end_time, Config.OUTPUT_UI_COURSE_TABLE, Config.ANALYSIS_STUDY_STAT_THRESHOLD, Config.ANALYSIS_LOOKBACKWINDOW)
+            ) t1 JOIN (
+                SELECT
+                    course_name, count(DISTINCT dt) as total, GREATEST(1, floor(count(DISTINCT dt) * {3})) as threshold
+                FROM {2}
+                WHERE dt >= '{0}' AND dt < '{1}'
+                GROUP BY course_name
+            ) t2 ON t1.course_name = t2.course_name;
+        '''.format(start_time, end_time, Config.OUTPUT_UI_COURSE_TABLE, Config.ANALYSIS_STUDY_STAT_THRESHOLD)
 
         res = {}
         for row in self.__db.select(sql):

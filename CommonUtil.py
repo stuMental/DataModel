@@ -45,16 +45,16 @@ class CommonUtil(object):
         start_time = (datetime.date.today() + datetime.timedelta(days=start_days))
         end_time = (datetime.date.today() + datetime.timedelta(days=end_days))
 
-        res['start_datetime'] = start_time.strftime("%Y-%m-%d")
-        res['end_datetime'] = end_time.strftime("%Y-%m-%d")
-        res['start_unixtime'] = int(time.mktime(start_time.timetuple()))
-        res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
+        # res['start_datetime'] = start_time.strftime("%Y-%m-%d")
+        # res['end_datetime'] = end_time.strftime("%Y-%m-%d")
+        # res['start_unixtime'] = int(time.mktime(start_time.timetuple()))
+        # res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
 
         # For test
-        # res['start_datetime'] = '2019-05-08'
-        # res['end_datetime'] = '2019-05-09'
-        # res['start_unixtime'] = 1557244800
-        # res['end_unixtime'] = 1557331200
+        res['start_datetime'] = '2019-06-28'
+        res['end_datetime'] = '2019-06-29'
+        res['start_unixtime'] = 1561651200
+        res['end_unixtime'] = 1561737600
 
         return res
 
@@ -89,8 +89,9 @@ class CommonUtil(object):
     @staticmethod
     def parse_arguments():
         parser = argparse.ArgumentParser()
-        parser.add_argument('--dbhost', type=str, help='database host ip')
-        # parser.add_argument('--dbuser', type=str, help='database username')
+        parser.add_argument('--dbhost', type=str, help='Database host ip')
+        parser.add_argument('--teacher', type=int, help='1: Estimate teacher status, 0: Don\'t estimate teacher status', default=0)
+        parser.add_argument('--classroom', type=int, help='1: Estimate classroom status, 0: Don\'t estimate classroom status. You need to enable teacher module', default=0)
         # parser.add_argument('--dbpassword', type=str, help='database user password')
         # parser.add_argument('--dbname', type=str, help='database name')
         
@@ -101,5 +102,7 @@ class CommonUtil(object):
         
         configs = {}
         configs['dbhost'] = args.dbhost
+        configs['teacher'] = args.teacher
+        configs['classroom'] = args.classroom
 
         return configs
