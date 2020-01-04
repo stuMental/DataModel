@@ -11,7 +11,7 @@ class CommonUtil(object):
     def __init__(self):
         super(CommonUtil, self).__init__()
 
-    @staticmethod  
+    @staticmethod
     def get_truncate_time(interval):
         ''''''
         now = datetime.datetime.now()
@@ -45,16 +45,10 @@ class CommonUtil(object):
         start_time = (datetime.date.today() + datetime.timedelta(days=start_days))
         end_time = (datetime.date.today() + datetime.timedelta(days=end_days))
 
-        # res['start_datetime'] = start_time.strftime("%Y-%m-%d")
-        # res['end_datetime'] = end_time.strftime("%Y-%m-%d")
-        # res['start_unixtime'] = int(time.mktime(start_time.timetuple()))
-        # res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
-
-        # For test
-        res['start_datetime'] = '2019-06-28'
-        res['end_datetime'] = '2019-06-29'
-        res['start_unixtime'] = 1561651200
-        res['end_unixtime'] = 1561737600
+        res['start_datetime'] = start_time.strftime("%Y-%m-%d")
+        res['end_datetime'] = end_time.strftime("%Y-%m-%d")
+        res['start_unixtime'] = int(time.mktime(start_time.timetuple()))
+        res['end_unixtime'] = int(time.mktime(end_time.timetuple()))
 
         return res
 
@@ -80,9 +74,7 @@ class CommonUtil(object):
     def get_date_day(days = 0):
         ''''''
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
-        # For test
-        # return '2019-05-08'
-    
+
     '''
     解析命令行参数
     '''
@@ -92,17 +84,19 @@ class CommonUtil(object):
         parser.add_argument('--dbhost', type=str, help='Database host ip')
         parser.add_argument('--teacher', type=int, help='1: Estimate teacher status, 0: Don\'t estimate teacher status', default=0)
         parser.add_argument('--classroom', type=int, help='1: Estimate classroom status, 0: Don\'t estimate classroom status. You need to enable teacher module', default=0)
+        parser.add_argument('--date', type=str, help='date yyyy-mm-dd', default='-1')
         # parser.add_argument('--dbpassword', type=str, help='database user password')
         # parser.add_argument('--dbname', type=str, help='database name')
-        
+
         args = parser.parse_args()
         if not args.dbhost:
             print "请在执行命令的时候传递正确格式的参数，比如: sudo python Main.py --dbhost xx"
             raise Exception("Please add necessary parameters (such as sudo python Main.py --dbhost xx) in the command line.")
-        
+
         configs = {}
         configs['dbhost'] = args.dbhost
         configs['teacher'] = args.teacher
         configs['classroom'] = args.classroom
+        configs['date'] = args.date
 
         return configs

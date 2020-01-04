@@ -10,7 +10,7 @@ Build a system to train data model
 1. Create some tables. Please execute the file CreateTable.py: `python CreateTable.py`
 
 # 系统配置
-1. 开启MySQL的binlog服务，方便数据的备份以及恢复等操作。
+1. 开启MySQL的binlog服务，方便数据的备份以及恢复等操作。https://blog.csdn.net/weixin_38187469/article/details/79273962
 2. docker需要设置日志的大小限制等，避免占满磁盘的空间。
 
 # DataModel配置
@@ -46,9 +46,11 @@ Build a system to train data model
     解决方案：修改RUN.sh中获取IP地址的代码。
 
     执行ifconfig，信息如下
+
     ![ifconfig获取IP信息](./images/ifconfig.png)
 
     修改RUN.sh中的代码
+
     ![修改RUN.sh的代码](./images/run.png)
 
     正常执行后，显示获取IP地址

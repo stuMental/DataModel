@@ -16,28 +16,31 @@ class CalcCourseMetric(object):
     def calculate_course_metrics(self, start_time, end_time):
         """
             Calculate 2 metrics, including student_emotion, student_study_stat and student_mental_stat for each course for each student.
+
             return {
                 'class_id1' => {
                     'face_id1' => {
-                        'course_name1' => {'student_emotion' => value, student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name1' => {'student_emotion' => value, student_study_stat' => value, 'student_mental_stat' => value},
                         'course_name2' => {'student_emotion' => value, student_study_stat' => value, 'student_mental_stat' => value}
                     },
                     'face_id2' => {
-                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value},
                         'course_name2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}
                     }
                 },
                 'class_id2' => {
                     'face_id1' => {
-                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value},
                         'course_name2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}
                     },
                     'face_id2' => {
-                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}, 
+                        'course_name1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value},
                         'course_name2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_mental_stat' => value}
                     }
                 }
             }
+
+            目前，基于room_addr作为class_id。即一堂课的id
         """
 
         # Compute the count of each basic metric
@@ -93,10 +96,10 @@ class CalcCourseMetric(object):
                 for face_id, value in values.items():
                     if not metrics.has_key(class_id):
                         metrics[class_id] = {}
-                    
+
                     if not metrics[class_id].has_key(face_id):
                         metrics[class_id][face_id] = {}
-                    
+
                     if not metrics[class_id][face_id].has_key(course_name):
                         metrics[class_id][face_id][course_name] = {}
 
@@ -112,10 +115,10 @@ class CalcCourseMetric(object):
         self.__logger.info("Begin to count by body_stat")
         sql = '''
             SELECT
-                class_id, course_name, face_id, body_stat, COUNT(*) AS total
+                room_addr AS class_id, course_name, face_id, body_stat, COUNT(*) AS total
             FROM {2}
             WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
-            GROUP BY class_id, course_name, face_id, body_stat
+            GROUP BY room_addr, course_name, face_id, body_stat
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {} # {'course_name' => {'face_id1' => values, 'face_id2' => values}}
@@ -157,10 +160,10 @@ class CalcCourseMetric(object):
         self.__logger.info("Begin to count by face_emotion")
         sql = '''
             SELECT
-                class_id, course_name, face_id, face_emotion, COUNT(*) AS total
+                room_addr AS class_id, course_name, face_id, face_emotion, COUNT(*) AS total
             FROM {2}
             WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
-            GROUP BY class_id, course_name, face_id, face_emotion
+            GROUP BY room_addr, course_name, face_id, face_emotion
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {}
@@ -198,10 +201,10 @@ class CalcCourseMetric(object):
         self.__logger.info("Begin to count by face_pose")
         sql = '''
             SELECT
-                class_id, course_name, face_id, face_pose, COUNT(*) AS total
+                room_addr AS class_id, course_name, face_id, face_pose, COUNT(*) AS total
             FROM {2}
             WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
-            GROUP BY class_id, course_name, face_id, face_pose
+            GROUP BY room_addr, course_name, face_id, face_pose
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
         res = {}
