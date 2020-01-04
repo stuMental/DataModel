@@ -164,8 +164,8 @@ STUDY_THREHOLD_GOOD = {
 
 # The degree threshold for course interest
 INTEREST_THRESHOLD = {
-    # 'STUDY_STATUS_DAYS': 18, # 30 * 0.6 = 18
     'STUDY_STATUS_DAYS_RATIO': 0.6, # For demo, 考虑有即感兴趣
+    'STUDY_STATUS_DAYS_LOWER': 3, # 感兴趣的天数最小值  一周一次课，45天应该有6次课程。50%的比例作为最低阈值
     'GTRADE' : 80
 }
 
@@ -183,7 +183,7 @@ LOOKBACKWINDOW = -45 # Days
 ANALYSIS_LOOKBACKWINDOW = -60 # Days
 
 # 过滤科目
-FILTER_COURSES = ['体育']
+FILTER_COURSES = ['体育', '班会']
 
 # 学习与成绩四维评估中 study_stat的阈值
 ANALYSIS_STUDY_STAT_THRESHOLD = 0.6  # 职教不同于K12，可以降低阈值。

@@ -18,6 +18,9 @@ Build a system to train data model
 2. If you want to run the specific date data, you can modify the function `get_range_times` and `get_date_day` in this file `CommonUtil.py`.
 3. If you want to output debug info, you can update the **LOGGER_LEVEL** of Config.py to DEBUG.
 
+# 利用CPython对code编译成.so文件
+  python Encryption.py build_ext --inplace 如果报错，可以试一试用sudo来执行
+
 # 安装MySQL或mysql-python的FQA
 1. Issue 1: 'this is MySQLdb version (1, 2, 5, 'final', 1), but _mysql is version (1, 4, 1, 'final', 0)'.
 

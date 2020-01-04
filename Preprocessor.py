@@ -16,7 +16,6 @@ class Preprocessor(object):
     def preprocessor(self, start_time, end_time, day):
         self.truncate_data(start_time, end_time, day)
         self.update_face_id(start_time, end_time)
-        # self.update_face_id_guest(start_time, end_time)
         self.update_status(start_time, end_time)
         self.update_face_pose_state(start_time, end_time)
         self.update_course(start_time, end_time, day)

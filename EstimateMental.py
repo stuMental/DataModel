@@ -154,7 +154,7 @@ class EstimateMental(object):
                 res[key] = {}
 
             course = row[1].encode('utf-8')
-            res[key][course] = math.ceil(int(row[2]) * Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_RATIO'])
+            res[key][course] = max(Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_LOWER'], math.ceil(int(row[2]) * Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_RATIO']))
 
         self.__logger.debug(str(res))
         return res
