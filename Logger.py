@@ -17,7 +17,7 @@ class Logger(object):
     def fatal(self, message):
         self.__logger.fatal(message)
 
-    def critical(slef, message):
+    def critical(self, message):
         self.__logger.critical(message)
 
     def error(self, message):

@@ -31,7 +31,7 @@
             GROUP BY student_number, student_name
             HAVING num>=6
         )t1
-    )t2 
+    )t2
 
     --学习状态不佳
     SELECT IF(names IS NULL, '无', names) as names
@@ -44,7 +44,7 @@
             GROUP BY student_number, student_name
             HAVING num>=6
         )t1
-    )t2 
+    )t2
 -- 今日心理状态分布
     -- 情绪状态
     SELECT
@@ -54,21 +54,21 @@
         SELECT
             student_emotion, COUNT(*) AS num
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
         GROUP BY student_emotion
     ) t1 JOIN
     (
         SELECT
             COUNT(*) AS total
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ) t2;
-    
+
     -- 学生名单
     SELECT
         DISTINCT student_number, student_name
     FROM student_mental_status_ld
-    WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+    WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ORDER BY student_emotion DESC;
 
     -- 人际关系
@@ -79,23 +79,23 @@
         SELECT
             student_relationship, COUNT(*) AS num
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
         GROUP BY student_relationship
     ) t1 JOIN
     (
         SELECT
             COUNT(*) AS total
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ) t2;
-    
+
     -- 学生名单
     SELECT
         DISTINCT student_number, student_name
     FROM student_mental_status_ld
-    WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+    WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ORDER BY student_relationship DESC;
-    
+
 -- 今日学业自律性分布
     -- 学习状态
     SELECT
@@ -105,23 +105,23 @@
         SELECT
             student_study_stat, COUNT(*) AS num
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
         GROUP BY student_study_stat
     ) t1 JOIN
     (
         SELECT
             COUNT(*) AS total
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ) t2;
-    
+
     -- 学生名单
     SELECT
         DISTINCT student_number, student_name
     FROM student_mental_status_ld
-    WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+    WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ORDER BY student_study_stat DESC;
-    
+
     -- 精神状态
     SELECT
         t1.student_mental_stat, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
@@ -130,23 +130,23 @@
         SELECT
             student_mental_stat, COUNT(*) AS num
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
         GROUP BY student_mental_stat
     ) t1 JOIN
     (
         SELECT
             COUNT(*) AS total
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ) t2;
-    
+
     -- 学生名单
     SELECT
         DISTINCT student_number, student_name
     FROM student_mental_status_ld
-    WHERE grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
+    WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt = selected_time_param
     ORDER BY student_mental_stat DESC;
-    
+
 -- 历史状态信息
     -- 情绪状态
     SELECT
@@ -156,18 +156,18 @@
         SELECT
             dt, student_emotion, COUNT(*) AS num
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
         GROUP BY dt, student_emotion
     ) t1 JOIN
     (
         SELECT
             dt, COUNT(*) AS total
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
         GROUP BY dt
     ) t2 ON t1.dt = t2.dt
     ORDER BY dt ASC;
-    
+
     -- 精神状态
     SELECT
         t1.dt, t1.student_mental_stat, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
@@ -176,18 +176,18 @@
         SELECT
             dt, student_mental_stat, COUNT(*) AS num
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
         GROUP BY dt, student_mental_stat
     ) t1 JOIN
     (
         SELECT
             dt, COUNT(*) AS total
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
+        WHERE college_name = "" AND grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
         GROUP BY dt
     ) t2 ON t1.dt = t2.dt
     ORDER BY dt ASC;
-    
+
     -- 学习状态
     SELECT
         t1.dt, t1.student_study_stat, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
@@ -196,14 +196,14 @@
         SELECT
             dt, student_study_stat, COUNT(*) AS num
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
+        WHERE college_name = '' AND grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
         GROUP BY dt, student_study_stat
     ) t1 JOIN
     (
         SELECT
             dt, COUNT(*) AS total
         FROM student_mental_status_ld
-        WHERE grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
+        WHERE college_name = '' AND grade_name = 'param' and class_name = 'param' AND dt >= date_add(end_time_param, interval -15 day) AND dt <= end_time_param
         GROUP BY dt
     ) t2 ON t1.dt = t2.dt
     ORDER BY dt ASC;
@@ -211,6 +211,6 @@
     SELECT
         student_interest, COUNT(*) AS total
     FROM student_mental_status_interest_daily
-    WHERE grade_name = 'param' AND class_name = 'param' AND dt = select_time_param
+    WHERE college_name = '' AND grade_name = 'param' AND class_name = 'param' AND dt = select_time_param
     GROUP BY student_interest
     ORDER BY student_interest ASC;

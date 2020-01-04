@@ -20,14 +20,16 @@ class CalcMetric(object):
             Calculate 4 metrics, including student_emotion, student_study_stat, student_relationship, and student_mental_stat.
             return {
                 'class_id1' => {
-                    'face_id1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}, 
+                    'face_id1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value},
                     'face_id2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}
                 },
                 'class_id2' => {
-                    'face_id1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}, 
+                    'face_id1' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value},
                     'face_id2' => {'student_emotion' => value, 'student_study_stat' => value, 'student_relationship' => value, 'student_mental_stat' => value}
                 },
             }
+
+            基于学院-年级-班级信息作为class_id
         """
 
         # Compute the count of each basic metric
@@ -134,7 +136,7 @@ class CalcMetric(object):
         self.__logger.info("Begin to count by body_stat")
         sql = '''
             SELECT
-                class_id, face_id, body_stat, COUNT(*) AS total
+                CONCAT(college_name, grade_name, class_name) AS class_id, face_id, body_stat, COUNT(*) AS total
             FROM {2}
             WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
             GROUP BY class_id, face_id, body_stat
@@ -178,28 +180,32 @@ class CalcMetric(object):
         if is_lookback:
             sql = '''
                 SELECT
-                    t1.class_id, t1.face_id, t1.face_emotion, COUNT(*) AS total
-                FROM {2} t1
-                WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.face_emotion != '-1' AND t1.course_name = 'rest' AND t1.face_id in
-                (
+                    class_id, face_id, face_emotion, COUNT(*) AS total
+                FROM (
                     SELECT
-                        t2.face_id
-                    FROM
+                        CONCAT(t1.college_name, t1.grade_name, t1.class_name) AS class_id, t1.face_id, t1.face_emotion
+                    FROM {2} t1
+                    WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.face_emotion != '-1' AND t1.course_name = 'rest' AND t1.face_id in
                     (
                         SELECT
-                            face_id, COUNT(*) AS num
-                        FROM {2}
-                        WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
-                        GROUP BY face_id
-                        HAVING num >= {3}
-                    ) t2
-                )
-                GROUP BY t1.class_id, t1.face_id, t1.face_emotion
+                            t2.face_id
+                        FROM
+                        (
+                            SELECT
+                                face_id, COUNT(*) AS num
+                            FROM {2}
+                            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
+                            GROUP BY face_id
+                            HAVING num >= {3}
+                        ) t2
+                    )
+                ) tt
+                GROUP BY class_id, face_id, face_emotion
             '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN, Config.DETECTED_LOWEST_LIMIT)
         else:
             sql = '''
                 SELECT
-                    class_id, face_id, face_emotion, COUNT(*) AS total
+                    CONCAT(college_name, grade_name, class_name) AS class_id, face_id, face_emotion, COUNT(*) AS total
                 FROM {2}
                 WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
                 GROUP BY class_id, face_id, face_emotion
@@ -238,28 +244,32 @@ class CalcMetric(object):
         if is_lookback:
             sql = '''
                 SELECT
-                    t1.class_id, t1.face_id, t1.face_pose, COUNT(*) AS total
-                FROM {2} t1
-                WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.course_name = 'rest' AND t1.face_pose != '-1' AND t1.face_id in
-                (
+                    class_id, face_id, face_pose, COUNT(*) AS total
+                FROM (
                     SELECT
-                        t2.face_id
-                    FROM
+                        CONCAT(t1.college_name, t1.grade_name, t1.class_name) AS class_id, t1.face_id, t1.face_pose
+                    FROM {2} t1
+                    WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.course_name = 'rest' AND t1.face_pose != '-1' AND t1.face_id in
                     (
                         SELECT
-                            face_id, COUNT(*) AS num
-                        FROM {2}
-                        WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
-                        GROUP BY face_id
-                        HAVING num >= {3}
-                    ) t2
-                )
-                GROUP BY t1.class_id, t1.face_id, t1.face_pose
+                            t2.face_id
+                        FROM
+                        (
+                            SELECT
+                                face_id, COUNT(*) AS num
+                            FROM {2}
+                            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
+                            GROUP BY face_id
+                            HAVING num >= {3}
+                        ) t2
+                    )
+                ) tt
+                GROUP BY class_id, face_id, face_pose
             '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN, Config.DETECTED_LOWEST_LIMIT)
         else:
             sql = '''
                 SELECT
-                    class_id, face_id, face_pose, COUNT(*) AS total
+                    CONCAT(college_name, grade_name, class_name) AS class_id, face_id, face_pose, COUNT(*) AS total
                 FROM {2}
                 WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
                 GROUP BY class_id, face_id, face_pose

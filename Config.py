@@ -67,8 +67,11 @@ INTERMEDIATE_TABLE = 'person_body_status_pose_stat_midlle'
 #在face_pose_stat_time内统计用户的人脸姿态是否正常
 INTERMEDIATE_RES_TABLE = 'person_body_status_face_pose_stat'
 
-#预处理完成后的数据表
-INTERMEDIATE_TABLE_TRAIN = 'person_body_status_course_info'
+# 插入课程信息
+INTERMEDIATE_COURSE_TABLE = 'person_body_status_course_info'
+
+# 预处理完成后的数据表
+INTERMEDIATE_TABLE_TRAIN = 'person_body_status_student_course_info'
 
 # 班级学生对照表
 SCHOOL_STUDENT_CLASS_TABLE = 'school_student_class_info'
@@ -76,8 +79,12 @@ SCHOOL_STUDENT_CLASS_TABLE = 'school_student_class_info'
 # 摄像头班级对照表
 SCHOOL_CAMERA_CLASS_TABLE = 'school_camera_class_info'
 
+# 摄像头与教室对照表
+SCHOOL_CAMERA_ROOM_TABLE = 'school_camera_room_info'
+
 # 课程表
 SCHOOL_COURSE_TABLE = 'school_course_info'
+SCHOOL_STUDENT_COURSE_TABLE = 'school_student_course_info'
 
 # 成绩表
 SCHOOL_PERFORMANCE_TABLE = 'school_performance_info'
@@ -85,8 +92,11 @@ SCHOOL_PERFORMANCE_TABLE = 'school_performance_info'
 # 学生获奖信息表
 SCHOOL_AWARD_TABLE = 'school_award_info'
 
-#学生考勤信息表
+# 学生考勤信息表
+# 记录缺勤
 STUDENT_ATTENDANCE='school_student_attendance_info'
+# 记录签到
+STUDENT_ATTENDANCE_EXIST='school_student_attendance_exist_info'
 
 # The config for Metrics
 # The threshold for Emotion
@@ -155,7 +165,7 @@ STUDY_THREHOLD_GOOD = {
 # The degree threshold for course interest
 INTEREST_THRESHOLD = {
     # 'STUDY_STATUS_DAYS': 18, # 30 * 0.6 = 18
-    'STUDY_STATUS_DAYS': 1, # For demo, 考虑有即感兴趣
+    'STUDY_STATUS_DAYS_RATIO': 0.6, # For demo, 考虑有即感兴趣
     'GTRADE' : 80
 }
 
@@ -167,7 +177,7 @@ FACE_POSE_STAT_ABNORMAL = 0.4
 LOGGER_LEVEL = logging.DEBUG
 
 # Lookbackwindow for Relationship and Interest
-LOOKBACKWINDOW = -30 # Days
+LOOKBACKWINDOW = -45 # Days
 
 # Lookbackwindow for analysis course and study_status
 ANALYSIS_LOOKBACKWINDOW = -60 # Days
@@ -176,7 +186,8 @@ ANALYSIS_LOOKBACKWINDOW = -60 # Days
 FILTER_COURSES = ['体育']
 
 # 学习与成绩四维评估中 study_stat的阈值
-ANALYSIS_STUDY_STAT_THRESHOLD = 0.4 # 职教不同于K12，可以降低阈值。
+ANALYSIS_STUDY_STAT_THRESHOLD = 0.6  # 职教不同于K12，可以降低阈值。
+ANALYSIS_STUDY_STAT_COURSE_THRESHOLD = 0.8  # 学生在课程出现的次数至少要大于等于课程总次数的80%
 
 # The detected count threshold of each face_id
 DETECTED_LOWEST_LIMIT = 500
@@ -238,7 +249,7 @@ TEACHER_TEACHING_BAD_THRESHOLD = {
 TEACHER_TEACHING_GREAT_THRESHOLD = {
     'TEACHER_EMOTION': [0], # 开心
     'ONTIME': 0, # 准时
-    'ETHICS_STATUS': [1], # 良好 
+    'ETHICS_STATUS': [1], # 良好
     'STANDING_TIME': 0.6, # >
     'FACING_STUDENT_TIME': 0.6 # >
 }
@@ -256,14 +267,14 @@ CLASS_POSITIVITY_BAD_THRESHOLD = {
     'TEACHER_EMOTION': [2, 3], # 低落，愤怒
     'STUDENT_EMOTION_LOW': 0.5, # >
     'STUDENT_HAND_STAND': 0.05, # <
-    'FACING_STUDENT_TIME': 0.2 # < 
+    'FACING_STUDENT_TIME': 0.2 # <
 }
 
 CLASS_POSITIVITY_GREAT_THRESHOLD = {
     'TEACHER_EMOTION': [0], # 开心
     'STUDENT_EMOTION_HAPPY': 0.6, # >
     'STUDENT_HAND_STAND': 0.2, # >
-    'FACING_STUDENT_TIME': 0.5 # > 
+    'FACING_STUDENT_TIME': 0.5 # >
 }
 
 CLASS_CONCENTRATION_HIGH_THRESHOLD = {

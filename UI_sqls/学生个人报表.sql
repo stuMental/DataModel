@@ -6,7 +6,7 @@
     WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     GROUP BY student_interest
     ORDER BY student_interest ASC;
-    
+
     -- 体艺发展
     SELECT
         CONCAT('- ', award_type) AS award_type
@@ -14,7 +14,7 @@
     WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     GROUP BY award_type
     ORDER BY award_type ASC;
-    
+
 -- 心理健康状态
     -- 人际关系
     SELECT
@@ -29,7 +29,7 @@
     ) t
     ORDER BY t.student_relationship ASC, t.total DESC
     LIMIT 0, 1;
-    
+
     -- 情绪状态
     SELECT
         t1.student_emotion, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
@@ -47,14 +47,14 @@
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     ) t2;
-    
+
     -- 情绪状态历史趋势图
     SELECT
         dt, student_emotion
     FROM student_mental_status_ld
     WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     ORDER BY dt ASC;
-    
+
 -- 学业自律性
     -- 精神状态
     SELECT
@@ -73,14 +73,14 @@
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     ) t2;
-    
+
     -- 精神状态历史趋势图
     SELECT
         dt, student_mental_stat
     FROM student_mental_status_ld
     WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     ORDER BY dt ASC;
-    
+
     -- 学习状态
     SELECT
         t1.student_study_stat, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
@@ -98,7 +98,7 @@
         FROM student_mental_status_ld
         WHERE student_number = 'param' AND dt >= start_time_param AND dt <= end_time_param
     ) t2;
-    
+
     -- 学习状态历史趋势图
     SELECT
         dt, student_study_stat
