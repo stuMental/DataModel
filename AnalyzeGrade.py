@@ -13,7 +13,6 @@ class AnalyzeGrade(object):
         super(AnalyzeGrade, self).__init__()
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
-        self.__delimiter = '@'
 
     def Analysis(self, dt):
         ''''''

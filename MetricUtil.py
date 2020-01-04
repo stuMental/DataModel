@@ -14,16 +14,19 @@ class MetricUtil(object):
         self.__MAXVALUE = 2147483647 # The max value of INT
 
     def get_min_value(self):
+
         return self.__MINVALUE
 
     def get_max_value(self):
+
         return self.__MAXVALUE
 
     def threshold_index(self, index):
-        if index < 0:
+
+        if index <= 0:
             return 0
 
-        return index if index == 0 else index - 1
+        return index - 1
 
     def DynamicThreshold(self, data, percentage = 0.2, multi_fact = 5, is_upper = True):
         '''

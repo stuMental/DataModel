@@ -228,8 +228,7 @@ class Preprocessor(object):
 
         sql = '''
             INSERT INTO {4}
-            SELECT t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.face_pose_stat,
-                   (CASE WHEN t2.course_name IS NULL THEN 'rest' ELSE t2.course_name END) AS course_name
+            SELECT t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.face_pose_stat, (CASE WHEN t2.course_id IS NULL THEN '-1' ELSE t2.course_id END) AS course_id, (CASE WHEN t2.course_name IS NULL THEN 'rest' ELSE t2.course_name END) AS course_name
             FROM
             (
                 SELECT
@@ -239,10 +238,10 @@ class Preprocessor(object):
             ) t1 LEFT OUTER JOIN
             (
                 SELECT
-                    room_addr, course_name, start_time, end_time
+                    room_addr, course_id, course_name, start_time, end_time
                 FROM {3}
                 WHERE weekday = dayofweek('{5}')
-                GROUP BY room_addr, course_name, start_time, end_time
+                GROUP BY room_addr, course_id, course_name, start_time, end_time
             ) t2 ON t1.room_addr = t2.room_addr AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) >= t2.start_time AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) <= t2.end_time
         '''.format(start_time, end_time, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.INTERMEDIATE_COURSE_TABLE, day)
 
@@ -258,7 +257,7 @@ class Preprocessor(object):
         sql = '''
             INSERT INTO {4}
             SELECT
-                t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.face_pose_stat, t1.course_name, t2.college_name, t2.grade_name, t2.class_name
+                t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.face_pose_stat, t1.course_id, t1.course_name, t2.college_name, t2.grade_name, t2.class_name
             FROM
             (
                 SELECT * FROM {2}
@@ -280,10 +279,10 @@ class Preprocessor(object):
 
         sql = '''
             INSERT INTO {4}
-            SELECT t5.room_addr, t5.course_name, t5.college_name, t5.class_name, t5.grade_name, t5.start_time, t5.end_time, t5.student_number, t5.student_name, '{5}'
+            SELECT t5.room_addr, t5.course_id, t5.course_name, t5.college_name, t5.class_name, t5.grade_name, t5.start_time, t5.end_time, t5.student_number, t5.student_name, t5.teacher_id, t5.teacher_name, '{5}'
             FROM (
                 SELECT
-                    room_addr, course_name, college_name, class_name, grade_name, start_time, end_time, student_number, student_name
+                    room_addr, course_id, course_name, college_name, class_name, grade_name, start_time, end_time, student_number, student_name, teacher_id, teacher_name
                 FROM {3}
                 WHERE weekday = dayofweek('{5}')
             )t5 LEFT JOIN (
@@ -301,19 +300,19 @@ class Preprocessor(object):
         self.__logger.info("Try to stat exist attendance, then output results to the table {0}".format(Config.STUDENT_ATTENDANCE_EXIST))
 
         sql = '''
-            INSERT INTO {4}
+            INSERT INTO {3}
             SELECT
-                t3.room_addr, t3.course_name, t3.college_name, t3.class_name, t3.grade_name, t3.start_time, t3.end_time, t3.student_number, t3.student_name, '{0}'
+                t3.room_addr, t3.course_id, t3.course_name, t3.college_name, t3.class_name, t3.grade_name, t3.start_time, t3.end_time, t3.student_number, t3.student_name, t3.teacher_id, t3.teacher_name, '{0}'
             FROM (
                 SELECT
-                   room_addr, course_name, college_name, class_name, grade_name, start_time, end_time, student_number, student_name
+                   room_addr, course_id, course_name, college_name, class_name, grade_name, start_time, end_time, student_number, student_name, teacher_id, teacher_name
                 FROM {1}
                 WHERE weekday = dayofweek('{0}')
             ) t3 LEFT JOIN (
-                SELECT * FROM {3} WHERE dt = '{0}'
+                SELECT * FROM {2} WHERE dt = '{0}'
             ) t4 ON t3.room_addr = t4.room_addr AND t3.course_name = t4.course_name AND t3.start_time = t4.start_time AND t3.end_time = t4.end_time AND t3.student_number = t4.student_number
             WHERE t4.student_number IS NULL
-        '''.format(day, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.SCHOOL_STUDENT_CLASS_TABLE, Config.STUDENT_ATTENDANCE, Config.STUDENT_ATTENDANCE_EXIST)
+        '''.format(day, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.STUDENT_ATTENDANCE, Config.STUDENT_ATTENDANCE_EXIST)
 
         self.__db.insert(sql)
         self.__logger.info("Finish to compute exist stat_attendance")

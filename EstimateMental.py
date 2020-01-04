@@ -30,17 +30,17 @@ class EstimateMental(object):
         self.__analyzer = AnalyzeGrade.AnalyzeGrade(configs)
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__interests = {}
+        self.__date = configs['date']
         self.__is_teacher = configs['teacher']
         if self.__is_teacher:
             self.__teacher_course = CalcTeaCourseMetric.CalcTeaCourseMetric(configs)
             self.__teacher = CalcTeacherMetric.CalcTeacherMetric(configs)
+
         self.__is_classroom = configs['classroom']
         if self.__is_classroom:
             if not self.__is_teacher:
                 raise ValueError("启动班级评估功能，需要同时开启教师评估功能")
             self.__classroom = CalcClassMetric.CalcClassMetric(configs)
-
-        self.__date = configs['date']
 
     def estimate(self):
         # 获取最新数据对应的日期
@@ -62,26 +62,26 @@ class EstimateMental(object):
 
         self.__logger.info("Begin to analyze the student data of {0}".format(estimate_date))
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
-        # self.__preprocessor.preprocessor(times['start_unixtime'], times['end_unixtime'], estimate_date)
+        self.__preprocessor.preprocessor(times['start_unixtime'], times['end_unixtime'], estimate_date)
 
-        # # 评估学生
+        # 评估学生
         # 获得学生基本信息
         students = self.get_students(estimate_date)
 
-        # # 先计算分科目的指标，因为兴趣需要基于这个数据计算
-        # self.__logger.info("Begin to compute and post daily course metrics")
-        # course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'])
-        # students = self.__poster.post_course_metric(course_metrics, estimate_date, students)
-        # self.__logger.info("Finished to compute and post daily course metrics")
-        # self.__logger.info("Begin to compute and post daily metrics")
-        # metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'])
-        # metrics = self.estimate_interest(times['end_datetime'], metrics)
-        # students = self.__poster.post(metrics, estimate_date, students)
-        # self.__logger.info("Finished to compute and post daily metrics")
+        # 先计算分科目的指标，因为兴趣需要基于这个数据计算
+        self.__logger.info("Begin to compute and post daily course metrics")
+        course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'])
+        students = self.__poster.post_course_metric(course_metrics, estimate_date, students)
+        self.__logger.info("Finished to compute and post daily course metrics")
+        self.__logger.info("Begin to compute and post daily metrics")
+        metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'])
+        metrics = self.estimate_interest(times['end_datetime'], metrics)
+        students = self.__poster.post(metrics, estimate_date, students)
+        self.__logger.info("Finished to compute and post daily metrics")
 
-        # self.__logger.info("Begin to post Interest")
-        # students = self.__poster.post_interest_metric(self.__interests, estimate_date, students)
-        # self.__logger.info("Finished to post Interest")
+        self.__logger.info("Begin to post Interest")
+        students = self.__poster.post_interest_metric(self.__interests, estimate_date, students)
+        self.__logger.info("Finished to post Interest")
 
         # 计算成绩与学习状态之间的四象限分析指标
         self.__logger.info("Begin to analyze and post Grade and Study_Status")
@@ -209,8 +209,3 @@ class EstimateMental(object):
         self.__logger.debug(str(res))
         self.__logger.info("Done")
         return res
-
-
-# if __name__ == '__main__':
-#     doer = EstimateMental()
-#     doer.estimate()
