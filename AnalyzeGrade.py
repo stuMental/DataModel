@@ -129,11 +129,11 @@ class AnalyzeGrade(object):
                 GROUP BY college_name, grade_name, class_name, student_number, course_name
             ) t1 JOIN (
                 SELECT
-                    college_name, grade_name, course_name, count(DISTINCT dt) AS total, GREATEST(1, floor(count(DISTINCT dt) * {3})) AS threshold
+                    college_name, grade_name, course_name, count(DISTINCT dt) AS total, GREATEST(1, floor(count(DISTINCT dt) * {3})) AS threshold, GREATEST(1, floor(count(DISTINCT dt) * {7})) AS lower_threshold
                 FROM {2}
                 WHERE dt >= '{0}' AND dt < '{1}' AND college_name = '{4}' AND grade_name = '{5}'
                 GROUP BY college_name, grade_name, course_name
-            ) t2 ON t1.course_name = t2.course_name AND t1.college_name = t2.college_name AND t1.grade_name AND t2.grade_name AND t1.total >= t2.total * {7};
+            ) t2 ON t1.course_name = t2.course_name AND t1.college_name = t2.college_name AND t1.grade_name AND t2.grade_name AND t1.total >= t2.lower_threshold;
         '''.format(start_time, dt[3], Config.OUTPUT_UI_COURSE_TABLE, Config.ANALYSIS_STUDY_STAT_THRESHOLD, dt[0], dt[1], dt[2], Config.ANALYSIS_STUDY_STAT_COURSE_THRESHOLD)
 
         res = {}

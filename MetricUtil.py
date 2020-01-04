@@ -83,7 +83,7 @@ class MetricUtil(object):
         if lows_len != 0:
             lows.sort(reverse=True)
             self.__logger.debug(str(lows))
-            thresholds['study_bad_low'] = lows[self.threshold_index(int(math.floor(arounds_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW'])))]
+            thresholds['study_bad_low'] = lows[self.threshold_index(int(math.floor(lows_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW'])))]
             thresholds['study_bad_low_count'] = self.DynamicThreshold(lows, Config.DYNAMIC_DELETE_PERCENTAGE, 5, is_upper=True)
 
         self.__logger.debug("Study Thresholds: " + str(thresholds))
@@ -227,7 +227,7 @@ class MetricUtil(object):
         ''''''
         self.__logger.debug("Emotions: " + str(emotions))
         self.__logger.debug("Thresholds: " + str(thresholds))
-        
+
         total = 0.0
         if 'emotion_low' in emotions:
             total += emotions['emotion_low']
