@@ -4,14 +4,14 @@ Table
         - camera_id
         - frame_id
         - body_id
-        - body_stat 军人 0: 姿态 1: 写字 2: 其他 -1: unknown 0： 正常姿态 1: 站立 2: 举手 3：睡觉 4：手托头听课 5：趴着听课
+        - body_stat  unknown(-1), 正常姿态(0), 站立(1), 举手(2), 睡觉(3), 手托头听课(4), 趴着听课(5)
         - body_track
         - face_id 学生学号 通过人脸识别之后定位到学生的基本信息
         - face_track
-        - face_pose  -1: unknown 0： 平视 1: 左顾右盼 2: 低头
+        - face_pose  unknown(-1) 平视(0), 左顾右盼(1),低头(2)
         - face_pose_stat 0： 表示正常 1: 表示不正常
         - face_pose_stat_time： 3 mins
-        - face_emotion -1: unknown 0: 正常 1: 开心 2: 低落
+        - face_emotion unknown(-1), 正常(0), 开心(1), 低落(2)
         - yawn 0: 没有 1: 打哈欠
         - unix_timestamp
         - pose_stat_time: max(body_stat\face_ose) group by pose_stat_time
@@ -47,7 +47,7 @@ Table
                 face_pose
                     - 按课堂检测到 (正常 face_pose_stat = 0) 平视的次数降序 最后 10% === <= 90%
 
-                or 
+                or
 
                 face_pose 低头次数 >= 300 && 低头次数降序排 Top 10%
                 face_pose 左顾右盼 >= 30 && 左顾右盼降序 Top 10%

@@ -4,6 +4,7 @@ import Config
 import DbUtil
 import Logger
 import MetricUtil
+from CommonUtil import CommonUtil
 
 class CalcCourseMetric(object):
     """docsTry for CalcCourseMetric"""
@@ -43,6 +44,7 @@ class CalcCourseMetric(object):
             目前，基于room_addr作为class_id。即一堂课的id
         """
 
+        CommonUtil.verify()
         # Compute the count of each basic metric
         self.__logger.info("Try to compute course basic metrics")
         body_stat_count = self.count_body_stat(start_time, end_time)

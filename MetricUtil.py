@@ -39,10 +39,10 @@ class MetricUtil(object):
 
         deleteNumber = int(math.floor(len(data) * percentage))
         deleteNumber = 1 if deleteNumber == 0 else deleteNumber # 避免deleteNumber等于0
-        self.__logger.debug("DeleteNumber of face_pose_around: " + str(deleteNumber))
+        self.__logger.debug("DeleteNumber: " + str(deleteNumber))
         calc_data = data[deleteNumber:-deleteNumber]
         if len(calc_data) != 0:
-            result = math.floor(np.mean(calc_data) + multi_fact * np.std(calc_data, ddof=1))
+            result = math.floor(np.mean(calc_data) + multi_fact * np.std(calc_data, ddof=0))
             if np.isnan(result):
                 result = self.__MINVALUE if is_upper else self.__MAXVALUE
         else:

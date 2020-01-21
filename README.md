@@ -40,6 +40,14 @@ Build a system to train data model
     用sudo aptitude install的方式安装相应的依赖包或者该package。如果机器上没有aptitude，请先安装: sudo apt-get install aptitude
     aptitude相对于apt-get在依赖的安装上更为聪明。
 
+# MySQL性能优化
+1. 关闭不必要表的日志.
+    alter table table1 nologging;
+2. 修改my.cnf参数
+    binlog_format=ROW
+    innodb_buffer_pool_size = 2147483648 # 2G 建议物理内存的75%
+
+
 # 运行DataModel的FQA
 1. 运行RUN.sh时，提示Main.py: error: argument --dbhost: expected one argument。
     错误原因：无法正常获取IP地址。

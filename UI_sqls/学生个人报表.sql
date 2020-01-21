@@ -107,6 +107,8 @@
     ORDER BY dt ASC;
 
 -- 学生综合状态
+-- TODO: 应该需要考虑班级整体的水平
+-- 可以认为高于班级平均水平的视为>=0.5
     SELECT
         ROUND((1.0 * IFNULL(t5.emotion_count, 0)) / t1.total, 2) AS emotion, ROUND((1.0 * IFNULL(t2.study_count, 0)) / t1.total, 2) AS study, ROUND((1.0 * IFNULL(t3.mental_count, 0)) / t1.total, 2) AS mental, ROUND((1.0 * IFNULL(t4.relationship_count, 0)) / t1.total, 2) AS relationship
     FROM

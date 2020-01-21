@@ -5,6 +5,7 @@ import datetime
 import time
 import Config
 import argparse
+import uuid
 
 class CommonUtil(object):
     """Define some common functions"""
@@ -75,11 +76,27 @@ class CommonUtil(object):
         ''''''
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
 
-    '''
-    解析命令行参数
-    '''
+    @staticmethod
+    def get_mac_addr():
+        """ 获取mac地址
+        """
+
+        return uuid.UUID(int = uuid.getnode()).hex[-12:].lower()
+
+    @staticmethod
+    def verify():
+        """ 验证权限
+        """
+
+        if CommonUtil.get_mac_addr() != Config.MAC_ADDRESS:
+            raise ValueError('Cannot run the service on this machine.')
+
     @staticmethod
     def parse_arguments():
+        '''
+        解析命令行参数
+        '''
+
         parser = argparse.ArgumentParser()
         parser.add_argument('--dbhost', type=str, help='Database host ip')
         parser.add_argument('--teacher', type=int, help='1: Estimate teacher status, 0: Don\'t estimate teacher status', default=0)

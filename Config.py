@@ -43,6 +43,12 @@ INPUT_DB_CHARSET = 'utf8'
 # Database charset
 # OUTPUT_DB_CHARSET = 'utf8'
 
+# MAC Address
+# MAC_ADDRESS = '6c0b846511a1'
+
+# [Test] MAC Address
+MAC_ADDRESS = '04ea5648c08c'
+
 # Raw input table
 RAW_INPUT_TABLE = 'person_body_status'
 
@@ -101,7 +107,7 @@ STUDENT_ATTENDANCE_EXIST='school_student_attendance_exist_info'
 # The config for Metrics
 # The threshold for Emotion
 EMOTION_THRESHOLD_HAPPY = {
-    'SMILE_FREQUENCY' : 0.25,
+    'SMILE_FREQUENCY' : 0.2,
     'SMILE_RATIO' : 0.3 # >=
 }
 
@@ -131,13 +137,13 @@ RELATIONSHIP_THRESHOLD_SOLITARY = {
 
 # The threshold for Mental
 MENTAL_THRESHOLD_TIRED = {
-    'BODY_STAT' : 0.05,
+    'BODY_STAT' : 0.1,
     'EMOTION_STATUS' : 2 # 低落
 }
 
 MENTAL_THRESHOLD_POSITIVE = {
     'BODY_STAT' : 0.05,
-    'EMOTION_STATUS' : 0 # 开心
+    'EMOTION_STATUS' : 0 # 积极
 }
 
 # The threshold for Study Status
@@ -145,7 +151,7 @@ STUDY_THREHOLD_BAD = {
     'MENTAL' : 2, # 疲惫
     'FACE_POSE_NORMAL' : 0.9, # <=
     'FACE_POSE_AROUND' : 0.9, # <=
-    'FACE_POSE_AROUND_FEQ': 0.1, # >=
+    'FACE_POSE_AROUND_FEQ': 0.2, # >=
     'FACE_POSE_LOW' : 0.9, # <=
     'FACE_POSE_LOW_FEQ': 0.6 # >=
 }
@@ -153,13 +159,13 @@ STUDY_THREHOLD_BAD = {
 STUDY_THREHOLD_GREAT= {
     'MENTAL' : 0, # 积极
     'FACE_POSE_NORMAL' : 0.1, # >=
-    'FACE_POSE_NORMAL_FEQ': 0.6 # >=
+    'FACE_POSE_NORMAL_FEQ': 0.8 # >=
 }
 
 STUDY_THREHOLD_GOOD = {
     'MENTAL' : [0, 1], # 积极 正常
     'FACE_POSE_NORMAL' : 0.3, # >=
-    'FACE_POSE_NORMAL_FEQ': 0.4 # >=
+    'FACE_POSE_NORMAL_FEQ': 0.5 # >=
 }
 
 # The degree threshold for course interest
@@ -199,7 +205,13 @@ INSERT_BATCH_THRESHOLD = 10000
 DATETIME_THRESHOLD = -1
 
 # 保留INTERMEDIATE_TABLE_TRAIN表中历史数据的天数
-DATA_RESERVED_WINDOW = -180 # 180 天
+DATA_RESERVED_WINDOW = -360 # 180 天
+
+# 考勤表的数据保留历史天数。
+DATA_RESERVED_ATTENDANCE_WINDOW = -360 # 默认保留最近180天
+
+# raw 数据的保留天数
+DATA_RESERVED_RAW_WINDOW = -360  # 90 默认保留90天数据
 
 # Dynamic threshold
 DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的数据
@@ -309,4 +321,12 @@ CLASS_INTERACTIVITY_GREAT_THRESHOLD = {
     'FACING_STUDENT_TIME': 0.6, # > 面向学生超过60%
     'STUDENT_HAND_STAND': 0.2, # > 学生举手或站立总次数占比超过20%
     'HEAD_POSE_AROUND': 0.3 # > 同时左顾右盼的学生人数超过30%
+}
+
+STUDENT_STATUS_DEFAULT = {
+    'student_emotion': '1',
+    'student_mental_stat': '1',
+    'student_study_stat': '2',
+    'student_relationship': '2',
+    'student_interest': ''
 }

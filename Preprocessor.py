@@ -14,10 +14,10 @@ class Preprocessor(object):
         self.__logger = Logger.Logger(__name__)
 
     def preprocessor(self, start_time, end_time, day):
+        CommonUtil.verify()
         self.truncate_data(start_time, end_time, day)
         self.update_face_id(start_time, end_time)
         self.update_status(start_time, end_time)
-        self.update_face_pose_state(start_time, end_time)
         self.update_course(start_time, end_time, day)
         self.update_student_info(start_time, end_time, day)
         self.stat_attendance(start_time, end_time, day)
@@ -27,20 +27,26 @@ class Preprocessor(object):
         '''Truncate all data of intermediate tables'''
         self.__logger.info("Try to truncate all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
 
-        logs = [Config.INTERMEDIATE_TRACK_TABLE, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_RES_TABLE, Config.INTERMEDIATE_COURSE_TABLE]
+        self.__logger.info('Begin to delete raw log for the table {0}'.format(Config.RAW_INPUT_TABLE))
+        sql = '''
+            DELETE a FROM {0} a WHERE pose_stat_time < {1}
+        '''.format(Config.RAW_INPUT_TABLE, CommonUtil.get_specific_unixtime(start_time, Config.DATA_RESERVED_RAW_WINDOW))
+        self.__db.delete(sql)
+        self.__logger.info("Deleted raw log for the table {0}".format(Config.RAW_INPUT_TABLE))
 
+        logs = [Config.INTERMEDIATE_TRACK_TABLE, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_COURSE_TABLE]
         for table_name in logs:
-            self.__logger.info("Begin to truncate {0}".format(table_name))
+            self.__logger.info("Begin to drop {0}".format(table_name))
             sql = '''
-                TRUNCATE TABLE {0}
+                DROP TABLE {0}
             '''.format(table_name)
             self.__db.truncate(sql)
-            self.__logger.info("End to truncate {0}".format(table_name))
+            self.__logger.info("End to drop {0}".format(table_name))
 
         # 对于Config.INTERMEDIATE_TABLE_TRAIN，我们需要保留历史数据(半年) 便于计算人际关系和课堂兴趣
         self.__logger.info("Begin to delete unnecessary data for the table {0}.".format(Config.INTERMEDIATE_TABLE_TRAIN))
         sql = '''
-            DELETE FROM {0} WHERE (pose_stat_time >= {1} AND pose_stat_time < {2}) OR (pose_stat_time < {3})
+            DELETE a FROM {0} a WHERE (pose_stat_time >= {1} AND pose_stat_time < {2}) OR (pose_stat_time < {3})
         '''.format(Config.INTERMEDIATE_TABLE_TRAIN, start_time, end_time, CommonUtil.get_specific_unixtime(start_time, Config.DATA_RESERVED_WINDOW))
         self.__db.delete(sql)
         self.__logger.info("End to delete unnecessary data for the table {0}.".format(Config.INTERMEDIATE_TABLE_TRAIN))
@@ -50,17 +56,11 @@ class Preprocessor(object):
         for table_name in attendances:
             self.__logger.info("Begin to delete unnecessary data from the table {0}.".format(table_name))
             sql = '''
-                DELETE FROM {0} WHERE dt = '{1}'
-            '''.format(table_name, day)
+                DELETE a FROM {0} a WHERE dt = '{1}' OR dt < '{2}'
+            '''.format(table_name, day, CommonUtil.get_specific_date(day, Config.DATA_RESERVED_ATTENDANCE_WINDOW))
             self.__db.delete(sql)
             self.__logger.info("End to delete unnecessary data from the table {0}.".format(table_name))
 
-        # 清空Config.SCHOOL_STUDENT_CLASS_TABLE中所有student_name中带有嘉宾符号的数据
-        # sql = '''
-        #     DELETE FROM {0} WHERE student_name LIKE '%{1}%'
-        # '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE, Config.PREFIX_GUEST)
-        # self.__db.delete(sql)
-        # self.__logger.info("End to delete all 嘉宾 records")
         self.__logger.info("End to truncate or delete all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
 
     def update_face_id(self, start_time, end_time):
@@ -69,10 +69,11 @@ class Preprocessor(object):
 
         # TODO(xufeng):解决同一个track被识别为多个人的问题，目前是将这样的track直接舍弃
         sql = '''
-            INSERT INTO {3}
-            SELECT t1.camera_id, t1.frame_id, t1.body_id, t1.body_stat, t1.body_track, t2.face_id, t1.face_track, t1.face_pose, t1.face_pose_stat, t1.face_pose_stat_time, t1.face_emotion, t1.yawn, t1.unix_timestamp, t1.pose_stat_time
+            CREATE TABLE {3}
+            SELECT
+                t1.camera_id, t1.body_stat, t2.face_id, t1.face_track, t1.face_pose, t1.face_emotion, t1.pose_stat_time
             FROM (
-                SELECT *
+                SELECT camera_id, body_stat, face_track, face_pose, face_emotion, pose_stat_time
                 FROM {2}
                     WHERE face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                 )t1 JOIN (
@@ -83,7 +84,7 @@ class Preprocessor(object):
                         WHERE face_id != 'unknown' AND face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                         GROUP BY camera_id, face_track, face_id
                     )t21 JOIN (
-                        SELECT camera_id, face_track, count(distinct face_id) as face_num
+                        SELECT camera_id, face_track, count(DISTINCT face_id) as face_num
                         FROM {2}
                         WHERE face_id != 'unknown' AND face_track != 'unknown' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                         GROUP BY camera_id, face_track
@@ -94,6 +95,11 @@ class Preprocessor(object):
 
         self.__db.insert(sql)
         self.__logger.info("[Step1] Finish to update face_id")
+
+        self.__logger.info("[Update face_id] add index")
+        self.__db.execute("CREATE INDEX pose_stat_time_index ON {0} (pose_stat_time);".format(Config.INTERMEDIATE_TRACK_TABLE))
+        self.__db.execute("CREATE INDEX camera_id_index ON {0} (camera_id);".format(Config.INTERMEDIATE_TRACK_TABLE))
+        self.__db.execute("CREATE INDEX face_id_index ON {0} (face_id);".format(Config.INTERMEDIATE_TRACK_TABLE))
 
     def update_face_id_guest(self, start_time, end_time):
         '''
@@ -155,25 +161,30 @@ class Preprocessor(object):
         self.__logger.info("Try to choose body_stat, face_pose, face_emotion, then output results to the table {0}".format(Config.INTERMEDIATE_TABLE))
 
         sql = '''
-            INSERT INTO {2}
-            SELECT room_addr, face_id, pose_stat_time, face_pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
+            CREATE TABLE {2}
+            SELECT
+                room_addr, face_id, pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
             FROM (
-                SELECT t2.room_addr, t1.camera_id, t1.face_id, t1.pose_stat_time, t1.face_pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion
+                SELECT t2.room_addr, t1.camera_id, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion
                 FROM (
-                        SELECT camera_id, face_id, pose_stat_time, face_pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
+                        SELECT camera_id, face_id, pose_stat_time, MAX(body_stat) AS body_stat, MAX(face_pose) AS face_pose, MAX(face_emotion) AS face_emotion
                         FROM {3}
                         WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown'
-                        GROUP BY camera_id, face_id, pose_stat_time, face_pose_stat_time
+                        GROUP BY camera_id, face_id, pose_stat_time
                 )t1 JOIN (
                     SELECT camera_id, room_id, room_addr
                     FROM {4}
                 )t2 ON t1.camera_id=t2.camera_id
             )t3
-            GROUP BY room_addr, face_id, pose_stat_time, face_pose_stat_time # 有可能一个教室多个摄像头 所以需要再执行一次GROUP BY语句
+            GROUP BY room_addr, face_id, pose_stat_time # 有可能一个教室多个摄像头 所以需要再执行一次GROUP BY语句
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_TRACK_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE)
 
         self.__db.insert(sql)
         self.__logger.info("Finish to update")
+
+        self.__logger.info("[Update status] add index")
+        self.__db.execute("CREATE INDEX pose_stat_time_index ON {0} (pose_stat_time);".format(Config.INTERMEDIATE_TABLE))
+        self.__db.execute("CREATE INDEX room_addr_index ON {0} (room_addr);".format(Config.INTERMEDIATE_TABLE))
 
     def update_face_pose_state(self, start_time, end_time):
         '''
@@ -226,12 +237,13 @@ class Preprocessor(object):
         self.__logger.info("Try to insert course according to room_addr and timespan, then output results to the table {0}".format(Config.INTERMEDIATE_COURSE_TABLE))
 
         sql = '''
-            INSERT INTO {4}
-            SELECT t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.face_pose_stat, (CASE WHEN t2.course_id IS NULL THEN '-1' ELSE t2.course_id END) AS course_id, (CASE WHEN t2.course_name IS NULL THEN 'rest' ELSE t2.course_name END) AS course_name
+            CREATE TABLE {4}
+            SELECT
+                t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, (CASE WHEN t2.course_id IS NULL THEN '-1' ELSE t2.course_id END) AS course_id, (CASE WHEN t2.course_name IS NULL THEN 'rest' ELSE t2.course_name END) AS course_name
             FROM
             (
                 SELECT
-                    room_addr, face_id, pose_stat_time, body_stat, face_pose, face_emotion, face_pose_stat
+                    room_addr, face_id, pose_stat_time, body_stat, face_pose, face_emotion
                 FROM {2}
                 WHERE pose_stat_time >= {0} AND pose_stat_time < {1}
             ) t1 LEFT OUTER JOIN
@@ -242,10 +254,14 @@ class Preprocessor(object):
                 WHERE weekday = dayofweek('{5}')
                 GROUP BY room_addr, course_id, course_name, start_time, end_time
             ) t2 ON t1.room_addr = t2.room_addr AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) >= t2.start_time AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) <= t2.end_time
-        '''.format(start_time, end_time, Config.INTERMEDIATE_RES_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.INTERMEDIATE_COURSE_TABLE, day)
+        '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.INTERMEDIATE_COURSE_TABLE, day)
 
         self.__db.insert(sql)
         self.__logger.info("Finish to update course_name")
+
+        self.__logger.info("[Update course] add index")
+        self.__db.execute("CREATE INDEX pose_stat_time_index ON {0} (pose_stat_time);".format(Config.INTERMEDIATE_COURSE_TABLE))
+        self.__db.execute("CREATE INDEX face_id_index ON {0} (face_id);".format(Config.INTERMEDIATE_COURSE_TABLE))
 
     def update_student_info(self, start_time, end_time, day):
         """ 关联学生信息
@@ -256,7 +272,7 @@ class Preprocessor(object):
         sql = '''
             INSERT INTO {4}
             SELECT
-                t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.face_pose_stat, t1.course_id, t1.course_name, t2.college_name, t2.grade_name, t2.class_name
+                t1.room_addr, t1.face_id, t1.pose_stat_time, t1.body_stat, t1.face_pose, t1.face_emotion, t1.course_id, t1.course_name, t2.college_name, t2.grade_name, t2.class_name
             FROM
             (
                 SELECT * FROM {2}
@@ -264,9 +280,10 @@ class Preprocessor(object):
             ) t1 JOIN
             (
                 SELECT
-                    DISTINCT student_number, college_name, grade_name, class_name
+                    student_number, college_name, grade_name, class_name
                 FROM {3}
                 WHERE weekday = dayofweek('{5}')
+                GROUP BY student_number, college_name, grade_name, class_name
             ) t2 ON t1.face_id = t2.student_number
         '''.format(start_time, end_time, Config.INTERMEDIATE_COURSE_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.INTERMEDIATE_TABLE_TRAIN, day)
 

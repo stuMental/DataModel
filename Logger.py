@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 import os
+import sys
 import Config
 import logging
 import datetime
@@ -20,7 +21,7 @@ class Logger(object):
         """ 创建logs目录
         """
 
-        dir_path = os.path.abspath('.')
+        dir_path, file_name = os.path.split(os.path.abspath(sys.argv[0]))
         log_path = dir_path + '/logs'
         while (not os.path.exists(log_path)):
             print 'Trying to create log path: {}'.format(log_path)

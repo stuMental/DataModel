@@ -16,6 +16,7 @@ class AnalyzeGrade(object):
 
     def Analysis(self, dt):
         ''''''
+        CommonUtil.verify()
         self.__logger.info("Begin to analyze grade and study_status")
         dates = self.get_calc_dates(dt)
         if not dates:

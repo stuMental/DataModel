@@ -9,7 +9,7 @@ class Main(object):
     def __init__(self):
         super(Main, self).__init__()
         self.doer = EstimateMental(CommonUtil.parse_arguments())
-    
+
     def executor(self):
         self.doer.estimate()
 

@@ -43,6 +43,8 @@ class EstimateMental(object):
             self.__classroom = CalcClassMetric.CalcClassMetric(configs)
 
     def estimate(self):
+
+        CommonUtil.verify()
         # 获取最新数据对应的日期
         times = CommonUtil.get_range_times()
         self.__logger.info("Current hour: {}".format(datetime.datetime.now().hour))
@@ -66,7 +68,7 @@ class EstimateMental(object):
 
         # 评估学生
         # 获得学生基本信息
-        students = self.get_students(estimate_date)
+        students = self.get_students()
 
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
@@ -186,15 +188,15 @@ class EstimateMental(object):
         self.__logger.info("Finished to compute student_interest")
         return metrics
 
-    def get_students(self, day):
+    def get_students(self):
         ''''''
         self.__logger.info("Get all students")
         sql = '''
             SELECT
-                DISTINCT student_number, student_name, college_name, grade_name, class_name
+                student_number, student_name, college_name, grade_name, class_name
             FROM {0}
-            WHERE weekday = dayofweek('{1}');
-        '''.format(Config.SCHOOL_STUDENT_COURSE_TABLE, day)
+            GROUP BY student_number, student_name, college_name, grade_name, class_name;
+        '''.format(Config.SCHOOL_STUDENT_COURSE_TABLE)
 
         res = {}
         for row in self.__db.select(sql):

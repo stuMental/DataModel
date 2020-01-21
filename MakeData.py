@@ -15,38 +15,41 @@ class MakeData(object):
 
 
     def make_data(self):
-        start_time = 1550678400
-        end_time = 1550764800
+
+        end_time = 1577980800
         frame = 0
         sql = '''
-        insert into person_body_status2(camera_id,frame_id,body_id,body_stat,body_track,face_id,face_track,face_pose,face_pose_stat_time,face_emotion,unix_timestamp,pose_stat_time)values
+        insert into person_body_status_test(camera_id,frame_id,body_id,body_stat,body_track,face_id,face_track,face_pose,face_pose_stat_time,face_emotion,unix_timestamp,pose_stat_time)values
         '''
         face_pose_gap = 300000
         pose_stat_gap = 3000
         insert_sql = sql
-        while (start_time <= end_time):
-            frame = frame + 1
-            for j in range(3):
-                body_id = j
-            body_stat = str(random.randint(0,5))
-            face_pose = str(random.randint(0,2))
-            face_id = str(random.randint(1,20))
-            body_track = str(frame) + '_' + face_id
-            face_track = body_track
-            face_pose_stat_time = (start_time/face_pose_gap)*300
-            pose_stat_time = (start_time/pose_stat_gap)*3
-            unix_timestamp = start_time
-            face_emotion = str(random.randint(0,2))
-            values = "('201801','"+str(frame)+"',"+str(body_id)+",'"+body_stat+"','"+body_track+"','"+face_id+"','"+face_track+"','"+face_pose+"','"+str(face_pose_stat_time)+"','"+face_emotion+"','"+str(unix_timestamp)+"','"+str(pose_stat_time)+"')" 
-            if insert_sql == sql:
-                insert_sql = insert_sql + values
-            else:
-                insert_sql = insert_sql + ',' + values
-            start_time = start_time + 50
-            if frame % 100 == 0:
-                self.__db.insert(insert_sql)
-                insert_sql = sql
-                print frame
+        count = 170
+        while count:
+            count -= 1
+            start_time = 1577894400
+            while (start_time <= end_time):
+                frame = frame + 1
+                body_id = 0
+                body_stat = str(random.randint(0,5))
+                face_pose = str(random.randint(0,2))
+                face_id = '2018' + str(random.randint(1,24))
+                body_track = str(random.randint(1, 50))
+                face_track = body_track
+                pose_stat_time = random.randint(start_time, end_time)
+                face_pose_stat_time = pose_stat_time
+                unix_timestamp = pose_stat_time * 1000
+                face_emotion = str(random.randint(0,2))
+                values = "('2','"+str(frame)+"',"+str(body_id)+",'"+body_stat+"','"+body_track+"','"+face_id+"','"+face_track+"','"+face_pose+"','"+str(face_pose_stat_time)+"','"+face_emotion+"','"+str(unix_timestamp)+"','"+str(pose_stat_time)+"')"
+                if insert_sql == sql:
+                    insert_sql = insert_sql + values
+                else:
+                    insert_sql = insert_sql + ',' + values
+                start_time = start_time + 1
+                if frame % 10000 == 0:
+                    self.__db.insert(insert_sql)
+                    insert_sql = sql
+                    print frame
 
     def make_course(self):
         sql='''
@@ -170,10 +173,10 @@ class MakeData(object):
         sql = sql + ',' + val
         self.__db.insert(sql)
 
-    def make_test_pose_stat(self):                               
+    def make_test_pose_stat(self):
         sql='''
             insert into person_body_status_face_track(camera_id,frame_id,body_id,body_stat,body_track,face_id,face_track,face_pose,face_pose_stat_time,face_emotion,unix_timestamp,pose_stat_time)values
-        ''' 
+        '''
         camera_id="'0'"
         frame_id="'1'"
         body_id=str(0)
@@ -188,7 +191,7 @@ class MakeData(object):
         pose_stat_time="'1549605600'"
         val = '('+camera_id+','+frame_id+','+body_id+','+body_stat+','+body_track+','+face_id+','+face_track+','+face_pose+','+face_pose_stat_time+','+face_emotion+','+unix_timestamp+','+pose_stat_time+')'
         sql = sql+val
- 
+
         camera_id="'0'"
         frame_id="'1'"
         body_id=str(0)

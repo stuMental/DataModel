@@ -138,7 +138,7 @@ class CalcMetric(object):
             SELECT
                 CONCAT(college_name, grade_name, class_name) AS class_id, face_id, body_stat, COUNT(*) AS total
             FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND body_stat != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND body_stat != '-1' AND face_id != 'unknown'
             GROUP BY class_id, face_id, body_stat
         '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
@@ -207,7 +207,7 @@ class CalcMetric(object):
                 SELECT
                     CONCAT(college_name, grade_name, class_name) AS class_id, face_id, face_emotion, COUNT(*) AS total
                 FROM {2}
-                WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_emotion != '-1' AND face_id != 'unknown' AND course_name != 'rest'
+                WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_emotion != '-1' AND face_id != 'unknown'
                 GROUP BY class_id, face_id, face_emotion
             '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
 
