@@ -50,7 +50,7 @@ INPUT_DB_CHARSET = 'utf8'
 MAC_ADDRESS = '04ea5648c08c'
 
 # Raw input table
-RAW_INPUT_TABLE = 'person_body_status'
+RAW_INPUT_TABLE = 'person_body_status_test'
 # Raw data backup
 RAW_INPUT_TABLE_BAK = 'person_body_status_bak'
 
@@ -354,3 +354,8 @@ ACTION_TYPE = {
     'face_pose': 2,
     'face_emotion': 3
 }
+
+# 教学效果评估模块
+INTERMEDIATE_TEACHING_TABLE = 'person_body_status_teaching_info'
+INTERMEDIATE_TEACHING_AGG_TABLE = 'person_body_status_aggregation_teaching_info'
+TEACHING_INTERVAL = 300  # 300秒，5分钟

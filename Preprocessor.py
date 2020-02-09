@@ -13,15 +13,22 @@ class Preprocessor(object):
         super(Preprocessor, self).__init__()
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
-        self.__multi = configs['multi']
+        self.__teaching = True if configs['teaching'] == 1 else False
 
     def preprocessor(self, day):
         CommonUtil.verify()
-        self.truncate_data(day)
-        self.update_face_id()
-        self.update_course(day)
-        self.preprocess_aggregate(day)
-        self.update_student_info(day)
+        if self.__teaching:
+            self.__logger.info('教学效果评估--预处理数据')
+            self.truncate_teaching_data(day)
+            self.update_teaching_data(day)
+            self.preprocess_aggregate_teaching(day)
+        else:
+            self.__logger.info('基于学生评估教学状态--预处理数据')
+            self.truncate_data(day)
+            self.update_face_id()
+            self.update_course(day)
+            self.preprocess_aggregate(day)
+            self.update_student_info(day)
 
     def truncate_data(self, day):
         '''Truncate all data of intermediate tables'''
@@ -190,11 +197,90 @@ class Preprocessor(object):
         self.__db.insert(sql)
         self.__logger.info("Finish to update student info")
 
+    def truncate_teaching_data(self, day):
+        '''Truncate all data of intermediate teaching tables'''
+        # 对于Config.INTERMEDIATE_TEACHING_TABLE(半年) 便于计算人际关系和课堂兴趣
+        self.__logger.info("Try to delete teaching data in {0}".format(Config.INPUT_DB_DATABASE))
+        sql = '''
+            DROP TABLE {0}
+        '''.format(Config.INTERMEDIATE_TEACHING_TABLE)
+        self.__db.delete(sql)
+        sql = '''
+            DELETE a FROM {0} a WHERE dt = '{1}' OR dt < '{2}'
+        '''.format(Config.INTERMEDIATE_TEACHING_AGG_TABLE, day, CommonUtil.get_specific_date(day, Config.DATA_RESERVED_WINDOW))
+        self.__db.delete(sql)
+        self.__logger.info("End to delete teaching data in {0}.".format(Config.INPUT_DB_DATABASE))
+
+    def update_teaching_data(self, day):
+        """ 预处理教学效果需要的数据
+        """
+
+        self.__logger.info("Process teaching data, then output results to the table {0}".format(Config.INTERMEDIATE_TEACHING_TABLE))
+        sql = '''
+            CREATE TABLE {3}
+            SELECT
+                t2.college_name, t2.grade_name, t2.class_name, t1.body_stat, t1.face_pose, t1.face_emotion, t2.course_id, t2.course_name, from_unixtime(t1.pose_stat_time - t1.pose_stat_time % {5}, '%Y-%m-%d %H:%i') AS pose_stat_time
+            FROM
+            (
+                SELECT
+                    t4.room_addr, t3.pose_stat_time, t3.body_stat, t3.face_pose, t3.face_emotion
+                FROM {0} t3 JOIN {1} t4
+                ON t3.camera_id = t4.camera_id
+            ) t1 JOIN
+            (
+                SELECT
+                    room_addr, college_name, grade_name, class_name, course_id, course_name, start_time, end_time
+                FROM {2}
+                WHERE weekday = dayofweek('{4}')
+                GROUP BY room_addr, college_name, grade_name, class_name, course_id, course_name, start_time, end_time
+            ) t2 ON t1.room_addr = t2.room_addr AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) >= t2.start_time AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) <= t2.end_time
+        '''.format(Config.RAW_INPUT_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.INTERMEDIATE_TEACHING_TABLE, day, Config.TEACHING_INTERVAL)
+
+        self.__db.insert(sql)
+        self.__logger.info("Finish to update student info")
+
+        self.__logger.info("[Update teaching] add index")
+        self.__db.execute("CREATE INDEX college_name_index ON {0} (college_name);".format(Config.INTERMEDIATE_TEACHING_TABLE))
+        self.__db.execute("CREATE INDEX grade_name_index ON {0} (grade_name);".format(Config.INTERMEDIATE_TEACHING_TABLE))
+        self.__db.execute("CREATE INDEX class_name_index ON {0} (class_name);".format(Config.INTERMEDIATE_TEACHING_TABLE))
+
+    def preprocess_aggregate_teaching(self, day):
+        """ 每隔固定周期聚合数据
+        """
+
+        self.__logger.info("Try to pre-aggrate the data, then output results to the table {0}".format(Config.INTERMEDIATE_TEACHING_AGG_TABLE))
+        sql = '''
+            INSERT INTO {1}
+            SELECT
+                college_name, grade_name, class_name, course_id, course_name, pose_stat_time, action, total, action_type, dt
+            FROM (
+                SELECT
+                    college_name, grade_name, class_name, course_id, course_name, pose_stat_time, body_stat AS action, COUNT(*) AS total, {3} AS action_type, '{2}' AS dt
+                FROM {0}
+                WHERE body_stat != '-1'
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, pose_stat_time, body_stat
+                UNION
+                SELECT
+                    college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_pose AS action, COUNT(*) AS total, {4} AS action_type, '{2}' AS dt
+                FROM {0}
+                WHERE face_pose != '-1'
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_pose
+                UNION
+                SELECT
+                    college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_emotion AS action, COUNT(*) AS total, {5} AS action_type, '{2}' AS dt
+                FROM {0}
+                WHERE face_emotion != '-1'
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_emotion
+            ) t
+        '''.format(Config.INTERMEDIATE_TEACHING_TABLE, Config.INTERMEDIATE_TEACHING_AGG_TABLE, day, Config.ACTION_TYPE['body_stat'], Config.ACTION_TYPE['face_pose'], Config.ACTION_TYPE['face_emotion'])
+        self.__db.insert(sql)
+        self.__logger.info("Finish to preprocess aggregate teaching data")
+
 
 if __name__ == "__main__":
     configs = {
         'dbhost': '172.16.14.190',
-        'multi': 0
+        'teaching': 1
     }
 
     processor = Preprocessor(configs)

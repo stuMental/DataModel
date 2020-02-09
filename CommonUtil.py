@@ -99,12 +99,8 @@ class CommonUtil(object):
 
         parser = argparse.ArgumentParser()
         parser.add_argument('--dbhost', type=str, help='Database host ip')
-        parser.add_argument('--teacher', type=int, help='1: Estimate teacher status, 0: Don\'t estimate teacher status', default=0)
-        parser.add_argument('--classroom', type=int, help='1: Estimate classroom status, 0: Don\'t estimate classroom status. You need to enable teacher module', default=0)
+        parser.add_argument('--teaching', type=int, help='1: Estimate teaching status, 0: Don\'t estimate teaching status', default=0)
         parser.add_argument('--date', type=str, help='date yyyy-mm-dd', default='-1')
-        parser.add_argument('--multi', type=int, help='Whether each teaching room has one camera or not. 1: Yes, 0: No', default=0)
-        # parser.add_argument('--dbpassword', type=str, help='database user password')
-        # parser.add_argument('--dbname', type=str, help='database name')
 
         args = parser.parse_args()
         if not args.dbhost:
@@ -113,9 +109,7 @@ class CommonUtil(object):
 
         configs = {}
         configs['dbhost'] = args.dbhost
-        configs['teacher'] = args.teacher
-        configs['classroom'] = args.classroom
+        configs['teaching'] = args.teaching
         configs['date'] = args.date
-        configs['multi'] = args.multi
 
         return configs
