@@ -33,12 +33,23 @@ class DbUtil(object):
 
     def delete(self, query):
         self.execute(query)
-    
+
     def create(self, query):
         self.execute(query)
 
     def truncate(self, query):
         self.execute(query)
+
+    def create_index(self, query):
+        self.__logger.debug(query)
+        cursor = self.__db.cursor()
+        try:
+            cursor.execute(query)
+        except Exception as e:
+            self.__db.rollback()
+            self.__logger.warning('Fail to execute the query. Message: ['+str(e)+']' +' ['+ query +']')
+        finally:
+            cursor.close()
 
     def execute(self, query):
         self.__logger.debug(query)

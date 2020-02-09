@@ -14,16 +14,19 @@ class MetricUtil(object):
         self.__MAXVALUE = 2147483647 # The max value of INT
 
     def get_min_value(self):
+
         return self.__MINVALUE
 
     def get_max_value(self):
+
         return self.__MAXVALUE
 
     def threshold_index(self, index):
-        if index < 0:
+
+        if index <= 0:
             return 0
 
-        return index if index == 0 else index - 1
+        return index - 1
 
     def DynamicThreshold(self, data, percentage = 0.2, multi_fact = 5, is_upper = True):
         '''
@@ -36,10 +39,10 @@ class MetricUtil(object):
 
         deleteNumber = int(math.floor(len(data) * percentage))
         deleteNumber = 1 if deleteNumber == 0 else deleteNumber # 避免deleteNumber等于0
-        self.__logger.debug("DeleteNumber of face_pose_around: " + str(deleteNumber))
+        self.__logger.debug("DeleteNumber: " + str(deleteNumber))
         calc_data = data[deleteNumber:-deleteNumber]
         if len(calc_data) != 0:
-            result = math.floor(np.mean(calc_data) + multi_fact * np.std(calc_data, ddof=1))
+            result = math.floor(np.mean(calc_data) + multi_fact * np.std(calc_data, ddof=0))
             if np.isnan(result):
                 result = self.__MINVALUE if is_upper else self.__MAXVALUE
         else:
@@ -83,7 +86,7 @@ class MetricUtil(object):
         if lows_len != 0:
             lows.sort(reverse=True)
             self.__logger.debug(str(lows))
-            thresholds['study_bad_low'] = lows[self.threshold_index(int(math.floor(arounds_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW'])))]
+            thresholds['study_bad_low'] = lows[self.threshold_index(int(math.floor(lows_len * Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW'])))]
             thresholds['study_bad_low_count'] = self.DynamicThreshold(lows, Config.DYNAMIC_DELETE_PERCENTAGE, 5, is_upper=True)
 
         self.__logger.debug("Study Thresholds: " + str(thresholds))
@@ -227,7 +230,7 @@ class MetricUtil(object):
         ''''''
         self.__logger.debug("Emotions: " + str(emotions))
         self.__logger.debug("Thresholds: " + str(thresholds))
-        
+
         total = 0.0
         if 'emotion_low' in emotions:
             total += emotions['emotion_low']

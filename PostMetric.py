@@ -44,7 +44,7 @@ class PostMetric(object):
 
                         valuesSql += '''
                             ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}')
-                        '''.format(face_id, students[face_id]['student_name'], students[face_id]['college_name'], students[face_id]['grade_name'], students[face_id]['class_name'], self.get_default_value(self.get_valid_value(value, 'student_relationship')), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt)
+                        '''.format(face_id, students[face_id]['student_name'], students[face_id]['college_name'], students[face_id]['grade_name'], students[face_id]['class_name'], self.get_valid_value(value, 'student_relationship'), self.get_valid_value(value, 'student_emotion'), self.get_valid_value(value, 'student_mental_stat'), self.get_valid_value(value, 'student_study_stat'), self.get_valid_value(value, 'student_interest'), dt)
                         first = False
                         count += 1
                         if count % Config.INSERT_BATCH_THRESHOLD == 0:
@@ -108,7 +108,7 @@ class PostMetric(object):
 
     def post_interest_metric(self, datas, dt, students):
         ''''''
-        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_INTEREST_TABLE))
+        self.__logger.info("Try to post metric for interest courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_INTEREST_TABLE))
         count = 0
         if isinstance(datas, dict) and len(datas) > 0:
             # 如果表中已经存在dt对应的数据，应先删除
@@ -149,15 +149,15 @@ class PostMetric(object):
 
             if valuesSql != '':
                 self.__db.insert(sql + valuesSql)
-        self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
+        self.__logger.info("Finished to post interest course metric data, total rows is {0}".format(count))
 
         return students
 
     def post_grade_study_metric(self, datas, students):
         ''''''
-        self.__logger.info("Try to post metric for courses to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
+        self.__logger.info("Try to post metric for grade and study to UI database [{0}], and the table [{1}]".format(Config.INPUT_DB_DATABASE, Config.OUTPUT_UI_GRADE_STUDY_TABLE))
         count = 0
-        if isinstance(datas, dict) and len(datas) > 0:
+        if isinstance(datas, dict) and len(datas) > 0 and students:
             for item in datas.items():
                 for dt in item[1].keys():
                     self.__logger.info("Begin to insert data on {0}".format(dt))
@@ -186,7 +186,7 @@ class PostMetric(object):
 
                                 valuesSql +='''
                                     ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')
-                                '''.format(stu_id, students[stu_id]['student_name'], students[stu_id]['college_name'], students[stu_id]['grade_name'], row[0], row[1], row[2], dt)
+                                '''.format(stu_id, students[stu_id]['college_name'], students[stu_id]['grade_name'], students[stu_id]['class_name'], row[0], row[1], row[2], dt)
                                 first = False
                                 count += 1
 
@@ -198,14 +198,14 @@ class PostMetric(object):
 
                     if valuesSql != '':
                         self.__db.insert(sql + valuesSql)
-        self.__logger.info("Finished to post course metric data, total rows is {0}".format(count))
+        self.__logger.info("Finished to post grade and study metric data, total rows is {0}".format(count))
 
     def get_valid_value(self, data, key):
         ''''''
         if isinstance(data, dict) and data.has_key(key):
             return data[key]
         else:
-            return ''
+            return Config.STUDENT_STATUS_DEFAULT[key]  # 默认值
 
     def get_default_value(self, data):
         '''对于人际关系 无数据时设置正常（2）为默认值'''

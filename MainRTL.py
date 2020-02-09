@@ -1,17 +1,18 @@
 # !/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from EstimateMental import EstimateMental
+from RTCount import RTCount
 from CommonUtil import CommonUtil
 
+
 class Main(object):
-    """Main class"""
+    """Main class for real time to count people"""
     def __init__(self):
         super(Main, self).__init__()
-        self.doer = EstimateMental(CommonUtil.parse_arguments())
+        self.doer = RTCount(CommonUtil.parse_arguments())
 
     def executor(self):
-        self.doer.estimate()
+        self.doer.process()
 
 if __name__ == '__main__':
     obj = Main()

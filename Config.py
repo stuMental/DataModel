@@ -43,8 +43,16 @@ INPUT_DB_CHARSET = 'utf8'
 # Database charset
 # OUTPUT_DB_CHARSET = 'utf8'
 
+# MAC Address
+# MAC_ADDRESS = '6c0b846511a1'
+
+# [Test] MAC Address
+MAC_ADDRESS = '04ea5648c08c'
+
 # Raw input table
 RAW_INPUT_TABLE = 'person_body_status'
+# Raw data backup
+RAW_INPUT_TABLE_BAK = 'person_body_status_bak'
 
 # UI daily status table
 OUTPUT_UI_TABLE = 'student_mental_status_ld'
@@ -70,8 +78,11 @@ INTERMEDIATE_RES_TABLE = 'person_body_status_face_pose_stat'
 # 插入课程信息
 INTERMEDIATE_COURSE_TABLE = 'person_body_status_course_info'
 
+# 插入学生信息表
+INTERMEDIATE_AGG_TABLE = 'person_body_status_aggregation_info'
+
 # 预处理完成后的数据表
-INTERMEDIATE_TABLE_TRAIN = 'person_body_status_student_course_info'
+INTERMEDIATE_TABLE_TRAIN = 'person_body_status_aggregation_student_info'
 
 # 班级学生对照表
 SCHOOL_STUDENT_CLASS_TABLE = 'school_student_class_info'
@@ -101,7 +112,7 @@ STUDENT_ATTENDANCE_EXIST='school_student_attendance_exist_info'
 # The config for Metrics
 # The threshold for Emotion
 EMOTION_THRESHOLD_HAPPY = {
-    'SMILE_FREQUENCY' : 0.25,
+    'SMILE_FREQUENCY' : 0.2,
     'SMILE_RATIO' : 0.3 # >=
 }
 
@@ -131,13 +142,13 @@ RELATIONSHIP_THRESHOLD_SOLITARY = {
 
 # The threshold for Mental
 MENTAL_THRESHOLD_TIRED = {
-    'BODY_STAT' : 0.05,
+    'BODY_STAT' : 0.1,
     'EMOTION_STATUS' : 2 # 低落
 }
 
 MENTAL_THRESHOLD_POSITIVE = {
     'BODY_STAT' : 0.05,
-    'EMOTION_STATUS' : 0 # 开心
+    'EMOTION_STATUS' : 0 # 积极
 }
 
 # The threshold for Study Status
@@ -145,7 +156,7 @@ STUDY_THREHOLD_BAD = {
     'MENTAL' : 2, # 疲惫
     'FACE_POSE_NORMAL' : 0.9, # <=
     'FACE_POSE_AROUND' : 0.9, # <=
-    'FACE_POSE_AROUND_FEQ': 0.1, # >=
+    'FACE_POSE_AROUND_FEQ': 0.2, # >=
     'FACE_POSE_LOW' : 0.9, # <=
     'FACE_POSE_LOW_FEQ': 0.6 # >=
 }
@@ -153,19 +164,19 @@ STUDY_THREHOLD_BAD = {
 STUDY_THREHOLD_GREAT= {
     'MENTAL' : 0, # 积极
     'FACE_POSE_NORMAL' : 0.1, # >=
-    'FACE_POSE_NORMAL_FEQ': 0.6 # >=
+    'FACE_POSE_NORMAL_FEQ': 0.8 # >=
 }
 
 STUDY_THREHOLD_GOOD = {
     'MENTAL' : [0, 1], # 积极 正常
     'FACE_POSE_NORMAL' : 0.3, # >=
-    'FACE_POSE_NORMAL_FEQ': 0.4 # >=
+    'FACE_POSE_NORMAL_FEQ': 0.5 # >=
 }
 
 # The degree threshold for course interest
 INTEREST_THRESHOLD = {
-    # 'STUDY_STATUS_DAYS': 18, # 30 * 0.6 = 18
     'STUDY_STATUS_DAYS_RATIO': 0.6, # For demo, 考虑有即感兴趣
+    'STUDY_STATUS_DAYS_LOWER': 3, # 感兴趣的天数最小值  一周一次课，45天应该有6次课程。50%的比例作为最低阈值
     'GTRADE' : 80
 }
 
@@ -183,7 +194,7 @@ LOOKBACKWINDOW = -45 # Days
 ANALYSIS_LOOKBACKWINDOW = -60 # Days
 
 # 过滤科目
-FILTER_COURSES = ['体育']
+FILTER_COURSES = ['体育', '班会']
 
 # 学习与成绩四维评估中 study_stat的阈值
 ANALYSIS_STUDY_STAT_THRESHOLD = 0.6  # 职教不同于K12，可以降低阈值。
@@ -199,7 +210,13 @@ INSERT_BATCH_THRESHOLD = 10000
 DATETIME_THRESHOLD = -1
 
 # 保留INTERMEDIATE_TABLE_TRAIN表中历史数据的天数
-DATA_RESERVED_WINDOW = -180 # 180 天
+DATA_RESERVED_WINDOW = -360 # 180 天
+
+# 考勤表的数据保留历史天数。
+DATA_RESERVED_ATTENDANCE_WINDOW = -360 # 默认保留最近180天
+
+# raw 数据的保留天数
+DATA_RESERVED_RAW_WINDOW = -360  # 90 默认保留90天数据
 
 # Dynamic threshold
 DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的数据
@@ -208,7 +225,7 @@ DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的�
 FACETRACK_MININUM_LIMITATION = 200 # 以face_track作为face_id的数据，要求face_track的数据量需要满足这个条件，才是有效的face_track.
 
 # 嘉宾Id
-PREFIX_GUEST = '嘉宾_' # 所有嘉宾的name都是以这个Prefix为前缀
+PREFIX_GUEST = '嘉宾_'  # 所有嘉宾的name都是以这个Prefix为前缀
 
 # 教师模块的参数配置
 INTERMEDIATE_TEACHER_TABLE_TRAIN = ''
@@ -218,9 +235,9 @@ OUTPUT_UI_TEA_DAILY_TABLE = ''
 OUTPUT_UI_TEA_COURSE_TABLE = ''
 
 TEACHER_EMOTION_THRESHOLD = {
-    'EMOTION_ANGRY': 0.3, # >=
-    'EMOTION_BAD': 0.3, # >=
-    'EMOTION_HAPPY': 0.6 # >=
+    'EMOTION_ANGRY': 0.3,  # >=
+    'EMOTION_BAD': 0.3,  # >=
+    'EMOTION_HAPPY': 0.6  # >=
 }
 
 TEACHER_ETHICS_BAD_THRESHOLD = {
@@ -309,4 +326,31 @@ CLASS_INTERACTIVITY_GREAT_THRESHOLD = {
     'FACING_STUDENT_TIME': 0.6, # > 面向学生超过60%
     'STUDENT_HAND_STAND': 0.2, # > 学生举手或站立总次数占比超过20%
     'HEAD_POSE_AROUND': 0.3 # > 同时左顾右盼的学生人数超过30%
+}
+
+STUDENT_STATUS_DEFAULT = {
+    'student_emotion': '1',
+    'student_mental_stat': '1',
+    'student_study_stat': '2',
+    'student_relationship': '2',
+    'student_interest': ''
+}
+
+# Socket通讯需要的配置信息
+SOCKET_SIZE = 1024  # 每次通讯的信息大小
+SOCKET_PORT = 8888  # 监听端口号
+SOCKET_COUNT = 5  # 链接最大等待数目
+SOCKET_TABLE = ''  # 实时统计人数的数据表
+SOCKET_WAIT = 2  # 300秒 衡量两次请求之间的间隔
+
+# 实时统计人数的信息表 该表每5分钟统计一次信息
+REAL_TIME_PEOPLE_TABLE = 'school_student_count_people'
+REAL_TIME_PEOPLE_TABLE_RTL = 'school_student_count_people_rtl'
+REAL_TIME_INTERVAL = 300  # 5 mins, 300 seconds
+
+# action type的取值
+ACTION_TYPE = {
+    'body_stat': 1,
+    'face_pose': 2,
+    'face_emotion': 3
 }

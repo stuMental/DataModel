@@ -30,19 +30,21 @@ class EstimateMental(object):
         self.__analyzer = AnalyzeGrade.AnalyzeGrade(configs)
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__interests = {}
+        self.__date = configs['date']
         self.__is_teacher = configs['teacher']
         if self.__is_teacher:
             self.__teacher_course = CalcTeaCourseMetric.CalcTeaCourseMetric(configs)
             self.__teacher = CalcTeacherMetric.CalcTeacherMetric(configs)
+
         self.__is_classroom = configs['classroom']
         if self.__is_classroom:
             if not self.__is_teacher:
                 raise ValueError("启动班级评估功能，需要同时开启教师评估功能")
             self.__classroom = CalcClassMetric.CalcClassMetric(configs)
 
-        self.__date = configs['date']
-
     def estimate(self):
+
+        CommonUtil.verify()
         # 获取最新数据对应的日期
         times = CommonUtil.get_range_times()
         self.__logger.info("Current hour: {}".format(datetime.datetime.now().hour))
@@ -62,26 +64,26 @@ class EstimateMental(object):
 
         self.__logger.info("Begin to analyze the student data of {0}".format(estimate_date))
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
-        # self.__preprocessor.preprocessor(times['start_unixtime'], times['end_unixtime'], estimate_date)
+        self.__preprocessor.preprocessor(estimate_date)
 
-        # # 评估学生
+        # 评估学生
         # 获得学生基本信息
-        students = self.get_students(estimate_date)
+        students = self.get_students()
 
-        # # 先计算分科目的指标，因为兴趣需要基于这个数据计算
-        # self.__logger.info("Begin to compute and post daily course metrics")
-        # course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'])
-        # students = self.__poster.post_course_metric(course_metrics, estimate_date, students)
-        # self.__logger.info("Finished to compute and post daily course metrics")
-        # self.__logger.info("Begin to compute and post daily metrics")
-        # metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'])
-        # metrics = self.estimate_interest(times['end_datetime'], metrics)
-        # students = self.__poster.post(metrics, estimate_date, students)
-        # self.__logger.info("Finished to compute and post daily metrics")
+        # 先计算分科目的指标，因为兴趣需要基于这个数据计算
+        self.__logger.info("Begin to compute and post daily course metrics")
+        course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
+        students = self.__poster.post_course_metric(course_metrics, estimate_date, students)
+        self.__logger.info("Finished to compute and post daily course metrics")
+        self.__logger.info("Begin to compute and post daily metrics")
+        metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
+        metrics = self.estimate_interest(times['end_datetime'], metrics)
+        students = self.__poster.post(metrics, estimate_date, students)
+        self.__logger.info("Finished to compute and post daily metrics")
 
-        # self.__logger.info("Begin to post Interest")
-        # students = self.__poster.post_interest_metric(self.__interests, estimate_date, students)
-        # self.__logger.info("Finished to post Interest")
+        self.__logger.info("Begin to post Interest")
+        students = self.__poster.post_interest_metric(self.__interests, estimate_date, students)
+        self.__logger.info("Finished to post Interest")
 
         # 计算成绩与学习状态之间的四象限分析指标
         self.__logger.info("Begin to analyze and post Grade and Study_Status")
@@ -154,7 +156,7 @@ class EstimateMental(object):
                 res[key] = {}
 
             course = row[1].encode('utf-8')
-            res[key][course] = math.ceil(int(row[2]) * Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_RATIO'])
+            res[key][course] = max(Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_LOWER'], math.ceil(int(row[2]) * Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_RATIO']))
 
         self.__logger.debug(str(res))
         return res
@@ -186,15 +188,15 @@ class EstimateMental(object):
         self.__logger.info("Finished to compute student_interest")
         return metrics
 
-    def get_students(self, day):
+    def get_students(self):
         ''''''
         self.__logger.info("Get all students")
         sql = '''
             SELECT
-                DISTINCT student_number, student_name, college_name, grade_name, class_name
+                student_number, student_name, college_name, grade_name, class_name
             FROM {0}
-            WHERE weekday = dayofweek('{1}');
-        '''.format(Config.SCHOOL_STUDENT_COURSE_TABLE, day)
+            GROUP BY student_number, student_name, college_name, grade_name, class_name;
+        '''.format(Config.SCHOOL_STUDENT_COURSE_TABLE)
 
         res = {}
         for row in self.__db.select(sql):
@@ -209,8 +211,3 @@ class EstimateMental(object):
         self.__logger.debug(str(res))
         self.__logger.info("Done")
         return res
-
-
-# if __name__ == '__main__':
-#     doer = EstimateMental()
-#     doer.estimate()

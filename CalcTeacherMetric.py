@@ -4,6 +4,7 @@ import Config
 import DbUtil
 import Logger
 import MetricUtil
+from CommonUtil import CommonUtil
 
 class CalcTeacherMetric(object):
     """计算教师报表相关的指标，比如教师情绪、师德修养和教学态度等。"""
@@ -22,13 +23,14 @@ class CalcTeacherMetric(object):
             }
         '''
 
+        CommonUtil.verify()
         self.__logger.info("==== Try to compute teacher metrics ====")
         emotion_count = self.count_emotin(start_time, end_time)
         body_stat_count = self.count_body_stat(start_time, end_time)
         activity_count = self.count_activity(start_time, end_time)
         clothes_count = self.count_clothes(start_time, end_time)
         ontime_count = self.count_ontime(start_time, end_time)
-        
+
         self.__logger.info("Begin to compute teacher high-level metrics")
         metrics = {}
 
@@ -163,7 +165,7 @@ class CalcTeacherMetric(object):
 
         self.__logger.info("Finished to count teacher activity_stat, and get total {0} records.".format(count))
         return res
-        
+
     def count_clothes(self, start_time, end_time):
         '''统计教师衣着的情况'''
         sql = '''

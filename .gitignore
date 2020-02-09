@@ -1,2 +1,5 @@
+logs
 *.pyc
 Log_*.txt
+TODOs
+.vscode

@@ -4,6 +4,7 @@ import Config
 import DbUtil
 import Logger
 import MetricUtil
+from CommonUtil import CommonUtil
 
 class CalcClassMetric(object):
     """计算教师报表相关的指标，比如教师情绪、师德修养和教学态度等。"""
@@ -16,7 +17,7 @@ class CalcClassMetric(object):
     def calculate_class_metrics(self, start_time, end_time, estimate_day):
         '''
             以天为单位，评估课堂的教学情况。
-            
+
             课堂：评估课堂的积极性、专注度和互动性
             return {
                 'class_id1' => {
@@ -29,7 +30,7 @@ class CalcClassMetric(object):
                     }
             }
         '''
-
+        CommonUtil.verify()
         self.__logger.info("==== Try to compute class metrics ====")
         student_emotions = self.get_student_emotion(estimate_day)
         student_mentals = self.get_student_mental_stat(estimate_day)
@@ -40,7 +41,7 @@ class CalcClassMetric(object):
         teacher_body_stat_count = self.count_teacher_body_stat(start_time, end_time)
         student_body_stat_count = self.count_student_body_stat()(start_time, end_time)
         student_face_pose_count = self.count_sutdent_face_pose(start_time, end_time)
-       
+
         self.__logger.info("Begin to compute class high-level metrics")
         metrics = {}
 
@@ -52,7 +53,7 @@ class CalcClassMetric(object):
                     and teacher_body_stat_count.has_key(class_id) and teacher_body_stat_count[class_id].has_key(course):
                     if not metrics.has_key(class_id):
                         metrics[class_id] = {}
-                    
+
                     if not metrics[class_id].has_key(course):
                         metrics[class_id][course] = {}
 
@@ -66,7 +67,7 @@ class CalcClassMetric(object):
                     and student_face_pose_count.has_key(class_id) and student_face_pose_count[class_id].has_key(course) \
                     and student_body_stat_count.has_key(class_id) and student_body_stat_count[class_id].has_key(course) \
                     and teacher_attitudes.has_key(class_id) and teacher_attitudes[class_id].has_key(course):
-                    
+
                     metrics[class_id][course]['class_concentration'] = self.estimate_class_concentration(student_mentals[class_id][course], student_studies[class_id][course], student_face_pose_count[class_id][course], student_body_stat_count[class_id][course], teacher_attitudes[class_id][course])
 
         self.__logger.info("Begin to compute class_interactivity metric")
@@ -96,7 +97,7 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             if not res.has_key(row[0]):
                 res[row[0]] ={}
-            
+
             course_name = row[1].encode('utf-8')
             if not res[row[0]].has_key(course_name):
                 res[row[0]][course_name] = None
@@ -120,7 +121,7 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             if not res.has_key(row[0]):
                 res[row[0]] ={}
-            
+
             course_name = row[1].encode('utf-8')
             if not res[row[0]].has_key(course_name):
                 res[row[0]][course_name] = None
@@ -144,7 +145,7 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             if not res.has_key(row[0]):
                 res[row[0]] ={}
-            
+
             course_name = row[1].encode('utf-8')
             if not res[row[0]].has_key(course_name):
                 res[row[0]][course_name] = []
@@ -168,11 +169,11 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             if not res.has_key(row[0]):
                 res[row[0]] ={}
-            
+
             course_name = row[1].encode('utf-8')
             if not res[row[0]].has_key(course_name):
                 res[row[0]][course_name] = []
-        
+
             res[row[0]][course_name].append(row[2])
 
         self.__logger.debug('Student mental: ' + str(res))
@@ -192,7 +193,7 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             if not res.has_key(row[0]):
                 res[row[0]] ={}
-            
+
             course_name = row[1].encode('utf-8')
             if not res[row[0]].has_key(course_name):
                 res[row[0]][course_name] = []
