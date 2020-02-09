@@ -102,18 +102,20 @@ class CommonUtil(object):
         parser.add_argument('--teacher', type=int, help='1: Estimate teacher status, 0: Don\'t estimate teacher status', default=0)
         parser.add_argument('--classroom', type=int, help='1: Estimate classroom status, 0: Don\'t estimate classroom status. You need to enable teacher module', default=0)
         parser.add_argument('--date', type=str, help='date yyyy-mm-dd', default='-1')
+        parser.add_argument('--multi', type=int, help='Whether each teaching room has one camera or not. 1: Yes, 0: No', default=0)
         # parser.add_argument('--dbpassword', type=str, help='database user password')
         # parser.add_argument('--dbname', type=str, help='database name')
 
         args = parser.parse_args()
         if not args.dbhost:
-            print "请在执行命令的时候传递正确格式的参数，比如: sudo python Main.py --dbhost xx"
-            raise Exception("Please add necessary parameters (such as sudo python Main.py --dbhost xx) in the command line.")
+            print "Please add necessary parameters, eg. --dbhost ip_address"
+            raise Exception("Please add necessary parameters (eg. --dbhost ip_address) in the command line.")
 
         configs = {}
         configs['dbhost'] = args.dbhost
         configs['teacher'] = args.teacher
         configs['classroom'] = args.classroom
         configs['date'] = args.date
+        configs['multi'] = args.multi
 
         return configs

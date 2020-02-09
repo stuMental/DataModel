@@ -15,8 +15,8 @@ class MakeData(object):
 
 
     def make_data(self):
-
-        end_time = 1577980800
+        start_time = 1563235200
+        end_time = 1563267600
         frame = 0
         sql = '''
         insert into person_body_status_test(camera_id,frame_id,body_id,body_stat,body_track,face_id,face_track,face_pose,face_pose_stat_time,face_emotion,unix_timestamp,pose_stat_time)values
@@ -24,32 +24,33 @@ class MakeData(object):
         face_pose_gap = 300000
         pose_stat_gap = 3000
         insert_sql = sql
-        count = 170
+        count = 6000000
+        i = 0
         while count:
+            i += 1
+            frame = str(random.randint(0, 200000))
+            body_stat = str(random.randint(-1,5))
+            face_pose = str(random.randint(-1,2))
+            face_id = 'unknown'
+            if count > 5000000:
+                face_id = str(random.randint(1,200))
+            face_track = face_id if face_id != 'unknown' else str(random.randint(201,1200))
+            body_track = face_track
+            body_id = face_track
+            pose_stat_time = random.randint(start_time, end_time)
+            face_pose_stat_time = pose_stat_time
+            unix_timestamp = pose_stat_time * 1000
+            face_emotion = str(random.randint(-1,2))
+            values = "('0','"+str(frame)+"',"+str(body_id)+",'"+body_stat+"','"+body_track+"','"+face_id+"','"+face_track+"','"+face_pose+"','"+str(face_pose_stat_time)+"','"+face_emotion+"','"+str(unix_timestamp)+"','"+str(pose_stat_time)+"')"
+            if insert_sql == sql:
+                insert_sql = insert_sql + values
+            else:
+                insert_sql = insert_sql + ',' + values
+            if i % 10000 == 0:
+                self.__db.insert(insert_sql)
+                insert_sql = sql
+                print i
             count -= 1
-            start_time = 1577894400
-            while (start_time <= end_time):
-                frame = frame + 1
-                body_id = 0
-                body_stat = str(random.randint(0,5))
-                face_pose = str(random.randint(0,2))
-                face_id = '2018' + str(random.randint(1,24))
-                body_track = str(random.randint(1, 50))
-                face_track = body_track
-                pose_stat_time = random.randint(start_time, end_time)
-                face_pose_stat_time = pose_stat_time
-                unix_timestamp = pose_stat_time * 1000
-                face_emotion = str(random.randint(0,2))
-                values = "('2','"+str(frame)+"',"+str(body_id)+",'"+body_stat+"','"+body_track+"','"+face_id+"','"+face_track+"','"+face_pose+"','"+str(face_pose_stat_time)+"','"+face_emotion+"','"+str(unix_timestamp)+"','"+str(pose_stat_time)+"')"
-                if insert_sql == sql:
-                    insert_sql = insert_sql + values
-                else:
-                    insert_sql = insert_sql + ',' + values
-                start_time = start_time + 1
-                if frame % 10000 == 0:
-                    self.__db.insert(insert_sql)
-                    insert_sql = sql
-                    print frame
 
     def make_course(self):
         sql='''

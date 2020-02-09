@@ -2,6 +2,7 @@
 Build a system to train data model
 
 # 安装步骤 (已验证)
+1. 安装时切换到root用户，以此保证python的包被安装到系统目录。
 1. Update package source: `sudo apt-get update`
 1. Install mysql server: `sudo apt-get install mysql-server`. // 如果安装的是5.7的版本就不会再安装过程中提醒设置root密码 此时需要利用/etc/mysql/debian.cnf文件中的用户和密码登录 然后执行 `update mysql.user set authentication_string=password('your password') where user='root'and Host = 'localhost';`命令reset root的密码
 1. Install python: `sudo apt-get install python2.7`

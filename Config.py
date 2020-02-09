@@ -51,6 +51,8 @@ MAC_ADDRESS = '04ea5648c08c'
 
 # Raw input table
 RAW_INPUT_TABLE = 'person_body_status'
+# Raw data backup
+RAW_INPUT_TABLE_BAK = 'person_body_status_bak'
 
 # UI daily status table
 OUTPUT_UI_TABLE = 'student_mental_status_ld'
@@ -76,8 +78,11 @@ INTERMEDIATE_RES_TABLE = 'person_body_status_face_pose_stat'
 # 插入课程信息
 INTERMEDIATE_COURSE_TABLE = 'person_body_status_course_info'
 
+# 插入学生信息表
+INTERMEDIATE_AGG_TABLE = 'person_body_status_aggregation_info'
+
 # 预处理完成后的数据表
-INTERMEDIATE_TABLE_TRAIN = 'person_body_status_student_course_info'
+INTERMEDIATE_TABLE_TRAIN = 'person_body_status_aggregation_student_info'
 
 # 班级学生对照表
 SCHOOL_STUDENT_CLASS_TABLE = 'school_student_class_info'
@@ -220,7 +225,7 @@ DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的�
 FACETRACK_MININUM_LIMITATION = 200 # 以face_track作为face_id的数据，要求face_track的数据量需要满足这个条件，才是有效的face_track.
 
 # 嘉宾Id
-PREFIX_GUEST = '嘉宾_' # 所有嘉宾的name都是以这个Prefix为前缀
+PREFIX_GUEST = '嘉宾_'  # 所有嘉宾的name都是以这个Prefix为前缀
 
 # 教师模块的参数配置
 INTERMEDIATE_TEACHER_TABLE_TRAIN = ''
@@ -230,9 +235,9 @@ OUTPUT_UI_TEA_DAILY_TABLE = ''
 OUTPUT_UI_TEA_COURSE_TABLE = ''
 
 TEACHER_EMOTION_THRESHOLD = {
-    'EMOTION_ANGRY': 0.3, # >=
-    'EMOTION_BAD': 0.3, # >=
-    'EMOTION_HAPPY': 0.6 # >=
+    'EMOTION_ANGRY': 0.3,  # >=
+    'EMOTION_BAD': 0.3,  # >=
+    'EMOTION_HAPPY': 0.6  # >=
 }
 
 TEACHER_ETHICS_BAD_THRESHOLD = {
@@ -329,4 +334,23 @@ STUDENT_STATUS_DEFAULT = {
     'student_study_stat': '2',
     'student_relationship': '2',
     'student_interest': ''
+}
+
+# Socket通讯需要的配置信息
+SOCKET_SIZE = 1024  # 每次通讯的信息大小
+SOCKET_PORT = 8888  # 监听端口号
+SOCKET_COUNT = 5  # 链接最大等待数目
+SOCKET_TABLE = ''  # 实时统计人数的数据表
+SOCKET_WAIT = 2  # 300秒 衡量两次请求之间的间隔
+
+# 实时统计人数的信息表 该表每5分钟统计一次信息
+REAL_TIME_PEOPLE_TABLE = 'school_student_count_people'
+REAL_TIME_PEOPLE_TABLE_RTL = 'school_student_count_people_rtl'
+REAL_TIME_INTERVAL = 300  # 5 mins, 300 seconds
+
+# action type的取值
+ACTION_TYPE = {
+    'body_stat': 1,
+    'face_pose': 2,
+    'face_emotion': 3
 }

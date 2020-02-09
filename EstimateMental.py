@@ -64,7 +64,7 @@ class EstimateMental(object):
 
         self.__logger.info("Begin to analyze the student data of {0}".format(estimate_date))
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
-        self.__preprocessor.preprocessor(times['start_unixtime'], times['end_unixtime'], estimate_date)
+        self.__preprocessor.preprocessor(estimate_date)
 
         # 评估学生
         # 获得学生基本信息
@@ -72,11 +72,11 @@ class EstimateMental(object):
 
         # 先计算分科目的指标，因为兴趣需要基于这个数据计算
         self.__logger.info("Begin to compute and post daily course metrics")
-        course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'])
+        course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
         students = self.__poster.post_course_metric(course_metrics, estimate_date, students)
         self.__logger.info("Finished to compute and post daily course metrics")
         self.__logger.info("Begin to compute and post daily metrics")
-        metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'])
+        metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
         metrics = self.estimate_interest(times['end_datetime'], metrics)
         students = self.__poster.post(metrics, estimate_date, students)
         self.__logger.info("Finished to compute and post daily metrics")

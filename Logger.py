@@ -14,7 +14,7 @@ class Logger(object):
         super(Logger, self).__init__()
         self.__filename = ''.join([self.__dir(), '/Log_', datetime.date.today().strftime('%Y_%m_%d'), '.txt'])
         logging.basicConfig(level = Config.LOGGER_LEVEL, filename = self.__filename, filemode = 'a', format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        # logging.basicConfig(level = Config.LOGGER_LEVEL, format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # logging.basicConfig(level=Config.LOGGER_LEVEL, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.__logger = logging.getLogger(class_name)
 
     def __dir(self):

@@ -15,7 +15,7 @@ class CalcMetric(object):
         self.__util = MetricUtil.MetricUtil()
         self.__logger = Logger.Logger(__name__)
 
-    def calculate_daily_metrics(self, start_time, end_time):
+    def calculate_daily_metrics(self, start_time, end_time, day):
         """
             Calculate 4 metrics, including student_emotion, student_study_stat, student_relationship, and student_mental_stat.
             return {
@@ -34,9 +34,9 @@ class CalcMetric(object):
 
         # Compute the count of each basic metric
         self.__logger.info("Try to compute basic metrics")
-        body_stat_count = self.count_body_stat(start_time, end_time)
-        emotion_count = self.count_face_emotion(start_time, end_time)
-        face_pose_count = self.count_face_pose(start_time, end_time)
+        body_stat_count = self.count_body_stat(day)
+        emotion_count = self.count_face_emotion(day)
+        face_pose_count = self.count_face_pose(day)
         self.__logger.info("Finished to compte basic metrics")
 
         self.__logger.info("Try to comput the high-level metrics")
@@ -76,8 +76,8 @@ class CalcMetric(object):
         # Calculate student relationship based on emotions, facePoses
         # Calculate threshold
         self.__logger.info("Begin to compute student_relationship")
-        emotion_count = self.count_face_emotion(CommonUtil.get_specific_unixtime(end_time, Config.LOOKBACKWINDOW), end_time, True)
-        face_pose_count = self.count_face_pose(CommonUtil.get_specific_unixtime(end_time, Config.LOOKBACKWINDOW), end_time, True)
+        emotion_count = self.count_face_emotion(day, True)
+        face_pose_count = self.count_face_pose(day, True)
         for class_id, values in metrics.items():
             if emotion_count.has_key(class_id) and face_pose_count.has_key(class_id):
                 relationship_thresholds = self.calculate_relationship_threshold(emotion_count[class_id], face_pose_count[class_id])
@@ -131,16 +131,16 @@ class CalcMetric(object):
         self.__logger.debug("Relation Thresholds: " + str(thresholds))
         return thresholds
 
-    def count_body_stat(self, start_time, end_time):
+    def count_body_stat(self, day):
         ''''''
         self.__logger.info("Begin to count by body_stat")
         sql = '''
             SELECT
-                CONCAT(college_name, grade_name, class_name) AS class_id, face_id, body_stat, COUNT(*) AS total
-            FROM {2}
-            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND body_stat != '-1' AND face_id != 'unknown'
-            GROUP BY class_id, face_id, body_stat
-        '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
+                CONCAT(college_name, grade_name, class_name) AS class_id, face_id, action, SUM(total) AS total
+            FROM {1}
+            WHERE dt = '{0}' AND action_type = {2}
+            GROUP BY class_id, face_id, action
+        '''.format(day, Config.INTERMEDIATE_TABLE_TRAIN, Config.ACTION_TYPE['body_stat'])
 
         res = {}
         count = 0
@@ -154,18 +154,19 @@ class CalcMetric(object):
             if not res[key].has_key(subKey):
                 res[key][subKey] = {}
 
+            cnt = float(row[3])
             if row[2] == '0': # 正常
-                res[key][subKey]['body_stat_normal'] = row[3]
+                res[key][subKey]['body_stat_normal'] = cnt
             elif row[2] == '1': # 站立
-                res[key][subKey]['body_stat_standup'] = row[3]
+                res[key][subKey]['body_stat_standup'] = cnt
             elif row[2] == '2': # 举手
-                res[key][subKey]['body_stat_handup'] = row[3]
+                res[key][subKey]['body_stat_handup'] = cnt
             elif row[2] == '3': # 睡觉
-                res[key][subKey]['body_stat_sleep'] = row[3]
+                res[key][subKey]['body_stat_sleep'] = cnt
             elif row[2] == '4': # 手托着听课
-                res[key][subKey]['body_stat_sttk'] = row[3]
+                res[key][subKey]['body_stat_sttk'] = cnt
             elif row[2] == '5': # 趴着听课
-                res[key][subKey]['body_stat_pztk'] = row[3]
+                res[key][subKey]['body_stat_pztk'] = cnt
             else:
                 continue
         self.__logger.debug("count_body_stat: " + str(res))
@@ -173,19 +174,19 @@ class CalcMetric(object):
         self.__logger.info("Finished to count body_stat, and get total {0} records.".format(count))
         return res
 
-    def count_face_emotion(self, start_time, end_time, is_lookback=False):
+    def count_face_emotion(self, day, is_lookback=False):
         ''''''
         self.__logger.info("Begin to count by face_emotion")
         sql = ''
         if is_lookback:
             sql = '''
                 SELECT
-                    class_id, face_id, face_emotion, COUNT(*) AS total
+                    class_id, face_id, action, COUNT(*) AS total
                 FROM (
                     SELECT
-                        CONCAT(t1.college_name, t1.grade_name, t1.class_name) AS class_id, t1.face_id, t1.face_emotion
+                        CONCAT(t1.college_name, t1.grade_name, t1.class_name) AS class_id, t1.face_id, t1.action
                     FROM {2} t1
-                    WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.face_emotion != '-1' AND t1.course_name = 'rest' AND t1.face_id in
+                    WHERE t1.dt >= '{0}' AND t1.dt <= '{1}' AND action_type = {4} AND t1.course_name = 'rest' AND t1.face_id in
                     (
                         SELECT
                             t2.face_id
@@ -194,22 +195,22 @@ class CalcMetric(object):
                             SELECT
                                 face_id, COUNT(*) AS num
                             FROM {2}
-                            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
+                            WHERE dt >= '{0}' AND dt <= '{1}' AND course_name = 'rest'
                             GROUP BY face_id
                             HAVING num >= {3}
                         ) t2
                     )
                 ) tt
-                GROUP BY class_id, face_id, face_emotion
-            '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN, Config.DETECTED_LOWEST_LIMIT)
+                GROUP BY class_id, face_id, action
+            '''.format(day, CommonUtil.get_date_day(Config.LOOKBACKWINDOW), Config.INTERMEDIATE_TABLE_TRAIN, Config.DETECTED_LOWEST_LIMIT, Config.ACTION_TYPE['face_emotion'])
         else:
             sql = '''
                 SELECT
-                    CONCAT(college_name, grade_name, class_name) AS class_id, face_id, face_emotion, COUNT(*) AS total
-                FROM {2}
-                WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_emotion != '-1' AND face_id != 'unknown'
-                GROUP BY class_id, face_id, face_emotion
-            '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
+                    CONCAT(college_name, grade_name, class_name) AS class_id, face_id, action, SUM(total) AS total
+                FROM {1}
+                WHERE dt = '{0}' AND action_type = {2}
+                GROUP BY class_id, face_id, action
+            '''.format(day, Config.INTERMEDIATE_TABLE_TRAIN, Config.ACTION_TYPE['face_emotion'])
 
         res = {}
         count = 0
@@ -223,12 +224,13 @@ class CalcMetric(object):
             if not res[key].has_key(subKey):
                 res[key][subKey] = {}
 
+            cnt = float(row[3])
             if row[2] == '0': # 正常
-                res[key][subKey]['emotion_normal'] = row[3]
+                res[key][subKey]['emotion_normal'] = cnt
             elif row[2] == '1': # 开心
-                res[key][subKey]['emotion_happy'] = row[3]
+                res[key][subKey]['emotion_happy'] = cnt
             elif row[2] == '2': # 低落
-                res[key][subKey]['emotion_low'] = row[3]
+                res[key][subKey]['emotion_low'] = cnt
             else:
                 continue
         self.__logger.debug("count_face_emotion: " + str(res))
@@ -236,7 +238,7 @@ class CalcMetric(object):
         self.__logger.info("Finished to count face_emotion, and get total {0} records.".format(count))
         return res
 
-    def count_face_pose(self, start_time, end_time, is_lookback = False):
+    def count_face_pose(self, day, is_lookback = False):
         ''' Compute the count of face pose based on face_id level '''
         # TODO 如何将face_pose_stat考虑到指标计算中
         self.__logger.info("Begin to count by face_pose")
@@ -244,12 +246,12 @@ class CalcMetric(object):
         if is_lookback:
             sql = '''
                 SELECT
-                    class_id, face_id, face_pose, COUNT(*) AS total
+                    class_id, face_id, action, COUNT(*) AS total
                 FROM (
                     SELECT
-                        CONCAT(t1.college_name, t1.grade_name, t1.class_name) AS class_id, t1.face_id, t1.face_pose
+                        CONCAT(t1.college_name, t1.grade_name, t1.class_name) AS class_id, t1.face_id, t1.action
                     FROM {2} t1
-                    WHERE t1.pose_stat_time >= {0} AND t1.pose_stat_time < {1} AND t1.course_name = 'rest' AND t1.face_pose != '-1' AND t1.face_id in
+                    WHERE t1.dt >= '{0}' AND t1.dt <= '{1}' AND t1.course_name = 'rest' AND t1.action_type = {4} AND t1.face_id in
                     (
                         SELECT
                             t2.face_id
@@ -258,22 +260,22 @@ class CalcMetric(object):
                             SELECT
                                 face_id, COUNT(*) AS num
                             FROM {2}
-                            WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_id != 'unknown' AND course_name = 'rest'
+                            WHERE dt >= '{0}' AND dt <= '{1}' AND course_name = 'rest'
                             GROUP BY face_id
                             HAVING num >= {3}
                         ) t2
                     )
                 ) tt
-                GROUP BY class_id, face_id, face_pose
-            '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN, Config.DETECTED_LOWEST_LIMIT)
+                GROUP BY class_id, face_id, action
+            '''.format(day, CommonUtil.get_date_day(Config.LOOKBACKWINDOW), Config.INTERMEDIATE_TABLE_TRAIN, Config.DETECTED_LOWEST_LIMIT, Config.ACTION_TYPE['face_pose'])
         else:
             sql = '''
                 SELECT
-                    CONCAT(college_name, grade_name, class_name) AS class_id, face_id, face_pose, COUNT(*) AS total
-                FROM {2}
-                WHERE pose_stat_time >= {0} AND pose_stat_time < {1} AND face_pose != '-1' AND face_id != 'unknown' AND course_name != 'rest'
-                GROUP BY class_id, face_id, face_pose
-            '''.format(start_time, end_time, Config.INTERMEDIATE_TABLE_TRAIN)
+                    CONCAT(college_name, grade_name, class_name) AS class_id, face_id, action, COUNT(*) AS total
+                FROM {1}
+                WHERE dt = '{0}' AND action_type = {2} AND course_name != 'rest'
+                GROUP BY class_id, face_id, action
+            '''.format(day, Config.INTERMEDIATE_TABLE_TRAIN, Config.ACTION_TYPE['face_pose'])
 
         res = {}
         count = 0
@@ -287,12 +289,13 @@ class CalcMetric(object):
             if not res[key].has_key(subKey):
                 res[key][subKey] = {}
 
+            cnt = float(row[3])
             if row[2] == '0': # 平视
-                res[key][subKey]['face_pose_normal'] = row[3]
+                res[key][subKey]['face_pose_normal'] = cnt
             elif row[2] == '1': # 左顾右盼
-                res[key][subKey]['face_pose_around'] = row[3]
+                res[key][subKey]['face_pose_around'] = cnt
             elif row[2] == '2': # 低头
-                res[key][subKey]['face_pose_low'] = row[3]
+                res[key][subKey]['face_pose_low'] = cnt
             else:
                 continue
         self.__logger.debug("count_face_pose: " + str(res))
