@@ -344,6 +344,7 @@ SOCKET_TABLE = ''  # 实时统计人数的数据表
 SOCKET_WAIT = 2  # 300秒 衡量两次请求之间的间隔
 
 # 实时统计人数的信息表 该表每5分钟统计一次信息
+RAW_INPUT_TABLE_COUNT = 'person_body_status_count'
 REAL_TIME_PEOPLE_TABLE = 'school_student_count_people'
 REAL_TIME_PEOPLE_TABLE_RTL = 'school_student_count_people_rtl'
 REAL_TIME_INTERVAL = 300  # 5 mins, 300 seconds

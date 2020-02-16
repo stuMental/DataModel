@@ -27,29 +27,20 @@ class RTCount(object):
         """ 每隔固定时间间隔处理数据
         """
 
-        # self.__logger.info('Delete all data in table {0} for the time {1}'.format(Config.REAL_TIME_PEOPLE_TABLE_RTL, timestamp))
-        # sql = '''
-        #     TRUNCATE TABLE {0}
-        # '''.format(Config.REAL_TIME_PEOPLE_TABLE_RTL)
-        # self.__db.delete(sql)
         sql = '''
-            SELECT t4.room_id, t4.room_addr, IF(t5.total IS NULL, 0, t5.total) AS total, {0} AS unix_timestamp, FROM_UNIXTIME({0}) AS dt
+            SELECT t4.room_id, t4.room_addr, IF(t3.total IS NULL, 0, t3.total) AS total, {0} AS unix_timestamp, FROM_UNIXTIME({0}) AS dt
             FROM {4} t4 LEFT OUTER JOIN (
-                SELECT t3.room_id, t3.room_addr, MAX(t3.total) AS total
-                FROM (
-                    SELECT t2.room_id, t2.room_addr, t1.frame_id, COUNT(*) AS total
+                    SELECT t2.room_id, t2.room_addr, MAX(t1.total) AS total
                     FROM (
                         SELECT
-                            camera_id, frame_id
+                            camera_id, total
                         FROM {2}
                         WHERE pose_stat_time >= {1} AND pose_stat_time <= {0}
                     ) t1 JOIN {3} t2
                     ON t1.camera_id = t2.camera_id
-                    GROUP BY t2.room_id, t2.room_addr, t1.frame_id
-                ) t3
-                GROUP BY t3.room_id, t3.room_addr
-            ) t5 ON t4.room_id = t5.room_id AND t4.room_addr = t5.room_addr
-        '''.format(timestamp, timestamp - Config.REAL_TIME_INTERVAL, Config.RAW_INPUT_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE)
+                    GROUP BY t2.room_id, t2.room_addr
+                ) t3 ON t3.room_id = t4.room_id AND t3.room_addr = t4.room_addr
+        '''.format(timestamp, timestamp - Config.REAL_TIME_INTERVAL, Config.RAW_INPUT_TABLE_COUNT, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE)
         for record in self.__db.select(sql):
             sql = '''
                 INSERT INTO {0} (room_id, room_addr, total, unix_timestamp, dt) VALUES({1}, '{2}', {3}, {4}, '{5}') ON DUPLICATE KEY UPDATE total = {3}, unix_timestamp ={4}, dt = '{5}'
