@@ -13,6 +13,7 @@ class PostMetric(object):
         super(PostMetric, self).__init__()
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
+        self.__delimiter = '@'
 
     def post(self, datas, dt, students):
         ''' Post data to UI database '''
@@ -199,6 +200,104 @@ class PostMetric(object):
                     if valuesSql != '':
                         self.__db.insert(sql + valuesSql)
         self.__logger.info("Finished to post grade and study metric data, total rows is {0}".format(count))
+
+    def post_teaching(self, data, dt):
+        """ 将教学评估的数据存储到Mysql数据库中
+        """
+
+        self.__logger.info('Try to post teaching status to db.')
+        self.post_teaching_student(data, dt)
+        self.post_teaching_class(data, dt)
+        self.__logger.info('End to post teaching status to db.')
+
+    def post_teaching_student(self, data, dt):
+        """ 将教学评估的数据存储到Mysql数据库中
+        """
+
+        self.__logger.info('Try to post teaching student status to db.')
+        if data:
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_TEACHING_CLASS_STUDENT, dt)
+            self.__db.delete(sql)
+
+            sql = '''
+                INSERT INTO {0} (college_name, grade_name, class_name, course_name, action_status, rate, action_type, dt) VALUES
+            '''.format(Config.OUTPUT_TEACHING_CLASS_STUDENT)
+
+            for class_id, classes in data.items():
+                result_sql = ''
+                class_arr = class_id.split(self.__delimiter)
+                for course, record in classes.items():
+                    for key, values in record.items():
+                        if key in ['face_emotion', 'mental', 'study']:
+                            for action, score in values.items():
+                                tmp_sql = ''
+                                if result_sql:
+                                    tmp_sql = ''',('{0}', '{1}', '{2}', '{3}', '{4}', {5}, {6}, '{7}')'''
+                                else:
+                                    tmp_sql = sql + '''('{0}', '{1}', '{2}', '{3}', '{4}', {5}, {6}, '{7}')'''
+
+                                result_sql += tmp_sql.format(class_arr[0], class_arr[1], class_arr[2], course, action, score, Config.ACTION_TYPE[key], dt)
+
+                self.__db.insert(result_sql)
+
+    def post_teaching_class(self, data, dt):
+        """ 将教学评估的数据存储到Mysql数据库中
+        """
+
+        self.__logger.info('Try to post teaching daily status to db.')
+        if data:
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_TEACHING_CLASS_DAILY, dt)
+            self.__db.delete(sql)
+
+            sql = '''
+                INSERT INTO {0} (college_name, grade_name, class_name, course_name, class_positivity, class_interactivity, class_concentration, dt) VALUES
+            '''.format(Config.OUTPUT_TEACHING_CLASS_DAILY)
+
+            result_sql = ''
+            for class_id, classes in data.items():
+                class_arr = class_id.split(self.__delimiter)
+                for course, record in classes.items():
+                    tmp_sql = ''
+                    if result_sql:
+                        tmp_sql = ''',('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')'''
+                    else:
+                        tmp_sql = sql + '''('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')'''
+
+                    result_sql += tmp_sql.format(class_arr[0], class_arr[1], class_arr[2], course, record['class_positivity'], record['class_interactivity'], record['class_concentration'], dt)
+
+            self.__db.insert(result_sql)
+
+    def post_teaching_study_grade(self, data):
+        """ 将课堂的成绩和学习状态二元关系存储到数据表
+        """
+
+        if data:
+            sql = '''
+                INSERT INTO {0} (college_name, grade_name, class_name, course_name, grade_level, study_level, dt) VALUES
+            '''.format(Config.OUTPUT_TEACHING_CLASS_GRADE_STUDY)
+
+            result_sql = ''
+            for class_id, dts in data.items():
+                class_arr = class_id.split(self.__delimiter)
+                for dt, records in dts.items():
+                    del_sql = '''
+                        DELETE FROM {0} WHERE dt = '{1}'
+                    '''.format(Config.OUTPUT_TEACHING_CLASS_GRADE_STUDY, dt)
+                    self.__db.delete(del_sql)
+                    for course, scores in records.items():
+                        tmp_sql = ''
+                        if result_sql:
+                            tmp_sql = ''',('{0}', '{1}', '{2}', '{3}', {4}, {5}, '{6}')'''
+                        else:
+                            tmp_sql = sql + '''('{0}', '{1}', '{2}', '{3}', {4}, {5}, '{6}')'''
+
+                        result_sql += tmp_sql.format(class_arr[0], class_arr[1], class_arr[2], course, scores[0], scores[1], dt)
+
+            self.__db.insert(result_sql)
 
     def get_valid_value(self, data, key):
         ''''''

@@ -20,6 +20,8 @@ class Preprocessor(object):
         if self.__teaching:
             self.__logger.info('教学效果评估--预处理数据')
             self.truncate_teaching_data(day)
+            self.update_teaching_mental()
+            self.update_teaching_study()
             self.update_teaching_data(day)
             self.preprocess_aggregate_teaching(day)
         else:
@@ -201,29 +203,83 @@ class Preprocessor(object):
         '''Truncate all data of intermediate teaching tables'''
         # 对于Config.INTERMEDIATE_TEACHING_TABLE(半年) 便于计算人际关系和课堂兴趣
         self.__logger.info("Try to delete teaching data in {0}".format(Config.INPUT_DB_DATABASE))
-        sql = '''
-            DROP TABLE {0}
-        '''.format(Config.INTERMEDIATE_TEACHING_TABLE)
-        self.__db.delete(sql)
+        del_tables = [Config.INTERMEDIATE_TEACHING_MENTAL_TABLE, Config.INTERMEDIATE_TEACHING_STUDY_TABLE, Config.INTERMEDIATE_TEACHING_TABLE]
+        for table in del_tables:
+            self.__logger.info('Begin to drop table {0}'.format(table))
+            sql = '''
+                DROP TABLE {0}
+            '''.format(table)
+            self.__db.delete(sql)
+
         sql = '''
             DELETE a FROM {0} a WHERE dt = '{1}' OR dt < '{2}'
         '''.format(Config.INTERMEDIATE_TEACHING_AGG_TABLE, day, CommonUtil.get_specific_date(day, Config.DATA_RESERVED_WINDOW))
         self.__db.delete(sql)
         self.__logger.info("End to delete teaching data in {0}.".format(Config.INPUT_DB_DATABASE))
 
+    def update_teaching_mental(self):
+        """ 评估每条记录的精神状态
+        """
+
+        self.__logger.info("Process teaching data, then output results to the table {0}".format(Config.INTERMEDIATE_TEACHING_MENTAL_TABLE))
+        sql = '''
+            CREATE TABLE {1}
+            SELECT
+                camera_id, pose_stat_time, body_stat, face_pose,
+                case
+                    WHEN face_emotion = '0' THEN '1',
+                    WHEN face_emotion = '1' THEN '0',
+                ELSE face_emotion
+                END AS face_emotion,
+                CASE
+                    WHEN face_emotion IN ('2', '-1') AND body_stat IN ('3', '4', '5') THEN '2'
+                    WHEN face_emotion IN ('1', '-1') AND body_stat IN ('1', '2') THEN '0'
+                ELSE '1'
+                END AS mental
+            FROM {0}
+            WHERE face_emotion != '-1' OR face_pose != '-1' OR body_stat != '-1'
+        '''.format(Config.RAW_INPUT_TABLE, Config.INTERMEDIATE_TEACHING_MENTAL_TABLE)
+
+        self.__db.insert(sql)
+        self.__logger.info("Finish to update teaching mental")
+
+    def update_teaching_study(self):
+        """ 评估每条记录的学习状态
+        """
+
+        self.__logger.info("Process teaching data, then output results to the table {0}".format(Config.INTERMEDIATE_TEACHING_STUDY_TABLE))
+        sql = '''
+            CREATE TABLE {1}
+            SELECT
+                camera_id, pose_stat_time, body_stat, face_pose, face_emotion, mental,
+                CASE
+                    WHEN mental = '2' AND face_pose IN ('1', '2') THEN '3'
+                    WHEN mental = '0' AND face_pose = '0' THEN '0'
+                    WHEN mental IN ('0', '1') AND face_pose = '0' THEN '1'
+                ELSE '2'
+                END AS study
+            FROM {0}
+        '''.format(Config.INTERMEDIATE_TEACHING_MENTAL_TABLE, Config.INTERMEDIATE_TEACHING_STUDY_TABLE)
+
+        self.__db.insert(sql)
+        self.__logger.info("Finish to update teaching study")
+
+        self.__logger.info("[Update teaching] add index")
+        self.__db.execute("CREATE INDEX camera_id_name_index ON {0} (camera_id);".format(Config.INTERMEDIATE_TEACHING_STUDY_TABLE))
+
     def update_teaching_data(self, day):
-        """ 预处理教学效果需要的数据
+        """ 关联课程信息
         """
 
         self.__logger.info("Process teaching data, then output results to the table {0}".format(Config.INTERMEDIATE_TEACHING_TABLE))
         sql = '''
             CREATE TABLE {3}
             SELECT
-                t2.college_name, t2.grade_name, t2.class_name, t1.body_stat, t1.face_pose, t1.face_emotion, t2.course_id, t2.course_name, from_unixtime(t1.pose_stat_time - t1.pose_stat_time % {5}, '%Y-%m-%d %H:%i') AS pose_stat_time
+                t2.college_name, t2.grade_name, t2.class_name, t1.body_stat, t1.face_pose, t1.face_emotion, t1.mental, t1.study, t2.course_id, t2.course_name
             FROM
             (
                 SELECT
-                    t4.room_addr, t3.pose_stat_time, t3.body_stat, t3.face_pose, t3.face_emotion
+                    t4.room_addr, t3.pose_stat_time, t3.body_stat, t3.face_pose, t3.face_emotion, t3.mental, t3.study
                 FROM {0} t3 JOIN {1} t4
                 ON t3.camera_id = t4.camera_id
             ) t1 JOIN
@@ -234,7 +290,7 @@ class Preprocessor(object):
                 WHERE weekday = dayofweek('{4}')
                 GROUP BY room_addr, college_name, grade_name, class_name, course_id, course_name, start_time, end_time
             ) t2 ON t1.room_addr = t2.room_addr AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) >= t2.start_time AND cast(from_unixtime(t1.pose_stat_time,'%H:%i') as time) <= t2.end_time
-        '''.format(Config.RAW_INPUT_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.INTERMEDIATE_TEACHING_TABLE, day, Config.TEACHING_INTERVAL)
+        '''.format(Config.INTERMEDIATE_TEACHING_STUDY_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, Config.INTERMEDIATE_TEACHING_TABLE, day, Config.TEACHING_INTERVAL)
 
         self.__db.insert(sql)
         self.__logger.info("Finish to update student info")
@@ -252,27 +308,37 @@ class Preprocessor(object):
         sql = '''
             INSERT INTO {1}
             SELECT
-                college_name, grade_name, class_name, course_id, course_name, pose_stat_time, action, total, action_type, dt
+                college_name, grade_name, class_name, course_id, course_name, action, total, action_type, dt
             FROM (
                 SELECT
-                    college_name, grade_name, class_name, course_id, course_name, pose_stat_time, body_stat AS action, COUNT(*) AS total, {3} AS action_type, '{2}' AS dt
+                    college_name, grade_name, class_name, course_id, course_name, body_stat AS action, COUNT(*) AS total, {3} AS action_type, '{2}' AS dt
                 FROM {0}
                 WHERE body_stat != '-1'
-                GROUP BY college_name, grade_name, class_name, course_id, course_name, pose_stat_time, body_stat
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, body_stat
                 UNION
                 SELECT
-                    college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_pose AS action, COUNT(*) AS total, {4} AS action_type, '{2}' AS dt
+                    college_name, grade_name, class_name, course_id, course_name, face_pose AS action, COUNT(*) AS total, {4} AS action_type, '{2}' AS dt
                 FROM {0}
                 WHERE face_pose != '-1'
-                GROUP BY college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_pose
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, face_pose
                 UNION
                 SELECT
-                    college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_emotion AS action, COUNT(*) AS total, {5} AS action_type, '{2}' AS dt
+                    college_name, grade_name, class_name, course_id, course_name, face_emotion AS action, COUNT(*) AS total, {5} AS action_type, '{2}' AS dt
                 FROM {0}
                 WHERE face_emotion != '-1'
-                GROUP BY college_name, grade_name, class_name, course_id, course_name, pose_stat_time, face_emotion
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, face_emotion
+                UNION
+                SELECT
+                    college_name, grade_name, class_name, course_id, course_name, mental AS action, COUNT(*) AS total, {6} AS action_type, '{2}' AS dt
+                FROM {0}
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, mental
+                UNION
+                SELECT
+                    college_name, grade_name, class_name, course_id, course_name, study AS action, COUNT(*) AS total, {7} AS action_type, '{2}' AS dt
+                FROM {0}
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, study
             ) t
-        '''.format(Config.INTERMEDIATE_TEACHING_TABLE, Config.INTERMEDIATE_TEACHING_AGG_TABLE, day, Config.ACTION_TYPE['body_stat'], Config.ACTION_TYPE['face_pose'], Config.ACTION_TYPE['face_emotion'])
+        '''.format(Config.INTERMEDIATE_TEACHING_TABLE, Config.INTERMEDIATE_TEACHING_AGG_TABLE, day, Config.ACTION_TYPE['body_stat'], Config.ACTION_TYPE['face_pose'], Config.ACTION_TYPE['face_emotion'], Config.ACTION_TYPE['mental'], Config.ACTION_TYPE['study'])
         self.__db.insert(sql)
         self.__logger.info("Finish to preprocess aggregate teaching data")
 

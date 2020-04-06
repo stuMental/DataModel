@@ -13,6 +13,8 @@ import CalcTeaCourseMetric
 import CalcTeacherMetric
 import CalcClassMetric
 import AnalyzeGrade
+import AnalyzeTeachingGrade
+import CalcTeachingMetric
 import datetime
 import math
 import time
@@ -24,17 +26,21 @@ class EstimateMental(object):
         super(EstimateMental, self).__init__()
         self.__logger = Logger.Logger(__name__)
         self.__preprocessor = Preprocessor.Preprocessor(configs)
-        self.__metric = CalcMetric.CalcMetric(configs)
         self.__poster = PostMetric.PostMetric(configs)
-        self.__course = CalcCourseMetric.CalcCourseMetric(configs)
-        self.__analyzer = AnalyzeGrade.AnalyzeGrade(configs)
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
-        self.__interests = {}
         self.__date = configs['date']
         self.__teaching = True if configs['teaching'] == 1 else False
+        if self.__teaching:  # 不识别学生情况下的教学效果评估
+            self.__teaching_metric = CalcTeachingMetric.CalcTeachingMetric(configs)
+            self.__teaching_analyzer = AnalyzeTeachingGrade.AnalyzeTeachingGrade(configs)
+        else:  # 需要识别学生
+            self.__metric = CalcMetric.CalcMetric(configs)
+            self.__course = CalcCourseMetric.CalcCourseMetric(configs)
+            self.__analyzer = AnalyzeGrade.AnalyzeGrade(configs)
+            self.__interests = {}
 
     def estimate(self):
-
+        """入口函数"""
         CommonUtil.verify()
         # 获取最新数据对应的日期
         times = CommonUtil.get_range_times()
@@ -55,31 +61,40 @@ class EstimateMental(object):
 
         self.__logger.info("Begin to analyze the student data of {0}".format(estimate_date))
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
-        self.__preprocessor.preprocessor(estimate_date)
+        # self.__preprocessor.preprocessor(estimate_date)
 
-        # 评估学生
-        # 获得学生基本信息
-        students = self.get_students()
+        if self.__teaching:
+            self.__logger.info('在班级+科目的维度对教学效果进行评估')
+            teaching_metrics = self.__teaching_metric.calculate_teaching_metrics(estimate_date)
+            self.__logger.info('将分析结果存储到数据库中')
+            self.__poster.post_teaching(teaching_metrics, estimate_date)
+            teaching_analysis_metrics = self.__teaching_analyzer.Analysis(estimate_date)
+            self.__poster.post_teaching_study_grade(teaching_analysis_metrics)
+            self.__teaching_analyzer.analyze_teaching_scores(estimate_date)
+        else:
+            # 评估学生
+            # 获得学生基本信息
+            students = self.get_students()
 
-        # 先计算分科目的指标，因为兴趣需要基于这个数据计算
-        self.__logger.info("Begin to compute and post daily course metrics")
-        course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
-        students = self.__poster.post_course_metric(course_metrics, estimate_date, students)
-        self.__logger.info("Finished to compute and post daily course metrics")
-        self.__logger.info("Begin to compute and post daily metrics")
-        metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
-        metrics = self.estimate_interest(times['end_datetime'], metrics)
-        students = self.__poster.post(metrics, estimate_date, students)
-        self.__logger.info("Finished to compute and post daily metrics")
+            # 先计算分科目的指标，因为兴趣需要基于这个数据计算
+            self.__logger.info("Begin to compute and post daily course metrics")
+            course_metrics = self.__course.calculate_course_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
+            students = self.__poster.post_course_metric(course_metrics, estimate_date, students)
+            self.__logger.info("Finished to compute and post daily course metrics")
+            self.__logger.info("Begin to compute and post daily metrics")
+            metrics = self.__metric.calculate_daily_metrics(times['start_unixtime'], times['end_unixtime'], estimate_date)
+            metrics = self.estimate_interest(times['end_datetime'], metrics)
+            students = self.__poster.post(metrics, estimate_date, students)
+            self.__logger.info("Finished to compute and post daily metrics")
 
-        self.__logger.info("Begin to post Interest")
-        students = self.__poster.post_interest_metric(self.__interests, estimate_date, students)
-        self.__logger.info("Finished to post Interest")
+            self.__logger.info("Begin to post Interest")
+            students = self.__poster.post_interest_metric(self.__interests, estimate_date, students)
+            self.__logger.info("Finished to post Interest")
 
-        # 计算成绩与学习状态之间的四象限分析指标
-        self.__logger.info("Begin to analyze and post Grade and Study_Status")
-        analysis_metrics = self.__analyzer.Analysis(estimate_date)
-        self.__poster.post_grade_study_metric(analysis_metrics, students)
+            # 计算成绩与学习状态之间的四象限分析指标
+            self.__logger.info("Begin to analyze and post Grade and Study_Status")
+            analysis_metrics = self.__analyzer.Analysis(estimate_date)
+            self.__poster.post_grade_study_metric(analysis_metrics, students)
 
         self.__logger.info("Finished to analyze and post")
 
