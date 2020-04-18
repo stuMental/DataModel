@@ -61,7 +61,7 @@ class EstimateMental(object):
 
         self.__logger.info("Begin to analyze the student data of {0}".format(estimate_date))
         self.__logger.info("Begin to preprocess data between {0} and {1}.".format(times['start_datetime'], times['end_datetime']))
-        # self.__preprocessor.preprocessor(estimate_date)
+        self.__preprocessor.preprocessor(estimate_date)
 
         if self.__teaching:
             self.__logger.info('在班级+科目的维度对教学效果进行评估')

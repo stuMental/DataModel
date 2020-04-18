@@ -13,9 +13,13 @@ class Attendance(object):
         super(Attendance, self).__init__()
         self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
+        self.__date = configs['date']
 
     def process(self, day):
         CommonUtil.verify()
+        if self.__date != '-1':
+            day = self.__date
+
         self.truncate_data(day)
         self.stat_attendance(day)
         self.stat_exist_attendance(day)

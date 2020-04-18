@@ -47,6 +47,8 @@ Build a system to train data model
 2. 修改my.cnf参数
     binlog_format=ROW
     innodb_buffer_pool_size = 2147483648 # 2G 建议物理内存的75%
+3. MySQL常见操作
+    mysqldump -uroot -p -d dev_icampusdb > dev_icampusdb_20200414.sql  只导表结构
 
 
 # 运行DataModel的FQA

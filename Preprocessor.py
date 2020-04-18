@@ -227,8 +227,8 @@ class Preprocessor(object):
             SELECT
                 camera_id, pose_stat_time, body_stat, face_pose,
                 case
-                    WHEN face_emotion = '0' THEN '1',
-                    WHEN face_emotion = '1' THEN '0',
+                    WHEN face_emotion = '0' THEN '1'
+                    WHEN face_emotion = '1' THEN '0'
                 ELSE face_emotion
                 END AS face_emotion,
                 CASE
