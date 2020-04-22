@@ -18,6 +18,11 @@ Build a system to train data model
 1. Modify Config.py to update Database's info.
 2. If you want to run the specific date data, you can modify the function `get_range_times` and `get_date_day` in this file `CommonUtil.py`.
 3. If you want to output debug info, you can update the **LOGGER_LEVEL** of Config.py to DEBUG.
+4. 检查python的sys.path路径中是否包含了当前用户的安装包，~/.local/lib/python2.7/site-packages路径，如果没有包含。需要Main*.py文件中设置。sys.path.append()
+
+# gocron配置
+1. 需要设置防火墙，开放5920、5921两个端口。
+2. 设置自启动。编辑文件 /etc/rc.local，将执行命令加入。
 
 # 利用CPython对code编译成.so文件
   python Encryption.py build_ext --inplace 如果报错，可以试一试用sudo来执行

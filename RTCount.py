@@ -33,6 +33,12 @@ class RTCount(object):
             DELETE a FROM {0} a WHERE pose_stat_time <= {1}
         '''.format(Config.RAW_INPUT_TABLE_COUNT, CommonUtil.get_specific_unixtime(timestamp, days=Config.REAL_TIME_DATA_RESERVED))
         self.__db.delete(sql)
+        self.__logger.info('Clean unnecessary teaching room.')
+        sql = '''
+            DELETE FROM {0} WHERE room_addr NOT IN (SELECT room_addr FROM {1} GROUP BY room_addr)
+        '''.format(Config.REAL_TIME_PEOPLE_TABLE_RTL, Config.SCHOOL_CAMERA_ROOM_TABLE)
+        self.__db.delete(sql)
+        self.__logger.info('Finished to delete data.')
 
     def __process_people_count(self, timestamp):
         """ 每隔固定时间间隔处理数据
