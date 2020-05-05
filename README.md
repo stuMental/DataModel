@@ -9,6 +9,7 @@ Build a system to train data model
 1. Install pip module: `sudo apt-get install python-pip`
 1. Install MySQLdb module: `sudo apt-get install libmysqlclient-dev`, and `sudo pip install mysql-python`
 1. Create some tables. Please execute the file CreateTable.py: `python CreateTable.py`
+1. 安装numpy，由于官方后续不支持python2.7，所以高版本的numpy已经不支持python2.7了。需要制定具体版本安装: `pip install numpy==1.16.0`
 
 # 系统配置
 1. 开启MySQL的binlog服务，方便数据的备份以及恢复等操作。https://blog.csdn.net/weixin_38187469/article/details/79273962
@@ -18,6 +19,11 @@ Build a system to train data model
 1. Modify Config.py to update Database's info.
 2. If you want to run the specific date data, you can modify the function `get_range_times` and `get_date_day` in this file `CommonUtil.py`.
 3. If you want to output debug info, you can update the **LOGGER_LEVEL** of Config.py to DEBUG.
+4. 检查python的sys.path路径中是否包含了当前用户的安装包，~/.local/lib/python2.7/site-packages路径，如果没有包含。需要Main*.py文件中设置。sys.path.append()
+
+# gocron配置
+1. 需要设置防火墙，开放5920、5921两个端口。
+2. 设置自启动。编辑文件 /etc/rc.local，将执行命令加入。
 
 # 利用CPython对code编译成.so文件
   python Encryption.py build_ext --inplace 如果报错，可以试一试用sudo来执行
@@ -41,12 +47,17 @@ Build a system to train data model
     用sudo aptitude install的方式安装相应的依赖包或者该package。如果机器上没有aptitude，请先安装: sudo apt-get install aptitude
     aptitude相对于apt-get在依赖的安装上更为聪明。
 
+1. str_to_date解析出错
+    sql_mode='STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
+
 # MySQL性能优化
 1. 关闭不必要表的日志.
     alter table table1 nologging;
 2. 修改my.cnf参数
     binlog_format=ROW
     innodb_buffer_pool_size = 2147483648 # 2G 建议物理内存的75%
+3. MySQL常见操作
+    mysqldump -uroot -p -d dev_icampusdb > dev_icampusdb_20200414.sql  只导表结构
 
 
 # 运行DataModel的FQA

@@ -22,7 +22,7 @@ INPUT_DB_PASSWORD = '123456'
 # INPUT_DB_PASSWORD = '190608'
 
 # Database dbname
-INPUT_DB_DATABASE = 'dev_icampusdb'
+INPUT_DB_DATABASE = 'student_service'
 
 # Database charset
 INPUT_DB_CHARSET = 'utf8'
@@ -43,10 +43,13 @@ INPUT_DB_CHARSET = 'utf8'
 # Database charset
 # OUTPUT_DB_CHARSET = 'utf8'
 
-# MAC Address
+# [prod] MAC Address
+# MAC_ADDRESS = '7085c21cbe31'
+
+# [test] MAC Address
 # MAC_ADDRESS = '6c0b846511a1'
 
-# [Test] MAC Address
+# [local] MAC Address
 MAC_ADDRESS = '04ea5648c08c'
 
 # Raw input table
@@ -194,7 +197,7 @@ LOOKBACKWINDOW = -45 # Days
 ANALYSIS_LOOKBACKWINDOW = -60 # Days
 
 # 过滤科目
-FILTER_COURSES = ['体育', '班会']
+FILTER_COURSES = []  #['体育', '班会']
 
 # 学习与成绩四维评估中 study_stat的阈值
 ANALYSIS_STUDY_STAT_THRESHOLD = 0.6  # 职教不同于K12，可以降低阈值。
@@ -210,13 +213,13 @@ INSERT_BATCH_THRESHOLD = 10000
 DATETIME_THRESHOLD = -1
 
 # 保留INTERMEDIATE_TABLE_TRAIN表中历史数据的天数
-DATA_RESERVED_WINDOW = -360 # 180 天
+DATA_RESERVED_WINDOW = -180 # 180 天
 
 # 考勤表的数据保留历史天数。
-DATA_RESERVED_ATTENDANCE_WINDOW = -360 # 默认保留最近180天
+DATA_RESERVED_ATTENDANCE_WINDOW = -180 # 默认保留最近180天
 
 # raw 数据的保留天数
-DATA_RESERVED_RAW_WINDOW = -360  # 90 默认保留90天数据
+DATA_RESERVED_RAW_WINDOW = -90  # 90 默认保留90天数据
 
 # Dynamic threshold
 DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的数据
@@ -347,11 +350,68 @@ SOCKET_WAIT = 2  # 300秒 衡量两次请求之间的间隔
 RAW_INPUT_TABLE_COUNT = 'person_body_status_count'
 REAL_TIME_PEOPLE_TABLE = 'school_student_count_people'
 REAL_TIME_PEOPLE_TABLE_RTL = 'school_student_count_people_rtl'
-REAL_TIME_INTERVAL = 300  # 5 mins, 300 seconds
+REAL_TIME_INTERVAL = 60  # 1 mins, 60 seconds
+REAL_TIME_DATA_RESERVED = -6  # 只保留近7天的原始数据
 
 # action type的取值
 ACTION_TYPE = {
     'body_stat': 1,
     'face_pose': 2,
-    'face_emotion': 3
+    'face_emotion': 3,
+    'mental': 4,
+    'study': 5
+}
+
+# 教学效果评估模块
+INTERMEDIATE_TEACHING_TABLE = 'person_body_status_teaching_info'
+INTERMEDIATE_TEACHING_MENTAL_TABLE = 'person_body_status_teaching_mental'
+INTERMEDIATE_TEACHING_STUDY_TABLE = 'person_body_status_teaching_study'
+INTERMEDIATE_TEACHING_AGG_TABLE = 'person_body_status_aggregation_teaching_info'
+OUTPUT_TEACHING_CLASS_STUDENT = 'class_status_student_daily'
+OUTPUT_TEACHING_CLASS_DAILY = 'class_status_daily'
+OUTPUT_TEACHING_CLASS_GRADE_STUDY = 'class_status_grade_study_daily'
+OUTPUT_TEACHING_CLASS_SCORES = 'class_status_scores'
+TEACHING_INTERVAL = 300  # 300秒，5分钟
+TEACHING_NORMAL_WEIGHT = 0.8  # 评估课堂状态为正常在计算综合状态时的权重
+TEACHING_POSITIVITY_BAD = {
+    'emotion': 0.5,  # 情绪为低落占比超过50%
+    'body_stat': 0.05 # 举手和站立出现的情况占比低于1%
+}
+
+TEACHING_POSITIVITY_GOOD = {
+    'emotion': 0.4,  # 情绪为开心占比超过40%
+    'body_stat': 0.2 # 举手和站立出现的情况超过20%
+}
+
+TEACHING_INTERACTIVITY_BAD = {
+    'face_pose_normal': 0.9,  # 平视的次数占比超过90%
+    'face_pose_around': 0.01, # 左顾右盼的次数占比低于1%
+    'body_stat': 0.05,  # 举手和站立的次数低于5%
+    'emotion': 0.90  # 正常的表情占比超过90%。即课堂沉闷
+}
+
+TEACHING_INTERACTIVITY_GREAT = {
+    'face_pose_around': 0.2,  # 左顾右盼的比例超过20%
+    'body_stat': 0.3,  # 举手和站立出现的次数超过30%
+    'emotion': 0.4  # 情绪为开心的次数超过60%
+}
+
+TEACHING_INTERACTIVITY_GOOD = {
+    'face_pose_around': 0.1,  # 左顾右盼的比例超过10%
+    'body_stat': 0.2,  # 举手和站立出现的次数超过20%
+    'emotion': 0.2  # 情绪为开心的次数超过40%
+}
+
+TEACHING_CONCENTRATION_HIGH = {
+    'mental': 0.4,  # 学生精神状态积极占比超过40%
+    'study': 0.5,  # 学生学习状态良好及以上占比超50%
+    'face_pose': 0.5,  # 平视次数超过50%
+    'body_stat': 0.3  # 举手和站立次数超过30%
+}
+
+TEACHING_CONCENTRATION_LOW = {
+    'mental': 0.5,  # 学生精神状态疲惫占比超过40%
+    'study': 0.5,  # 学生学习状态不佳及以上占比超50%
+    'face_pose': 0.4,  # 低头或左顾右盼次数超过50%
+    'body_stat': 0.4  # 睡觉、趴着听课、手托举听课次数超50%
 }
