@@ -22,7 +22,7 @@ INPUT_DB_PASSWORD = '123456'
 # INPUT_DB_PASSWORD = '190608'
 
 # Database dbname
-INPUT_DB_DATABASE = 'dev_icampusdb'
+INPUT_DB_DATABASE = 'student_service'
 
 # Database charset
 INPUT_DB_CHARSET = 'utf8'
@@ -44,7 +44,7 @@ INPUT_DB_CHARSET = 'utf8'
 # OUTPUT_DB_CHARSET = 'utf8'
 
 # [prod] MAC Address
-# MAC_ADDRESS = 'ac1f6b702493'
+# MAC_ADDRESS = '7085c21cbe31'
 
 # [test] MAC Address
 # MAC_ADDRESS = '6c0b846511a1'
@@ -213,13 +213,13 @@ INSERT_BATCH_THRESHOLD = 10000
 DATETIME_THRESHOLD = -1
 
 # 保留INTERMEDIATE_TABLE_TRAIN表中历史数据的天数
-DATA_RESERVED_WINDOW = -360 # 180 天
+DATA_RESERVED_WINDOW = -180 # 180 天
 
 # 考勤表的数据保留历史天数。
-DATA_RESERVED_ATTENDANCE_WINDOW = -360 # 默认保留最近180天
+DATA_RESERVED_ATTENDANCE_WINDOW = -180 # 默认保留最近180天
 
 # raw 数据的保留天数
-DATA_RESERVED_RAW_WINDOW = -360  # 90 默认保留90天数据
+DATA_RESERVED_RAW_WINDOW = -90  # 90 默认保留90天数据
 
 # Dynamic threshold
 DYNAMIC_DELETE_PERCENTAGE = 0.2 # 计算动态阈值时，去掉高低各20%的数据

@@ -9,6 +9,7 @@ Build a system to train data model
 1. Install pip module: `sudo apt-get install python-pip`
 1. Install MySQLdb module: `sudo apt-get install libmysqlclient-dev`, and `sudo pip install mysql-python`
 1. Create some tables. Please execute the file CreateTable.py: `python CreateTable.py`
+1. 安装numpy，由于官方后续不支持python2.7，所以高版本的numpy已经不支持python2.7了。需要制定具体版本安装: `pip install numpy==1.16.0`
 
 # 系统配置
 1. 开启MySQL的binlog服务，方便数据的备份以及恢复等操作。https://blog.csdn.net/weixin_38187469/article/details/79273962
@@ -45,6 +46,9 @@ Build a system to train data model
 1. 使用apt-get install按照package的过程中，出现依赖包找不到。
     用sudo aptitude install的方式安装相应的依赖包或者该package。如果机器上没有aptitude，请先安装: sudo apt-get install aptitude
     aptitude相对于apt-get在依赖的安装上更为聪明。
+
+1. str_to_date解析出错
+    sql_mode='STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
 
 # MySQL性能优化
 1. 关闭不必要表的日志.

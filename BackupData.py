@@ -25,7 +25,7 @@ class BackupData(object):
         sql = '''
             TRUNCATE TABLE {0}
         '''.format(Config.RAW_INPUT_TABLE)
-        # self.__db.truncate(sql)
+        self.__db.truncate(sql)
         self.__logger.info('备份数据结束')
 
 

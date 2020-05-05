@@ -35,7 +35,7 @@ class Preprocessor(object):
     def truncate_data(self, day):
         '''Truncate all data of intermediate tables'''
         self.__logger.info("Try to truncate all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
-        tmp_tables = [Config.INTERMEDIATE_TRACK_TABLE, Config.INTERMEDIATE_TABLE, Config.INTERMEDIATE_COURSE_TABLE, Config.INTERMEDIATE_AGG_TABLE]
+        tmp_tables = [Config.INTERMEDIATE_TRACK_TABLE, Config.INTERMEDIATE_COURSE_TABLE, Config.INTERMEDIATE_AGG_TABLE]
         for table_name in tmp_tables:
             self.__logger.info("Begin to drop {0}".format(table_name))
             sql = '''
@@ -51,17 +51,6 @@ class Preprocessor(object):
         '''.format(Config.INTERMEDIATE_TABLE_TRAIN, day, CommonUtil.get_specific_date(day, Config.DATA_RESERVED_WINDOW))
         self.__db.delete(sql)
         self.__logger.info("End to delete unnecessary data for the table {0}.".format(Config.INTERMEDIATE_TABLE_TRAIN))
-
-        # 删除学生出勤相关数据
-        attendances = [Config.STUDENT_ATTENDANCE, Config.STUDENT_ATTENDANCE_EXIST]
-        for table_name in attendances:
-            self.__logger.info("Begin to delete unnecessary data from the table {0}.".format(table_name))
-            sql = '''
-                DELETE a FROM {0} a WHERE dt = '{1}' OR dt < '{2}'
-            '''.format(table_name, day, CommonUtil.get_specific_date(day, Config.DATA_RESERVED_ATTENDANCE_WINDOW))
-            self.__db.delete(sql)
-            self.__logger.info("End to delete unnecessary data from the table {0}.".format(table_name))
-
         self.__logger.info("End to truncate or delete all data of intermediate tables in {0}".format(Config.INPUT_DB_DATABASE))
 
     def update_face_id(self):
@@ -137,7 +126,7 @@ class Preprocessor(object):
         self.__logger.info("[Update course] add index")
         self.__db.execute("CREATE INDEX room_addr_index ON {0} (room_addr);".format(Config.INTERMEDIATE_COURSE_TABLE))
         self.__db.execute("CREATE INDEX face_id_index ON {0} (face_id);".format(Config.INTERMEDIATE_COURSE_TABLE))
-        self.__db.execute("CREATE INDEX course_name_index ON {0} (course_name);".format(Config.INTERMEDIATE_COURSE_TABLE))
+        self.__db.execute("CREATE INDEX course_id_index ON {0} (course_id);".format(Config.INTERMEDIATE_COURSE_TABLE))
 
     def preprocess_aggregate(self, day):
         """ 预聚合信息
