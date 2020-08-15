@@ -56,11 +56,11 @@ class MetricUtil(object):
         arounds = []
         lows = []
         for key, value in data.items():
-            if value.has_key('face_pose_normal'):
+            if 'face_pose_normal' in value:
                 normals.append(value['face_pose_normal'])
-            if value.has_key('face_pose_around'):
+            if 'face_pose_around' in value:
                 arounds.append(value['face_pose_around'])
-            if value.has_key('face_pose_low'):
+            if 'face_pose_low' in value:
                 lows.append(value['face_pose_low'])
 
         normal_len = len(normals)
@@ -98,9 +98,9 @@ class MetricUtil(object):
         res_happy = []
         res_low = []
         for key, value in data.items():
-            if value.has_key('emotion_happy'):
+            if 'emotion_happy' in value:
                 res_happy.append(value['emotion_happy'])
-            if value.has_key('emotion_low'):
+            if 'emotion_low' in value:
                 res_low.append(value['emotion_low'])
 
         thresholds = {}
@@ -127,13 +127,13 @@ class MetricUtil(object):
         body_stat_standup = []
         body_stat_handup = []
         for key, value in data.items():
-            if value.has_key('body_stat_sttk'):
+            if 'body_stat_sttk' in value:
                 body_stat_sttk.append(value['body_stat_sttk'])
-            if value.has_key('body_stat_pztk'):
+            if 'body_stat_pztk' in value:
                 body_stat_pztk.append(value['body_stat_pztk'])
-            if value.has_key('body_stat_standup'):
+            if 'body_stat_standup' in value:
                 body_stat_standup.append(value['body_stat_standup'])
-            if value.has_key('body_stat_handup'):
+            if 'body_stat_handup' in value:
                 body_stat_handup.append(value['body_stat_handup'])
 
         thresholds = {}
@@ -178,16 +178,16 @@ class MetricUtil(object):
         if 'face_pose_low' in face_poses:
             total += face_poses['face_pose_low']
 
-        if (mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'])\
-        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_bad') and (face_poses['face_pose_normal'] <= thresholds['study_bad'])) \
-        or (face_poses.has_key('face_pose_around') and thresholds.has_key('study_bad_around') and (face_poses['face_pose_around'] >= thresholds['study_bad_around']) and (face_poses['face_pose_around'] >= thresholds['study_bad_around_count']) and (face_poses['face_pose_around'] / total >= Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_FEQ']))\
-        or (face_poses.has_key('face_pose_low') and thresholds.has_key('study_bad_low') and (face_poses['face_pose_low'] >= thresholds['study_bad_low']) and (face_poses['face_pose_low'] >= thresholds['study_bad_low_count']) and (face_poses['face_pose_low'] / total >= Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_FEQ'])): # 学习状态 -- 不佳
+        if ('student_mental_stat' in mentals and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_BAD['MENTAL'])\
+        and 'face_pose_normal' in face_poses and 'study_bad' in thresholds and (face_poses['face_pose_normal'] <= thresholds['study_bad'])) \
+        or ('face_pose_around' in face_poses and 'study_bad_around' in thresholds and (face_poses['face_pose_around'] >= thresholds['study_bad_around']) and (face_poses['face_pose_around'] >= thresholds['study_bad_around_count']) and (face_poses['face_pose_around'] / total >= Config.STUDY_THREHOLD_BAD['FACE_POSE_AROUND_FEQ']))\
+        or ('face_pose_low' in face_poses and 'study_bad_low' in thresholds and (face_poses['face_pose_low'] >= thresholds['study_bad_low']) and (face_poses['face_pose_low'] >= thresholds['study_bad_low_count']) and (face_poses['face_pose_low'] / total >= Config.STUDY_THREHOLD_BAD['FACE_POSE_LOW_FEQ'])): # 学习状态 -- 不佳
             return 3
-        elif mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_GREAT['MENTAL'])\
-        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_great') and (face_poses['face_pose_normal'] >= thresholds['study_great']) and (face_poses['face_pose_normal'] / total >= Config.STUDY_THREHOLD_GREAT['FACE_POSE_NORMAL_FEQ']): # 学习状态 -- 非常好
+        elif 'student_mental_stat' in mentals and (mentals['student_mental_stat'] == Config.STUDY_THREHOLD_GREAT['MENTAL'])\
+        and 'face_pose_normal' in face_poses and 'study_great' in thresholds and (face_poses['face_pose_normal'] >= thresholds['study_great']) and (face_poses['face_pose_normal'] / total >= Config.STUDY_THREHOLD_GREAT['FACE_POSE_NORMAL_FEQ']): # 学习状态 -- 非常好
             return 0
-        elif mentals.has_key('student_mental_stat') and (mentals['student_mental_stat'] in Config.STUDY_THREHOLD_GOOD['MENTAL'])\
-        and face_poses.has_key('face_pose_normal') and thresholds.has_key('study_good') and (face_poses['face_pose_normal'] >= thresholds['study_good']) and (face_poses['face_pose_normal'] / total >= Config.STUDY_THREHOLD_GOOD['FACE_POSE_NORMAL_FEQ']): # 学习状态 -- 良好
+        elif 'student_mental_stat' in mentals and (mentals['student_mental_stat'] in Config.STUDY_THREHOLD_GOOD['MENTAL'])\
+        and 'face_pose_normal' in face_poses and 'study_good' in thresholds and (face_poses['face_pose_normal'] >= thresholds['study_good']) and (face_poses['face_pose_normal'] / total >= Config.STUDY_THREHOLD_GOOD['FACE_POSE_NORMAL_FEQ']): # 学习状态 -- 良好
             return 1
         else: # 学习状态 -- 正常
             return 2
@@ -217,10 +217,10 @@ class MetricUtil(object):
             total += body_stats['body_stat_pztk']
             mental_tired_cnt += body_stats['body_stat_pztk']
 
-        if (emotions.has_key('student_emotion') and emotions['student_emotion'] == Config.MENTAL_THRESHOLD_TIRED['EMOTION_STATUS']) \
+        if ('student_emotion' in emotions and emotions['student_emotion'] == Config.MENTAL_THRESHOLD_TIRED['EMOTION_STATUS']) \
         and (mental_tired_cnt / total >= Config.MENTAL_THRESHOLD_TIRED['BODY_STAT']) and (('body_stat_sttk' in body_stats and body_stats['body_stat_sttk'] >= thresholds['body_stat_sttk_count']) or ('body_stat_pztk' in body_stats and body_stats['body_stat_pztk'] >= thresholds['body_stat_pztk_count'])): # 精神状态 -- 疲惫
             return 2
-        elif (emotions.has_key('student_emotion') and emotions['student_emotion'] == Config.MENTAL_THRESHOLD_POSITIVE['EMOTION_STATUS']) \
+        elif ('student_emotion' in emotions and emotions['student_emotion'] == Config.MENTAL_THRESHOLD_POSITIVE['EMOTION_STATUS']) \
         and (mental_positive_cnt / total >= Config.MENTAL_THRESHOLD_POSITIVE['BODY_STAT']) and (('body_stat_standup' in body_stats and body_stats['body_stat_standup'] >= thresholds['body_stat_standup_count']) or ('body_stat_handup' in body_stats and body_stats['body_stat_handup'] >= thresholds['body_stat_handup_count'])): # 精神状态 -- 积极
             return 0
         else: # 正常
@@ -239,95 +239,9 @@ class MetricUtil(object):
         if 'emotion_normal' in emotions:
             total += emotions['emotion_normal']
 
-        if emotions.has_key('emotion_low') and thresholds.has_key('emotion_low') and (emotions['emotion_low'] / total >= Config.EMOTION_THRESHOLD_LOW['SAD_FREQUENCY']) and (emotions['emotion_low'] >= thresholds['emotion_low']) and (emotions['emotion_low'] >= thresholds['emotion_low_count']): # 情绪 -- 低落
+        if 'emotion_low' in emotions and 'emotion_low' in thresholds and (emotions['emotion_low'] / total >= Config.EMOTION_THRESHOLD_LOW['SAD_FREQUENCY']) and (emotions['emotion_low'] >= thresholds['emotion_low']) and (emotions['emotion_low'] >= thresholds['emotion_low_count']): # 情绪 -- 低落
             return 2
-        elif emotions.has_key('emotion_happy') and thresholds.has_key('emotion_happy') and (emotions['emotion_happy'] / total >= Config.EMOTION_THRESHOLD_HAPPY['SMILE_FREQUENCY']) and (emotions['emotion_happy'] >= thresholds['emotion_happy']) and (emotions['emotion_happy'] >= thresholds['emotion_happy_count']): # 情绪 -- 开心
+        elif 'emotion_happy' in emotions and 'emotion_happy' in thresholds and (emotions['emotion_happy'] / total >= Config.EMOTION_THRESHOLD_HAPPY['SMILE_FREQUENCY']) and (emotions['emotion_happy'] >= thresholds['emotion_happy']) and (emotions['emotion_happy'] >= thresholds['emotion_happy_count']): # 情绪 -- 开心
             return 0
         else: # 情绪 -- 正常
             return 1
-
-    def calculate_teacher_emotion_threshold(self, data):
-        ''''''
-        angries = []
-        lows = []
-        happies = []
-
-        for key, value in data.items():
-            if value.has_key('emotion_angry'):
-                angries.append(value['emotion_angry'])
-            if value.has_key('emotion_low'):
-                lows.append(value['emotion_low'])
-            if value.has_key('emotion_happy'):
-                happies.append(value['emotion_happy'])
-
-        thresholds = {}
-        if angries:
-            angries.sort(reverse=True)
-            self.__logger.debug(str(angries))
-            thresholds['emotion_angry'] = self.DynamicThreshold(angries, Config.DYNAMIC_DELETE_PERCENTAGE, 5, is_upper=True)
-
-        if lows:
-            lows.sort(reverse=True)
-            self.__logger.debug(str(lows))
-            thresholds['emotion_low'] = self.DynamicThreshold(lows, Config.DYNAMIC_DELETE_PERCENTAGE, 5, is_upper=True)
-
-        if happies:
-            happies.sort(reverse=True)
-            self.__logger.debug(str(happies))
-            thresholds['emotion_happy'] = self.DynamicThreshold(happies, Config.DYNAMIC_DELETE_PERCENTAGE, 5, is_upper=True)
-
-        self.__logger.debug(str(thresholds))
-        return thresholds
-
-    def estimate_teacher_emotion(self, emotions, thresholds):
-        ''''''
-        self.__logger(str(emotions))
-        self.__logger(str(thresholds))
-
-        total = 0.0
-        if emotions.has_key('emotion_angry'):
-            total += emotions['emotion_angry']
-        if emotions.has_key('emotion_happy'):
-            total += emotions['emotion_happy']
-        if emotions.has_key('emotion_low'):
-            total += emotions['emotion_low']
-        if emotions.has_key('emotion_normal'):
-            total += emotions['emotion_normal']
-
-        total = float(emotions['emotion_angry'] + emotions['emotion_low'] + emotions['emotion_happy'] + emotions['emotion_normal'])
-        if emotions.has_key('emotion_angry') and emotions['emotion_angry'] / total >= Config.TEACHER_EMOTION_THRESHOLD['EMOTION_ANGRY'] and emotions['emotion_angry'] >= thresholds['emotion_angry']:  # 愤怒
-            return 3
-        elif emotions.has_key('emotion_low') and emotions['emotion_low'] / total >= Config.TEACHER_EMOTION_THRESHOLD['EMOTION_LOW'] and emotions['emotion_low'] >= thresholds['emotion_low']:  # 低落
-            return 2
-        elif emotions.has_key('emotion_happy') and emotions['emotion_happy'] / total >= Config.TEACHER_EMOTION_THRESHOLD['EMOTION_HAPPY'] and emotions['emotion_happy'] >= thresholds['emotion_happy']: # 开心
-            return 1
-        else:  # 正常
-            return 0
-
-    def estimate_teacher_attitude(self, emotion, ethics, ontimes, body_stats, activities):
-        self.__logger.debug(str(emotion))
-        self.__logger.debug(str(ethics))
-        self.__logger.debug(str(ontimes))
-        self.__logger.debug(str(body_stats))
-        self.__logger.debug(str(activities))
-
-        total = 0.0
-        if body_stats.has_key('body_stat_normal'):
-            total += body_stats['body_stat_normal']
-        if body_stats.has_key('body_stat_stand'):
-            total += body_stats['body_stat_stand']
-        if body_stats.has_key('body_stat_facing_student'):
-            total += body_stats['body_stat_facing_student']
-        if body_stats.has_key('body_stat_sit'):
-            total += body_stats['body_stat_sit']
-        if body_stats.has_key('body_stat_back_student'):
-            total += body_stats['body_stat_back_student']
-
-        if body_stats.has_key('body_stat_sit') and body_stats['body_stat_sit'] / total > Config.TEACHER_TEACHING_BAD_THRESHOLD['SITTING_TIME'] and body_stats.has_key('body_stat_facing_student') and body_stats['body_stat_facing_student'] / total < Config.TEACHER_TEACHING_BAD_THRESHOLD['FACING_STUDENT_TIME'] and emotion in Config.TEACHER_TEACHING_BAD_THRESHOLD['TEACHER_EMOTION'] and ethics in Config.TEACHER_TEACHING_BAD_THRESHOLD['ETHICS_STATUS'] and ontimes == Config.TEACHER_TEACHING_BAD_THRESHOLD['ONTIME']:  # 不佳
-            return 3
-        elif body_stats.has_key('body_stat_stand') and body_stats['body_stat_stand'] / total > Config.TEACHER_TEACHING_GREAT_THRESHOLD['STANDING_TIME'] and body_stats.has_key('body_stat_facing_student') / total > Config.TEACHER_TEACHING_GREAT_THRESHOLD['FACING_STUDENT_TIME'] and emotion in Config.TEACHER_TEACHING_GREAT_THRESHOLD['TEACHER_EMOTION'] and ethics in Config.TEACHER_TEACHING_GREAT_THRESHOLD['ETHICS_STATUS'] and ontimes == Config.TEACHER_TEACHING_GREAT_THRESHOLD['ONTIME']:  # 非常好
-            return 0
-        elif body_stats.has_key('body_stat_stand') and body_stats['body_stat_stand'] / total > Config.TEACHER_TEACHING_GOOD_THRESHOLD['STANDING_TIME'] and body_stats.has_key('body_stat_facing_student') / total > Config.TEACHER_TEACHING_GOOD_THRESHOLD['FACING_STUDENT_TIME'] and emotion in Config.TEACHER_TEACHING_GOOD_THRESHOLD['TEACHER_EMOTION'] and ethics in Config.TEACHER_TEACHING_GOOD_THRESHOLD['ETHICS_STATUS'] and ontimes == Config.TEACHER_TEACHING_GOOD_THRESHOLD['ONTIME']:  # 良好
-            return 1
-        else:  # 正常
-            return 2

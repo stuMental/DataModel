@@ -10,7 +10,7 @@ class CalcCourseMetric(object):
     """docsTry for CalcCourseMetric"""
     def __init__(self, configs):
         super(CalcCourseMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__utils = MetricUtil.MetricUtil()
         self.__logger = Logger.Logger(__name__)
 
@@ -61,13 +61,13 @@ class CalcCourseMetric(object):
             for course_name, values in raws.items():
                 emotion_thresholds = self.__utils.calculate_emotion_threshold(emotion_count[class_id][course_name])
                 for face_id, value in values.items():
-                    if not metrics.has_key(class_id):
+                    if class_id not in metrics:
                         metrics[class_id] = {}
 
-                    if not metrics[class_id].has_key(face_id):
+                    if face_id not in metrics[class_id]:
                         metrics[class_id][face_id] = {}
 
-                    if not metrics[class_id][face_id].has_key(course_name):
+                    if course_name not in metrics[class_id][face_id]:
                         metrics[class_id][face_id][course_name] = {}
 
                     metrics[class_id][face_id][course_name]['student_emotion'] = self.__utils.estimate_emotion(value, emotion_thresholds)
@@ -78,13 +78,13 @@ class CalcCourseMetric(object):
             for course_name, values in raws.items():
                 body_stat_thresholds = self.__utils.calculate_mental_threshold(body_stat_count[class_id][course_name])
                 for face_id, value in values.items():
-                    if not metrics.has_key(class_id):
+                    if class_id not in metrics:
                         metrics[class_id] = {}
 
-                    if not metrics[class_id].has_key(face_id):
+                    if face_id not in metrics[class_id]:
                         metrics[class_id][face_id] = {}
 
-                    if not metrics[class_id][face_id].has_key(course_name):
+                    if course_name not in metrics[class_id][face_id]:
                         metrics[class_id][face_id][course_name] = {}
 
                     metrics[class_id][face_id][course_name]['student_mental_stat'] = self.__utils.estimate_mental_stat(metrics[class_id][face_id][course_name], value, body_stat_thresholds)
@@ -96,13 +96,13 @@ class CalcCourseMetric(object):
             for course_name, values in raws.items():
                 study_stat_thresholds = self.__utils.calculate_study_threshold(face_pose_count[class_id][course_name])
                 for face_id, value in values.items():
-                    if not metrics.has_key(class_id):
+                    if class_id not in metrics:
                         metrics[class_id] = {}
 
-                    if not metrics[class_id].has_key(face_id):
+                    if face_id not in metrics[class_id]:
                         metrics[class_id][face_id] = {}
 
-                    if not metrics[class_id][face_id].has_key(course_name):
+                    if course_name not in metrics[class_id][face_id]:
                         metrics[class_id][face_id][course_name] = {}
 
                     metrics[class_id][face_id][course_name]['student_study_stat'] = self.__utils.estimate_study_stat(metrics[class_id][face_id][course_name], value, study_stat_thresholds)
@@ -128,14 +128,14 @@ class CalcCourseMetric(object):
         for row in self.__db.select(sql):
             count += 1
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
             subKey = row[1].encode('utf-8')
-            if not res[key].has_key(subKey):
+            if subKey not in res[key]:
                 res[key][subKey] = {}
 
             ssKey = row[2].encode('utf-8')
-            if not res[key][subKey].has_key(ssKey):
+            if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = {}
 
             cnt = float(row[4])
@@ -174,15 +174,15 @@ class CalcCourseMetric(object):
         for row in self.__db.select(sql):
             count += 1
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
 
             subKey = row[1].encode('utf-8')
-            if not res[key].has_key(subKey):
+            if subKey not in res[key]:
                 res[key][subKey] = {}
 
             ssKey = row[2].encode('utf-8')
-            if not res[key][subKey].has_key(ssKey):
+            if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = {}
 
             cnt = float(row[4])
@@ -216,15 +216,15 @@ class CalcCourseMetric(object):
         for row in self.__db.select(sql):
             count += 1
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
 
             subKey = row[1].encode('utf-8')
-            if not res[key].has_key(subKey):
+            if subKey not in res[key]:
                 res[key][subKey] = {}
 
             ssKey = row[2].encode('utf-8')
-            if not res[key][subKey].has_key(ssKey):
+            if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = {}
 
             cnt = float(row[4])

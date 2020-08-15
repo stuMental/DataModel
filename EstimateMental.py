@@ -9,7 +9,6 @@ import Logger
 import Config
 import DbUtil
 import CalcCourseMetric
-import CalcTeaCourseMetric
 import CalcTeacherMetric
 import CalcClassMetric
 import AnalyzeGrade
@@ -27,13 +26,16 @@ class EstimateMental(object):
         self.__logger = Logger.Logger(__name__)
         self.__preprocessor = Preprocessor.Preprocessor(configs)
         self.__poster = PostMetric.PostMetric(configs)
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__date = configs['date']
-        self.__teaching = True if configs['teaching'] == 1 else False
+        self.__teaching = True if configs['teaching'] == 1 else False  # teaching=1 表示评估课堂的教学情况
+        self.__teacher = True if configs['teaching'] == 2 else False  # teaching=2 表示基于S-T评估教师的教学情况
         if self.__teaching:  # 不识别学生情况下的教学效果评估
             self.__teaching_metric = CalcTeachingMetric.CalcTeachingMetric(configs)
             self.__teaching_analyzer = AnalyzeTeachingGrade.AnalyzeTeachingGrade(configs)
-        else:  # 需要识别学生
+        elif self.__teacher:  # 基于S-T分析教师教学情况
+            self.__teacher_metric = CalcTeacherMetric.CalcTeacherMetric(configs)
+        else:  # 需要识别学生，基于学生的行为评估学生学习状态
             self.__metric = CalcMetric.CalcMetric(configs)
             self.__course = CalcCourseMetric.CalcCourseMetric(configs)
             self.__analyzer = AnalyzeGrade.AnalyzeGrade(configs)
@@ -71,6 +73,12 @@ class EstimateMental(object):
             teaching_analysis_metrics = self.__teaching_analyzer.Analysis(estimate_date)
             self.__poster.post_teaching_study_grade(teaching_analysis_metrics)
             self.__teaching_analyzer.analyze_teaching_scores(estimate_date)
+        elif self.__teacher:
+            self.__logger.info('基于S-T分析法评估教师的教学情况')
+            emotions, behaviors, scores = self.__teacher_metric.calculate_teacher_metrics(estimate_date)
+            self.__poster.post_teacher_emotions(emotions, estimate_date)
+            self.__poster.post_teacher_behaviors(behaviors, estimate_date)
+            self.__poster.post_teacher_scores(scores, estimate_date)
         else:
             # 评估学生
             # 获得学生基本信息
@@ -91,10 +99,15 @@ class EstimateMental(object):
             students = self.__poster.post_interest_metric(self.__interests, estimate_date, students)
             self.__logger.info("Finished to post Interest")
 
-            # 计算成绩与学习状态之间的四象限分析指标
+            # 计算学生成绩与学习状态之间的四象限分析指标
             self.__logger.info("Begin to analyze and post Grade and Study_Status")
             analysis_metrics = self.__analyzer.Analysis(estimate_date)
             self.__poster.post_grade_study_metric(analysis_metrics, students)
+
+            # 计算班级整体成绩与学习状态之间的四象限分析指标
+            self.__logger.info("Begin to analyze and post Grade and Study status for class")
+            class_metrics = self.__analyzer.class_analysis(estimate_date)
+            self.__poster.post_teaching_study_grade(class_metrics)
 
         self.__logger.info("Finished to analyze and post")
 
@@ -110,15 +123,15 @@ class EstimateMental(object):
         res = {}
         for row in self.__db.select(sql):
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
 
             subKey = row[1].encode('utf-8')
-            if not res[key].has_key(subKey):
+            if subKey not in res[key]:
                 res[key][subKey] = {}
 
             ssKey = row[2].encode('utf-8')
-            if not res[key][subKey].has_key(ssKey):
+            if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = 0
 
             if row[3] == '0' or row[3] == '1': # 非常好 + 良好的总计天数
@@ -147,7 +160,7 @@ class EstimateMental(object):
         res = {}
         for row in self.__db.select(sql):
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
 
             course = row[1].encode('utf-8')
@@ -163,19 +176,19 @@ class EstimateMental(object):
         course_thresholds = self.count_course_interest_threshold(end_date)
         for class_id, values in metrics.items():
             for face_id in values:
-                if study_states.has_key(class_id) and study_states[class_id].has_key(face_id):
+                if class_id in study_states and face_id in study_states[class_id]:
                     for course, value in study_states[class_id][face_id].items():
                         if class_id in course_thresholds and course in course_thresholds[class_id]:
                             if value >= course_thresholds[class_id][course]:
-                                if not metrics[class_id][face_id].has_key('student_interest'):
+                                if student_interest not in metrics[class_id][face_id]:
                                     metrics[class_id][face_id]['student_interest'] = course
                                 else:
                                     metrics[class_id][face_id]['student_interest'] += ',' + course
 
                                 # Keep interest in a seperated table
-                                if not self.__interests.has_key(class_id):
+                                if class_id not in self.__interests:
                                     self.__interests[class_id] = {}
-                                if not self.__interests[class_id].has_key(face_id):
+                                if face_id not in self.__interests[class_id]:
                                     self.__interests[class_id][face_id] = []
                                 self.__interests[class_id][face_id].append(course)
 
@@ -196,7 +209,7 @@ class EstimateMental(object):
         res = {}
         for row in self.__db.select(sql):
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
             res[key]['student_name'] = row[1].encode('utf-8')
             res[key]['college_name'] = row[2].encode('utf-8')

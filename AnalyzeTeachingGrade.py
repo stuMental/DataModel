@@ -11,15 +11,15 @@ class AnalyzeTeachingGrade(object):
     """Analyze grade with course ans study_status for class"""
     def __init__(self, configs):
         super(AnalyzeTeachingGrade, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
         self.__delimiter = '@'
 
-    def Analysis(self, dt):
+    def Analysis(self, i_dt):
         ''''''
         CommonUtil.verify()
         self.__logger.info("Begin to analyze grade and study_status for class")
-        dates = self.get_calc_dates(dt)
+        dates = self.get_calc_dates(i_dt)
         if not dates:
             self.__logger.info("No dates that needs to be computed")
             return {}
@@ -34,7 +34,7 @@ class AnalyzeTeachingGrade(object):
             grade_levels = self.get_course_grade_level(dt)
             study_levels = self.get_course_study_status(CommonUtil.get_specific_date(dt[3], Config.ANALYSIS_LOOKBACKWINDOW) , dt)
             for course_name, score in study_levels.items():
-                    if course_name not in Config.FILTER_COURSES and grade_levels.has_key(course_name):
+                    if course_name not in Config.FILTER_COURSES and course_name in grade_levels:
                         metrics[class_id][dt[3]][course_name] = [grade_levels[course_name], score]
 
         self.__logger.debug(str(metrics))
@@ -79,7 +79,7 @@ class AnalyzeTeachingGrade(object):
         res = {}
         for row in self.__db.select(sql):
             course = row[0].encode('utf-8')
-            if not res.has_key(course):
+            if course not in res:
                 res[course] = {}
 
             res[course] = float(row[1])
@@ -112,7 +112,7 @@ class AnalyzeTeachingGrade(object):
         res = {}
         for row in self.__db.select(sql):
             course = row[0].encode('utf-8')
-            if not res.has_key(course):
+            if course not in res:
                 res[course] = {}
 
             res[course] = float(row[1])

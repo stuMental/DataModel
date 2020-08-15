@@ -24,10 +24,10 @@ class Logger(object):
         dir_path, file_name = os.path.split(os.path.abspath(sys.argv[0]))
         log_path = dir_path + '/logs'
         while (not os.path.exists(log_path)):
-            print 'Trying to create log path: {}'.format(log_path)
+            print ('Trying to create log path: {}'.format(log_path))
             os.mkdir(log_path)
 
-        print 'Log path: {}'.format(log_path)
+        print ('Log path: {}'.format(log_path))
         return log_path
 
     def fatal(self, message):
