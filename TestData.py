@@ -11,7 +11,7 @@ class TestData(object):
     """docsTry for TestData"""
     def __init__(self):
         super(TestData, self).__init__()
-        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(Config.INPUT_DB_HOST, Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
         self.__courses = ['course_1', 'course_2', 'course_2']
         self.__students = ['201821210001', '201821210002', '201821210003']
@@ -23,7 +23,7 @@ class TestData(object):
     def produce(self):
         ''''''
         sql = '''
-            INSERT INTO  {0} (camera_id, face_id, pose_stat_time, body_stat, face_pose, face_emotion, face_pose_stat, course_name, class_id) VALUES 
+            INSERT INTO  {0} (camera_id, face_id, pose_stat_time, body_stat, face_pose, face_emotion, face_pose_stat, course_name, class_id) VALUES
         '''.format(Config.INTERMEDIATE_TABLE_TRAIN)
 
         vSqls = ''
@@ -46,7 +46,7 @@ class TestData(object):
     def stu_class(self):
         ''''''
         sql = '''
-            INSERT INTO  {0} (grade_name, class_name, student_number, student_name, dt) VALUES 
+            INSERT INTO  {0} (grade_name, class_name, student_number, student_name, dt) VALUES
         '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE)
 
         vSqls = ''
@@ -70,7 +70,7 @@ class TestData(object):
     def course(self):
         ''''''
         sql = '''
-            INSERT INTO  {0} (course_id, course_name, tea_id, tea_name, class_name, grade_name, start_time, end_time, dt) VALUES 
+            INSERT INTO  {0} (course_id, course_name, tea_id, tea_name, class_name, grade_name, start_time, end_time, dt) VALUES
         '''.format(Config.SCHOOL_COURSE_TABLE)
 
         vSqls = ''

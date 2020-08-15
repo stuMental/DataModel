@@ -10,7 +10,7 @@ class CalcClassMetric(object):
     """计算教师报表相关的指标，比如教师情绪、师德修养和教学态度等。"""
     def __init__(self, configs):
         super(CalcClassMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__utils = MetricUtil.MetricUtil()
         self.__logger = Logger.Logger(__name__)
 
@@ -48,13 +48,13 @@ class CalcClassMetric(object):
         self.__logger.info("Begin to compute class_positivity metric")
         for class_id, rows in student_emotions.items():
             for course, records in rows.items():
-                if teacher_emotions.has_key(class_id) and teacher_emotions[class_id].has_key(course) \
-                    and student_body_stat_count.has_key(class_id) and student_body_stat_count[class_id].has_key(course) \
-                    and teacher_body_stat_count.has_key(class_id) and teacher_body_stat_count[class_id].has_key(course):
-                    if not metrics.has_key(class_id):
+                if class_id in teacher_emotions and course in teacher_emotions[class_id] \
+                    and class_id in student_body_stat_count and course in student_body_stat_count[class_id] \
+                    and class_id in teacher_body_stat_count and course in teacher_body_stat_count[class_id]:
+                    if class_id not in metrics:
                         metrics[class_id] = {}
 
-                    if not metrics[class_id].has_key(course):
+                    if course not in metrics[class_id]:
                         metrics[class_id][course] = {}
 
                     metrics[class_id][course]['class_positivity'] = self.estimate_class_positivity(teacher_emotions[class_id][course], teacher_body_stat_count[class_id][course], student_emotions[class_id][course], student_body_stat_count[class_id][course])
@@ -62,20 +62,20 @@ class CalcClassMetric(object):
         self.__logger.info("Begin to compute class_concentration metric")
         for class_id, values in metrics.items():
             for course, records in values.items():
-                if student_mentals.has_key(class_id) and student_mentals[class_id].has_key(course) \
-                    and student_studies.has_key(class_id) and student_studies[class_id].has_key(course) \
-                    and student_face_pose_count.has_key(class_id) and student_face_pose_count[class_id].has_key(course) \
-                    and student_body_stat_count.has_key(class_id) and student_body_stat_count[class_id].has_key(course) \
-                    and teacher_attitudes.has_key(class_id) and teacher_attitudes[class_id].has_key(course):
+                if class_id in student_mentals and course in student_mentals[class_id] \
+                    and class_id in student_studies and course in student_studies[class_id] \
+                    and class_id in student_face_pose_count and course in student_face_pose_count[class_id] \
+                    and class_id in student_body_stat_count and course in student_body_stat_count[class_id] \
+                    and class_id in teacher_attitudes and course in teacher_attitudes[class_id]:
 
                     metrics[class_id][course]['class_concentration'] = self.estimate_class_concentration(student_mentals[class_id][course], student_studies[class_id][course], student_face_pose_count[class_id][course], student_body_stat_count[class_id][course], teacher_attitudes[class_id][course])
 
         self.__logger.info("Begin to compute class_interactivity metric")
         for class_id, values in metrics.items():
             for course, records in values.items():
-                if student_face_pose_count.has_key(class_id) and student_face_pose_count[class_id].has_key(course) \
-                    and student_body_stat_count.has_key(class_id) and student_body_stat_count[class_id].has_key(course) \
-                    and teacher_body_stat_count.has_key(class_id) and teacher_body_stat_count[class_id].has_key(course):
+                if class_id in student_face_pose_count and course in student_face_pose_count[class_id] \
+                    and class_id in student_body_stat_count and course in student_body_stat_count[class_id] \
+                    and class_id in teacher_body_stat_count and course in teacher_body_stat_count[class_id]:
 
                     metrics[class_id][course]['class_interactivity'] = self.estimate_class_interactivity(student_face_pose_count[class_id][course], student_body_stat_count[class_id][course], teacher_body_stat_count[class_id][course])
 
@@ -95,11 +95,11 @@ class CalcClassMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
+            if row[0] not in res:
                 res[row[0]] ={}
 
             course_name = row[1].encode('utf-8')
-            if not res[row[0]].has_key(course_name):
+            if course_name not in res[row[0]]:
                 res[row[0]][course_name] = None
 
             res[row[0]][course_name] = row[2]
@@ -119,11 +119,11 @@ class CalcClassMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
+            if row[0] not in res:
                 res[row[0]] ={}
 
             course_name = row[1].encode('utf-8')
-            if not res[row[0]].has_key(course_name):
+            if course_name not in res[row[0]]:
                 res[row[0]][course_name] = None
 
             res[row[0]][course_name] = row[2]
@@ -143,11 +143,11 @@ class CalcClassMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
+            if row[0] not in res:
                 res[row[0]] ={}
 
             course_name = row[1].encode('utf-8')
-            if not res[row[0]].has_key(course_name):
+            if row[0] not in res[row[0]]:
                 res[row[0]][course_name] = []
 
             res[row[0]][course_name].append(row[2])
@@ -167,11 +167,11 @@ class CalcClassMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
+            if row[0] not in res:
                 res[row[0]] ={}
 
             course_name = row[1].encode('utf-8')
-            if not res[row[0]].has_key(course_name):
+            if course_name not in res[row[0]]:
                 res[row[0]][course_name] = []
 
             res[row[0]][course_name].append(row[2])
@@ -191,11 +191,11 @@ class CalcClassMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            if not res.has_key(row[0]):
+            if row[0] not in res:
                 res[row[0]] ={}
 
             course_name = row[1].encode('utf-8')
-            if not res[row[0]].has_key(course_name):
+            if course_name not in res[row[0]]:
                 res[row[0]][course_name] = []
 
             res[row[0]][course_name].append(row[2])
@@ -220,11 +220,11 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             count += 1
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
 
             course_name = row[1].encode('utf-8')
-            if not res[key].has_key(course_name):
+            if course_name not in res[key]:
                 res[key][course_name] = {}
 
             if row[2] == '0': # 正常
@@ -260,10 +260,10 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             count += 1
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
             subKey = row[1].encode('utf-8')
-            if not res[key].has_key(subKey):
+            if subKey not in res[key]:
                 res[key][subKey] = {}
 
             if row[2] == '0': # 正常
@@ -302,11 +302,11 @@ class CalcClassMetric(object):
         for row in self.__db.select(sql):
             count += 1
             key = row[0].encode('utf-8')
-            if not res.has_key(key):
+            if key not in res:
                 res[key] = {}
 
             subKey = row[1].encode('utf-8')
-            if not res[key].has_key(subKey):
+            if subKey not in res[key]:
                 res[key][subKey] = {}
 
             if row[2] == '0': # 平视

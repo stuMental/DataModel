@@ -6,6 +6,7 @@ import time
 import Config
 import argparse
 import uuid
+import math
 
 class CommonUtil(object):
     """Define some common functions"""
@@ -14,10 +15,19 @@ class CommonUtil(object):
 
     @staticmethod
     def get_truncate_time(interval):
-        ''''''
+        """ 对当前时间按照固定的时间周期进行截断
+        """
+
         now = datetime.datetime.now()
         unix = time.mktime(now.timetuple())
         return datetime.datetime.fromtimestamp(unix - unix % interval)
+
+    @staticmethod
+    def get_truncate_unix_timstamp(unix, interval):
+        """ 对以秒为单位的时间戳进行固定周期interval的截断
+        """
+
+        return unix - unix % interval
 
     @staticmethod
     def get_time_range():
@@ -99,17 +109,43 @@ class CommonUtil(object):
 
         parser = argparse.ArgumentParser()
         parser.add_argument('--dbhost', type=str, help='Database host ip')
-        parser.add_argument('--teaching', type=int, help='1: Estimate teaching status, 0: Don\'t estimate teaching status', default=0)
+        parser.add_argument('--teaching', type=int, help='0: Don\'t estimate, 1: Estimate teaching status, 2: Estimate teacher status based on S-T analysis', default=0)
         parser.add_argument('--date', type=str, help='date yyyy-mm-dd', default='-1')
+        parser.add_argument('--dbname', type=str, help='Database name', default=None)
 
         args = parser.parse_args()
         if not args.dbhost:
-            print "Please add necessary parameters, eg. --dbhost ip_address"
+            print ("Please add necessary parameters, eg. --dbhost ip_address")
             raise Exception("Please add necessary parameters (eg. --dbhost ip_address) in the command line.")
 
         configs = {}
         configs['dbhost'] = args.dbhost
         configs['teaching'] = args.teaching
         configs['date'] = args.date
+        configs['dbname'] = args.dbname
 
         return configs
+
+    @staticmethod
+    def get_score_by_triangle(edges):
+        """ 用三角形计算图形的面积
+        """
+        length = len(edges)
+        if length <= 2:
+            return 0.0
+
+        sin_value = 2 * math.pi / length
+        score = 0.0
+        for i in range(0, length):
+            a = edges[i]
+            b = edges[0] if i == length - 1 else edges[i + 1]
+            score += 0.5 * a * b * math.sin(sin_value)
+
+        return score
+
+    @staticmethod
+    def sigmoid(x, alpha=1, base=math.e):
+        """ 求sigmoid函数值
+        """
+
+        return 2 / (1 + math.pow(base, -x * alpha)) - 1

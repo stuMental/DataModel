@@ -10,7 +10,7 @@ class Preprocessor(object):
     """docsTry for Preprocessor"""
     def __init__(self, configs):
         super(Preprocessor, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def preprocessor(self, start_time, end_time, day):
@@ -184,7 +184,7 @@ class Preprocessor(object):
 
         sql = '''
             INSERT INTO {3}
-            SELECT t5.class_id, t5.face_id, t5.pose_stat_time, t5.body_stat, t5.face_pose, t5.face_emotion, 
+            SELECT t5.class_id, t5.face_id, t5.pose_stat_time, t5.body_stat, t5.face_pose, t5.face_emotion,
                    (CASE WHEN t6.face_pose IS NULL THEN '1' ELSE '0' END) AS face_pose_stat
             FROM (
                 SELECT class_id, face_id, pose_stat_time, face_pose_stat_time, body_stat, face_pose, face_emotion
@@ -206,7 +206,7 @@ class Preprocessor(object):
                     FROM {2}
                     WHERE face_pose != '-1' AND pose_stat_time >= {0} AND pose_stat_time < {1}
                     GROUP BY class_id, face_pose_stat_time, face_pose
-                    )t1 
+                    )t1
                     GROUP BY class_id, face_pose_stat_time
                 )t3
                 ON t2.class_id=t3.class_id AND t2.face_pose_stat_time=t3.face_pose_stat_time AND t2.num=t3.num

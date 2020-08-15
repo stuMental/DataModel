@@ -11,7 +11,7 @@ class PostMetric(object):
     """docsTry for PostMetric"""
     def __init__(self, configs):
         super(PostMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
         self.__delimiter = '@'
 
@@ -36,7 +36,6 @@ class PostMetric(object):
             '''.format(Config.OUTPUT_UI_TABLE)
 
             valuesSql = ''
-
             for class_id, values in datas.items():
                 for face_id, value in values.items():
                     if face_id in students:
@@ -81,7 +80,6 @@ class PostMetric(object):
             '''.format(Config.OUTPUT_UI_COURSE_TABLE)
 
             valuesSql = ''
-
             for class_id, raws in datas.items():
                 for face_id, values in raws.items():
                     if face_id in students:
@@ -128,7 +126,6 @@ class PostMetric(object):
             '''.format(Config.OUTPUT_UI_INTEREST_TABLE)
 
             valuesSql = ''
-
             for class_id, raws in datas.items():
                 for face_id, values in raws.items():
                     if face_id in students:
@@ -178,7 +175,6 @@ class PostMetric(object):
                     '''.format(Config.OUTPUT_UI_GRADE_STUDY_TABLE)
 
                     valuesSql = ''
-
                     for stu_id, values in item[1][dt].items():
                         if stu_id in students:
                             for row in values:
@@ -274,7 +270,6 @@ class PostMetric(object):
     def post_teaching_study_grade(self, data):
         """ 将课堂的成绩和学习状态二元关系存储到数据表
         """
-
         if data:
             sql = '''
                 INSERT INTO {0} (college_name, grade_name, class_name, course_name, grade_level, study_level, dt) VALUES
@@ -299,9 +294,115 @@ class PostMetric(object):
 
             self.__db.insert(result_sql)
 
+    def post_teacher_emotions(self, data, dt):
+        """ 将教师情绪储存到数据表
+        """
+        self.__logger.info('将教师情绪的结果存储到数据表')
+        if data:
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_UI_TEA_EMOTION_TABLE, dt)
+            self.__db.delete(sql)
+
+            sql = '''
+                INSERT INTO {0} (teacher_id, teacher_name, college_name, grade_name, class_name, course_id, course_name, happy, normal, angry, dt) VALUES
+            '''.format(Config.OUTPUT_UI_TEA_EMOTION_TABLE)
+            result_sql = ''
+            for teas in data.keys():
+                tea_arrs = teas.split(self.__delimiter)
+                for classes in data[teas].keys():
+                    class_arrs = classes.split(self.__delimiter)
+                    for courses, items in data[teas][classes].items():
+                        course_arrs = courses.split(self.__delimiter)
+                        tmp_sql = ''
+                        if result_sql:
+                            tmp_sql = ''',('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', {7}, {8}, {9}, '{10}')'''
+                        else:
+                            tmp_sql = sql + '''('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', {7}, {8}, {9}, '{10}')'''
+
+                        result_sql += tmp_sql.format(tea_arrs[0], tea_arrs[1], class_arrs[0], class_arrs[1], class_arrs[2], course_arrs[0], course_arrs[1], items['happy'], items['normal'], items['angry'], dt)
+
+            self.__db.insert(result_sql)
+
+    def post_teacher_behaviors(self, data, dt):
+        """ 将行为序列存储到数据表
+        """
+        self.__logger.info('将S-T行为序列的结果存储到数据表')
+        if data:
+            for table in [Config.OUTPUT_UI_TEA_BEHAVIOR_TABLE, Config.OUTPUT_UI_TEA_COURSE_TABLE]:
+                sql = '''
+                    DELETE FROM {0} WHERE dt = '{1}'
+                '''.format(table, dt)
+                self.__db.delete(sql)
+
+            sql1 = '''
+                INSERT INTO {0} (teacher_id, teacher_name, college_name, grade_name, class_name, course_id, course_name, action, type, unix_timestamp, dt) VALUES
+            '''.format(Config.OUTPUT_UI_TEA_BEHAVIOR_TABLE)
+            sql2 = '''
+                INSERT INTO {0} (teacher_id, teacher_name, college_name, grade_name, class_name, course_id, course_name, rt, ch, dt) VALUES
+            '''.format(Config.OUTPUT_UI_TEA_COURSE_TABLE)
+            result_sql1 = ''
+            result_sql2 = ''
+            for teas in data.keys():
+                tea_arrs = teas.split(self.__delimiter)
+                for classes in data[teas].keys():
+                    class_arrs = classes.split(self.__delimiter)
+                    for courses, items in data[teas][classes].items():
+                        course_arrs = courses.split(self.__delimiter)
+                        tmp_sql2 = ''
+                        if result_sql2:
+                            tmp_sql2 = ''',('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', {7}, {8}, '{9}')'''
+                        else:
+                            tmp_sql2 = sql2 + '''('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', {7}, {8}, '{9}')'''
+
+                        result_sql2 += tmp_sql2.format(tea_arrs[0], tea_arrs[1], class_arrs[0], class_arrs[1], class_arrs[2], course_arrs[0], course_arrs[1], items['scores'][0], items['scores'][1], dt)
+                        for item in items['behaviors']:
+                            arrs = item[1].split('-')
+                            tmp_sql1 = ''
+                            if result_sql1:
+                                tmp_sql1 = ''',('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', {8}, {9}, '{10}')'''
+                            else:
+                                tmp_sql1 = sql1 + '''('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', {8}, {9}, '{10}')'''
+
+                            result_sql1 += tmp_sql1.format(tea_arrs[0], tea_arrs[1], class_arrs[0], class_arrs[1], class_arrs[2], course_arrs[0], course_arrs[1], arrs[1], arrs[0], item[0], dt)
+
+            self.__db.insert(result_sql1)
+            self.__db.insert(result_sql2)
+
+    def post_teacher_scores(self, data, dt):
+        """ 将教学状态评估得分存储到数据表
+        """
+        self.__logger.info('将教学状态评估的结果存储到数据表')
+        if data:
+            sql = '''
+                DELETE FROM {0} WHERE dt = '{1}'
+            '''.format(Config.OUTPUT_UI_TEA_DAILY_TABLE, dt)
+            self.__db.delete(sql)
+
+            sql = '''
+                INSERT INTO {0} (teacher_id, teacher_name, college_name, grade_name, class_name, course_id, course_name, score, emotion, behavior, ontime, dt) VALUES
+            '''.format(Config.OUTPUT_UI_TEA_DAILY_TABLE)
+
+            result_sql = ''
+            for teas in data.keys():
+                tea_arrs = teas.split(self.__delimiter)
+                for classes in data[teas].keys():
+                    class_arrs = classes.split(self.__delimiter)
+                    for courses, items in data[teas][classes].items():
+                        course_arrs = courses.split(self.__delimiter)
+                        tmp_sql = ''
+                        if result_sql:
+                            tmp_sql = ''',('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', {7}, {8}, {9}, {10}, '{11}')'''
+                        else:
+                            tmp_sql = sql + '''('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', {7}, {8}, {9}, {10}, '{11}')'''
+
+                        result_sql += tmp_sql.format(tea_arrs[0], tea_arrs[1], class_arrs[0], class_arrs[1], class_arrs[2], course_arrs[0], course_arrs[1], items['score'], items['emotion'], items['behavior'], items['ontime'], dt)
+
+            self.__db.insert(result_sql)
+
     def get_valid_value(self, data, key):
         ''''''
-        if isinstance(data, dict) and data.has_key(key):
+        if isinstance(data, dict) and key in data:
             return data[key]
         else:
             return Config.STUDENT_STATUS_DEFAULT[key]  # 默认值

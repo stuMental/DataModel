@@ -230,57 +230,8 @@ FACETRACK_MININUM_LIMITATION = 200 # 以face_track作为face_id的数据，要�
 # 嘉宾Id
 PREFIX_GUEST = '嘉宾_'  # 所有嘉宾的name都是以这个Prefix为前缀
 
-# 教师模块的参数配置
-INTERMEDIATE_TEACHER_TABLE_TRAIN = ''
-INTERMEDIATE_TABLE_ONTIME = ''
-
-OUTPUT_UI_TEA_DAILY_TABLE = ''
-OUTPUT_UI_TEA_COURSE_TABLE = ''
-
-TEACHER_EMOTION_THRESHOLD = {
-    'EMOTION_ANGRY': 0.3,  # >=
-    'EMOTION_BAD': 0.3,  # >=
-    'EMOTION_HAPPY': 0.6  # >=
-}
-
-TEACHER_ETHICS_BAD_THRESHOLD = {
-    "TEACHER_EMOTION": [2,3], # 愤怒 低落
-    "CLOTHING_STATUS": 0.6 # >=
-}
-
-TEACHER_ETHICS_GOOD_THRESHOLD = {
-    "TEACHER_EMOTION": [0,1], # 正常 开心
-    "CLOTHING_STATUS": 0.6 # >=
-}
-
-TEACHER_ETHICS_GREAT_THRESHOLD = {
-    "TEACHER_EMOTION": [1], # 开心
-    "CLOTHING_STATUS": 0.6 # >=
-}
-
-TEACHER_TEACHING_BAD_THRESHOLD = {
-    'TEACHER_EMOTION': [2,3], # 愤怒 低落
-    'ONTIME': 1, # 不准时
-    'ETHICS_STATUS': [3], # 不佳
-    'SITTING_TIME': 0.5, # >
-    'FACING_STUDENT_TIME': 0.5 # <
-}
-
-TEACHER_TEACHING_GREAT_THRESHOLD = {
-    'TEACHER_EMOTION': [0], # 开心
-    'ONTIME': 0, # 准时
-    'ETHICS_STATUS': [1], # 良好
-    'STANDING_TIME': 0.6, # >
-    'FACING_STUDENT_TIME': 0.6 # >
-}
-
-TEACHER_TEACHING_GOOD_THRESHOLD = {
-    'TEACHER_EMOTION': [0], # 开心
-    'ONTIME': 0, # 准时
-    'ETHICS_STATUS': [0], # 优秀
-    'STANDING_TIME': 0.4, # >
-    'FACING_STUDENT_TIME': 0.4 # >
-}
+# 基于学生的学习状态评估课程的学习状态
+STUDENT_CLASS_STUDY_STAT_THRESHOLD = 0.85  # 对于student_study_stat=2 正常 的权重
 
 # 课堂
 CLASS_POSITIVITY_BAD_THRESHOLD = {
@@ -415,3 +366,28 @@ TEACHING_CONCENTRATION_LOW = {
     'face_pose': 0.4,  # 低头或左顾右盼次数超过50%
     'body_stat': 0.4  # 睡觉、趴着听课、手托举听课次数超50%
 }
+
+# 教师模块的参数配置
+TEACHER_RAW_DATA_TABLE = 'person_teacher_body_status'
+INTERMEDIATE_TEACHER_STUDENT_TABLE = 'person_teacher_body_status_student_course_info'
+INTERMEDIATE_TEACHER_STUDENT_BEHAVIOR_TABLE = 'person_teacher_body_status_student_behavior_info'
+INTERMEDIATE_TEACHER_COURSE_TABLE = 'person_teacher_body_status_course_info'
+INTERMEDIATE_TEACHER_BEHAVIOR_TABLE = 'person_teacher_body_status_behavior_info'
+INTERMEDIATE_TEACHER_EMOTION_TABLE = 'person_teacher_body_status_emotion_info'
+INTERMEDIATE_TEACHER_ONTIME_TABLE = 'person_teacher_body_status_ontime_info'
+
+OUTPUT_UI_TEA_EMOTION_TABLE = 'teacher_emotion_daily'
+OUTPUT_UI_TEA_DAILY_TABLE = 'teacher_status_daily'
+OUTPUT_UI_TEA_COURSE_TABLE = 'teacher_course_type_daily'
+OUTPUT_UI_TEA_BEHAVIOR_TABLE = 'teacher_student_behavior_result'
+
+TEACHER_INTERVAL = 30  # 30秒 标准的S-T分析采用的时间间隔
+TEACHER_STUDENT_THINK = 0.4  # 低头比例超过40% 认为是学生是在思考/计算
+TEACHER_STUDENT_DISCUSSION = 0.4  # 左顾右盼超过40% 认为学生是在讨论
+TEACHER_STUDENT_SPEAK = 3  # 考虑到站立和举手存钻误差识别的情况，因此需要大于一定的阈值才被认为是[发言]。
+TEACHER_ONTIME = '0:5:0'  # 5分钟内识别到，即认为教师准时上课
+TEACHER_BEHAVIORS = ['板书', '解说(讲课)', '巡视', '其他']
+STUDENT_BEHAVIORS = ['发言', '讨论', '思考/计算', '其他']
+TEACHER_NORMAL_WEIGHT = 0.8  # 评估教学情绪得分时，平静的得分权重。
+TEACHER_HAPPY_THRESHOLD = 0.4  # 评估教学情绪得分时，如果开始占比低于40%，需要启用平静得分权重的限制。
+TEACHER_ESTIMATE_DEFAULT = 0.6  # 评估教学状态时，如果无信息，默认为0.6

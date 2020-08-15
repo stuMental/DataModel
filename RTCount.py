@@ -12,19 +12,20 @@ class RTCount(object):
     """实时统计教室的人数情况"""
     def __init__(self, configs):
         super(RTCount, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def process(self):
         CommonUtil.verify()
         self.__logger.info("Try to real time the number of students for each teaching room, then output results to the table {0}".format(Config.REAL_TIME_PEOPLE_TABLE))
         unixtimestamp = int(time.time())
-        self.__delete_data(unixtimestamp)
+        dt = CommonUtil.get_date_day()
+        self.__delete_data(unixtimestamp, dt)
         self.__process_people_count(unixtimestamp)
         self.__process_history(unixtimestamp)
         self.__logger.info('Done')
 
-    def __delete_data(self, timestamp):
+    def __delete_data(self, timestamp, dt):
         """ 删除数据
         """
 
@@ -37,6 +38,10 @@ class RTCount(object):
         sql = '''
             DELETE FROM {0} WHERE room_addr NOT IN (SELECT room_addr FROM {1} GROUP BY room_addr)
         '''.format(Config.REAL_TIME_PEOPLE_TABLE_RTL, Config.SCHOOL_CAMERA_ROOM_TABLE)
+        self.__db.delete(sql)
+        sql = '''
+            DELETE a FROM {0} a WHERE dt <= '{1}'
+        '''.format(Config.REAL_TIME_PEOPLE_TABLE, CommonUtil.get_specific_date(dt, days=Config.DATA_RESERVED_RAW_WINDOW))
         self.__db.delete(sql)
         self.__logger.info('Finished to delete data.')
 

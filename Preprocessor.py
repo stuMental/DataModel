@@ -11,9 +11,10 @@ class Preprocessor(object):
     """预处理raw数据"""
     def __init__(self, configs):
         super(Preprocessor, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE, Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
-        self.__teaching = True if configs['teaching'] == 1 else False
+        self.__teaching = True if configs['teaching'] == 1 else False  # teaching=1 表示评估课堂的教学情况
+        self.__teacher = True if configs['teaching'] == 2 else False  # teaching=2 表示基于S-T评估教师的教学情况
 
     def preprocessor(self, day):
         CommonUtil.verify()
@@ -24,6 +25,15 @@ class Preprocessor(object):
             self.update_teaching_study()
             self.update_teaching_data(day)
             self.preprocess_aggregate_teaching(day)
+        elif self.__teacher:
+            self.__logger.info('基于S-T评估教师教学情况')
+            self.truncate_teacher_data(day)
+            self.filter_student_for_teacher(day)
+            self.process_student_actions(day)
+            self.update_teacher_course(day)
+            self.process_teacher_ontime(day)
+            self.process_teacher_emotion(day)
+            self.process_teacher_behavior(day)
         else:
             self.__logger.info('基于学生评估教学状态--预处理数据')
             self.truncate_data(day)
@@ -331,12 +341,228 @@ class Preprocessor(object):
         self.__db.insert(sql)
         self.__logger.info("Finish to preprocess aggregate teaching data")
 
+    def truncate_teacher_data(self, day):
+        """ 清除教师教学情况的临时表
+        """
+        self.__logger.info("Truncate all data for teacher in database {0}".format(Config.INPUT_DB_DATABASE))
+        tables = [Config.INTERMEDIATE_TEACHER_STUDENT_TABLE, Config.INTERMEDIATE_TEACHER_COURSE_TABLE, Config.INTERMEDIATE_TEACHER_BEHAVIOR_TABLE, Config.INTERMEDIATE_TEACHER_STUDENT_BEHAVIOR_TABLE, Config.INTERMEDIATE_TEACHER_EMOTION_TABLE, Config.INTERMEDIATE_TEACHER_ONTIME_TABLE]
+        for table in tables:
+            sql = '''
+                DROP TABLE {0}
+            '''.format(table)
+            self.__db.truncate(sql)
+
+        self.__logger.info("Done to truncate or delete data")
+
+    def filter_student_for_teacher(self, day):
+        """ 预处理学生数据、关联课程信息
+        """
+
+        self.__logger.info("filter student data for teacher")
+        sql = '''
+            CREATE TABLE {0}
+            SELECT
+                t4.college_name, t4.grade_name, t4.class_name, t4.course_id, t4.course_name, t4.teacher_id, t4.teacher_name, t3.body_stat AS body_stat, t3.face_pose, t3.pose_stat_time - t3.pose_stat_time % {5} AS pose_stat_time
+            FROM (
+                SELECT
+                    t2.room_addr, t1.body_stat, t1.face_pose, t1.pose_stat_time
+                FROM (
+                    SELECT
+                        camera_id, body_stat, face_pose, pose_stat_time
+                    FROM {1}
+                    WHERE body_stat IN ('1', '2') OR face_pose IN ('0', '1', '2')
+                ) t1 JOIN {2} t2 ON t1.camera_id = t2.camera_id
+            ) t3 JOIN (
+                SELECT
+                    room_addr, college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, end_time
+                FROM {3}
+                WHERE weekday = dayofweek('{4}')
+                GROUP BY room_addr, college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, end_time
+            ) t4 ON t3.room_addr = t4.room_addr AND cast(from_unixtime(t3.pose_stat_time,'%H:%i') as time) >= t4.start_time AND cast(from_unixtime(t3.pose_stat_time,'%H:%i') as time) <= t4.end_time
+        '''.format(Config.INTERMEDIATE_TEACHER_STUDENT_TABLE, Config.RAW_INPUT_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, day, Config.TEACHER_INTERVAL)
+        self.__db.insert(sql)
+        self.__logger.info("Finish to filter student data for teacher")
+
+        self.__logger.info("To add index")
+        self.__db.execute("CREATE INDEX college_name_index ON {0} (college_name);".format(Config.INTERMEDIATE_TEACHER_STUDENT_TABLE))
+        self.__db.execute("CREATE INDEX grade_name_index ON {0} (grade_name);".format(Config.INTERMEDIATE_TEACHER_STUDENT_TABLE))
+        self.__db.execute("CREATE INDEX class_name_index ON {0} (class_name);".format(Config.INTERMEDIATE_TEACHER_STUDENT_TABLE))
+
+    def process_student_actions(self, day):
+        """ 处理学生的行为动作序列
+        """
+        self.__logger.info("Process student actions for teacher")
+        sql = '''
+            CREATE TABLE {0}
+            SELECT
+                college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time,
+                CASE
+                    WHEN body_stat_cnt >= {9} THEN '{5}'
+                    WHEN face_pose_cnt1 / total >= {2} THEN '{6}'
+                    WHEN face_pose_cnt2 / total >= {3} THEN '{7}'
+                ELSE '{8}'
+                END AS behavior,
+                '{4}' AS dt
+            FROM (
+                SELECT
+                    t3.college_name, t3.grade_name, t3.class_name, t3.course_id, t3.course_name, t3.teacher_id, t3.teacher_name, t3.pose_stat_time,
+                    MAX(CASE WHEN t4.body_stat IS NOT NULL THEN t4.body_stat_cnt ELSE 0 END) AS body_stat_cnt,
+                    MAX(CASE WHEN t3.face_pose IS NOT NULL AND t3.face_pose = '1' THEN t3.face_pose_cnt ELSE 0 END) AS face_pose_cnt1,
+                    MAX(CASE WHEN t3.face_pose IS NOT NULL AND t3.face_pose = '2' THEN t3.face_pose_cnt ELSE 0 END) AS face_pose_cnt2,
+                    MAX(total) AS total
+                FROM (
+                    SELECT
+                        t1.college_name, t1.grade_name, t1.class_name, t1.course_id, t1.course_name, t1.teacher_id, t1.teacher_name, t1.pose_stat_time, t1.total, t2.face_pose, t2.face_pose_cnt
+                    FROM (
+                        SELECT
+                            college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, COUNT(*) AS total
+                        FROM {1}
+                        GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time
+                    ) t1 LEFT OUTER JOIN (
+                        SELECT
+                            college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, face_pose, COUNT(*) AS face_pose_cnt
+                        FROM {1}
+                        WHERE face_pose IN ('1', '2')
+                        GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, face_pose
+                    ) t2 ON t1.college_name = t2.college_name AND t1.grade_name = t2.grade_name AND t1.class_name = t2.class_name AND t1.course_id = t2.course_id AND t1.course_name = t2.course_name AND t1.teacher_id = t2.teacher_id AND t1.teacher_name = t2.teacher_name AND t1.pose_stat_time = t2.pose_stat_time
+                ) t3 LEFT OUTER JOIN (
+                    SELECT
+                        college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, body_stat, COUNT(*) AS body_stat_cnt
+                    FROM (
+                        SELECT
+                            college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, '1' AS body_stat
+                        FROM {1}
+                        WHERE body_stat IN ('1', '2')
+                    ) tmp
+                    GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, body_stat
+                ) t4 ON t3.college_name = t4.college_name AND t3.grade_name = t4.grade_name AND t3.class_name = t4.class_name AND t3.course_id = t4.course_id AND t3.course_name = t4.course_name AND t3.teacher_id = t4.teacher_id AND t3.teacher_name = t4.teacher_name AND t3.pose_stat_time = t4.pose_stat_time
+                GROUP BY t3.college_name, t3.grade_name, t3.class_name, t3.course_id, t3.course_name, t3.teacher_id, t3.teacher_name, t3.pose_stat_time
+            ) tmp2
+        '''.format(Config.INTERMEDIATE_TEACHER_STUDENT_BEHAVIOR_TABLE, Config.INTERMEDIATE_TEACHER_STUDENT_TABLE, Config.TEACHER_STUDENT_DISCUSSION, Config.TEACHER_STUDENT_THINK, day, Config.STUDENT_BEHAVIORS[0], Config.STUDENT_BEHAVIORS[1], Config.STUDENT_BEHAVIORS[2], Config.STUDENT_BEHAVIORS[3], Config.TEACHER_STUDENT_SPEAK)
+        self.__db.insert(sql)
+        self.__logger.info("Finish to process behavior of student for teacher")
+
+        self.__logger.info("To add index")
+        self.__db.execute("CREATE INDEX college_name_index ON {0} (college_name);".format(Config.INTERMEDIATE_TEACHER_STUDENT_BEHAVIOR_TABLE))
+        self.__db.execute("CREATE INDEX grade_name_index ON {0} (grade_name);".format(Config.INTERMEDIATE_TEACHER_STUDENT_BEHAVIOR_TABLE))
+        self.__db.execute("CREATE INDEX class_name_index ON {0} (class_name);".format(Config.INTERMEDIATE_TEACHER_STUDENT_BEHAVIOR_TABLE))
+
+    def update_teacher_course(self, day):
+        """ 处理教师数据，关联课程信息
+        """
+        self.__logger.info("To add course info for teacher")
+        sql = '''
+            CREATE TABLE {0}
+            SELECT
+                t4.college_name, t4.grade_name, t4.class_name, t4.course_id, t4.course_name, t4.teacher_id, t4.teacher_name, t3.face_id, t3.body_stat, t3.face_emotion, t3.unix_timestamp - t3.unix_timestamp % {5} AS pose_stat_time, cast(from_unixtime(t3.unix_timestamp,'%H:%i') as time) AS u_time, t4.start_time
+            FROM (
+                SELECT
+                    t2.room_addr, t1.body_stat, t1.face_emotion, t1.unix_timestamp, t1.face_id
+                FROM (
+                    SELECT
+                        camera_id, face_id, body_stat, face_emotion, unix_timestamp
+                    FROM {1}
+                    WHERE dt = '{4}'
+                ) t1 JOIN {2} t2 ON t1.camera_id = t2.camera_id
+            ) t3 JOIN (
+                SELECT
+                    room_addr, college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, end_time
+                FROM {3}
+                WHERE weekday = dayofweek('{4}')
+                GROUP BY room_addr, college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, end_time
+            ) t4 ON t3.room_addr = t4.room_addr AND cast(from_unixtime(t3.unix_timestamp,'%H:%i') as time) >= t4.start_time AND cast(from_unixtime(t3.unix_timestamp,'%H:%i') as time) <= t4.end_time
+        '''.format(Config.INTERMEDIATE_TEACHER_COURSE_TABLE, Config.TEACHER_RAW_DATA_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, day, Config.TEACHER_INTERVAL)
+        self.__db.insert(sql)
+        self.__logger.info("Finish to add course data for teacher")
+
+        self.__logger.info("To add index")
+        self.__db.execute("CREATE INDEX college_name_index ON {0} (college_name);".format(Config.INTERMEDIATE_TEACHER_COURSE_TABLE))
+        self.__db.execute("CREATE INDEX grade_name_index ON {0} (grade_name);".format(Config.INTERMEDIATE_TEACHER_COURSE_TABLE))
+        self.__db.execute("CREATE INDEX class_name_index ON {0} (class_name);".format(Config.INTERMEDIATE_TEACHER_COURSE_TABLE))
+
+    def process_teacher_ontime(self, day):
+        """ 判定教师是否准时上课
+            标准：教师是否在课堂5分钟内被识别
+        """
+        self.__logger.info("Judge if the teacher begins to take course on time")
+        sql = '''
+            CREATE TABLE {0}
+            SELECT
+                college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time,
+                CASE
+                    WHEN total > 0 THEN 1
+                ELSE 0
+                END AS ontime,
+                '{3}' AS dt
+            FROM (
+                SELECT
+                    college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, COUNT(*) AS total
+                FROM {1}
+                WHERE face_id != 'unknown' AND u_time >= start_time AND u_time <= DATE_FORMAT(ADDTIME(start_time, '{2}'), '%H:%i')
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time
+            ) t1
+        '''.format(Config.INTERMEDIATE_TEACHER_ONTIME_TABLE, Config.INTERMEDIATE_TEACHER_COURSE_TABLE, Config.TEACHER_ONTIME, day)
+        self.__db.insert(sql)
+        self.__logger.info("Finish to judge ontime for teacher")
+
+    def process_teacher_emotion(self, day):
+        """ 处理教师的表情数据
+        """
+        self.__logger.info("Compute the emotion of teacher")
+        sql = '''
+            CREATE TABLE {0}
+            SELECT
+                college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, face_emotion, COUNT(*) AS total, '{2}' AS dt
+            FROM {1}
+            WHERE face_emotion != '-1'
+            GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, face_emotion
+        '''.format(Config.INTERMEDIATE_TEACHER_EMOTION_TABLE, Config.INTERMEDIATE_TEACHER_COURSE_TABLE, day)
+        self.__db.insert(sql)
+        self.__logger.info("Finish to compute the emotion of teacher")
+
+    def process_teacher_behavior(self, day):
+        """ 处理教师的行为数据
+        """
+        self.__logger.info("Process behaviors of teacher")
+        sql = '''
+            CREATE TABLE {0}
+            SELECT college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time,
+            CASE
+                WHEN behavior1 != 0 AND GREATEST(behavior1, behavior2, behavior3) = behavior1 THEN '{3}'
+                WHEN behavior2 != 0 AND GREATEST(behavior1, behavior2, behavior3) = behavior2 THEN '{4}'
+                WHEN behavior3 != 0 AND GREATEST(behavior1, behavior2, behavior3) = behavior3 THEN '{5}'
+            ELSE '{6}'
+            END AS behavior,
+            '{2}' AS dt
+            FROM (
+                SELECT college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time,
+                    MAX(CASE WHEN body_stat = '0' THEN total ELSE 0 END) AS behavior0,
+                    MAX(CASE WHEN body_stat = '1' THEN total ELSE 0 END) AS behavior1,
+                    MAX(CASE WHEN body_stat = '2' THEN total ELSE 0 END) AS behavior2,
+                    MAX(CASE WHEN body_stat = '3' THEN total ELSE 0 END) AS behavior3
+                FROM (
+                    SELECT
+                        college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, body_stat, COUNT(*) AS total
+                    FROM {1}
+                    GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, body_stat
+                ) t1
+                GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time
+            ) t2
+        '''.format(Config.INTERMEDIATE_TEACHER_BEHAVIOR_TABLE, Config.INTERMEDIATE_TEACHER_COURSE_TABLE, day, Config.TEACHER_BEHAVIORS[0], Config.TEACHER_BEHAVIORS[1], Config.TEACHER_BEHAVIORS[2], Config.TEACHER_BEHAVIORS[3])
+        self.__db.insert(sql)
+        self.__logger.info("Finish to process behavior of teacher")
+
+        self.__logger.info("To add index")
+        self.__db.execute("CREATE INDEX college_name_index ON {0} (college_name);".format(Config.INTERMEDIATE_TEACHER_BEHAVIOR_TABLE))
+        self.__db.execute("CREATE INDEX grade_name_index ON {0} (grade_name);".format(Config.INTERMEDIATE_TEACHER_BEHAVIOR_TABLE))
+        self.__db.execute("CREATE INDEX class_name_index ON {0} (class_name);".format(Config.INTERMEDIATE_TEACHER_BEHAVIOR_TABLE))
+
 
 if __name__ == "__main__":
     configs = {
         'dbhost': '172.16.14.190',
-        'teaching': 1
+        'teaching': 2
     }
 
     processor = Preprocessor(configs)
-    processor.preprocessor('2019-07-16')
+    processor.preprocessor('2020-07-07')

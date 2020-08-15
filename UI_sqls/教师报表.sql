@@ -1,94 +1,137 @@
 -- 如果数据结果中，缺少的维度均显示为0.
+-- 除了type的过滤条件意外，其余条件均需要从前端输入。
+
+
+-- 教师课堂互动类型
+SELECT
+    ROUND(AVG(rt), 2) AS rt, ROUND(AVG(ch), 2) AS ch
+FROM teacher_course_type_daily
+WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07';
+
+-- 师生行为序列
+SELECT
+    `type`
+FROM teacher_student_behavior_result
+WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+ORDER BY unix_timestamp ASC;
+
+-- 学生行为分析
+-- type:0 为教师行为
+-- type:1 为学生行为
+-- 所以where条件中type的过滤条件不用变
+SELECT
+    stu.`action` AS `action`,
+    ROUND(stu.action_cnt / tmp.total, 4) AS percentage
+FROM (
+    SELECT
+        `action`,
+        count(1) AS action_cnt
+    FROM teacher_student_behavior_result
+    WHERE `type` = 1 AND teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+    GROUP BY `action`
+) AS stu JOIN (
+    SELECT
+        COUNT(1) AS total
+    FROM teacher_student_behavior_result
+    WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+) AS tmp;
+
+
+-- 教师行为分析
+-- type:0 为教师行为
+-- type:1 为学生行为
+-- 所以where条件中type的过滤条件不用变
+SELECT
+    tea.`action` AS `action`,
+    ROUND(tea.action_cnt / tmp.total, 4) AS percentage
+FROM (
+    SELECT
+        `action`,
+        count(1) AS action_cnt
+    FROM teacher_student_behavior_result
+    WHERE `type` = 0 AND teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+    GROUP BY `action`
+) AS tea JOIN (
+    SELECT
+        COUNT(1) AS total
+    FROM teacher_student_behavior_result
+    WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+) AS tmp;
 
 ----------------------------------------
 -- 0：开心
 -- 1：正常
--- 2：低落
--- 3：愤怒
+-- 2：愤怒
 ----------------------------------------
--- 教师情绪状态
+-- 教学情绪
 SELECT
-       t1.teacher_emotion, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
-FROM
-(
-	SELECT
-		teacher_emotion, COUNT(*) AS num
-    FROM teacher_status_daily
-    WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
-    GROUP BY teacher_emotion
-) t1 JOIN
-(
-	SELECT
-		COUNT(*) as total
-	FROM teacher_status_daily
-	WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
-) t2;
+    ROUND(emotion.happy_cnt / tmp.total, 4) AS happy_rate,
+    ROUND(emotion.normal_cnt / tmp.total, 4) AS normal_rate,
+    ROUND(emotion.angry_cnt / tmp.total, 4) AS angry_rate
+FROM (
+    SELECT
+        SUM(happy) AS happy_cnt,
+        SUM(normal) AS normal_cnt,
+        SUM(angry) AS angry_cnt
+    FROM teacher_emotion_daily
+    WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+) AS emotion JOIN (
+    SELECT
+        SUM(happy + normal + angry) AS total
+    FROM teacher_emotion_daily
+    WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+) tmp;
 
--- 教师情绪状态趋势
+
+----------------------------------------
+-- 0：开心
+-- 1：正常
+-- 2：愤怒
+----------------------------------------
+-- 教学情绪状态趋势
 SELECT
-    dt, teacher_emotion
-FROM teacher_status_daily
-WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
+    emotion.dt AS dt,
+    ROUND(emotion.happy / tmp.total, 4) AS happy_rate,
+    ROUND(emotion.normal / tmp.total, 4) AS normal_rate,
+    ROUND(emotion.angry / tmp.total, 4) AS angry_rate
+FROM (
+    SELECT
+        dt,
+        happy,
+        normal,
+        angry
+    FROM teacher_emotion_daily
+    WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+) AS emotion JOIN (
+    SELECT
+        dt,
+        happy + normal + angry AS total
+    FROM teacher_emotion_daily
+    WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+    GROUP BY dt
+) tmp ON emotion.dt = tmp.dt
 ORDER BY dt ASC;
 
-----------------------------------------
--- 0：优秀
--- 1：良好
--- 2：正常
--- 3：不佳
-----------------------------------------
--- 师德修养
-SELECT
-       t1.teacher_ethics, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
-FROM
-(
-	SELECT
-		teacher_ethics, COUNT(*) AS num
-    FROM teacher_status_daily
-    WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
-    GROUP BY teacher_ethics
-) t1 JOIN
-(
-	SELECT
-		COUNT(*) as total
-	FROM teacher_status_daily
-	WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
-) t2;
 
--- 师德修养趋势
+----------------------------------------
+-- 教师教学状态
+-- 总评得分
+-- 教学表情
+-- 教学行为
+-- 上课准时
 SELECT
-    dt, teacher_ethics
+    ROUND(AVG(score), 2) AS score,
+    ROUND(AVG(emotion), 2) AS emotion,
+    ROUND(AVG(behavior), 2) AS behavior,
+    ROUND(AVG(ontime), 2) AS ontime
 FROM teacher_status_daily
-WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
-ORDER BY dt ASC;
+WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
+;
 
-----------------------------------------
--- 0：非常好
--- 1：良好
--- 2：正常
--- 3：不佳
-----------------------------------------
--- 教师教学态度
+-- 教师教学状态趋势
 SELECT
-       t1.teacher_attitude, ROUND((1.0 * t1.num) / t2.total * 100, 2) AS percentage
-FROM
-(
-	SELECT
-		teacher_attitude, COUNT(*) AS num
-    FROM teacher_status_daily
-    WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
-    GROUP BY teacher_attitude
-) t1 JOIN
-(
-	SELECT
-		COUNT(*) as total
-	FROM teacher_status_daily
-	WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
-) t2;
-
--- 教师教学态度趋势
-SELECT
-    dt, teacher_attitude
+    dt,
+    score
 FROM teacher_status_daily
-WHERE teacher_number = '1' AND dt >= '2019-09-01' AND dt <= '2019-09-29'
+WHERE teacher_id = '202001' AND course_id = '语文' AND college_name = '某职业学校' AND grade_name = '2017' AND class_name = '17动漫' AND dt >= '2020-06-04' AND dt <= '2020-06-07'
 ORDER BY dt ASC;
