@@ -66,7 +66,7 @@ class RTCount(object):
         for record in self.__db.select(sql):
             sql = '''
                 INSERT INTO {0} (room_id, room_addr, total, unix_timestamp, dt) VALUES('{1}', '{2}', '{3}', {4}, '{5}') ON DUPLICATE KEY UPDATE total = '{3}', unix_timestamp ={4}, dt = '{5}'
-            '''.format(Config.REAL_TIME_PEOPLE_TABLE_RTL, record[0].encode('utf-8'), record[1].encode('utf-8'), record[2].encode('utf-8'), record[3], record[4])
+            '''.format(Config.REAL_TIME_PEOPLE_TABLE_RTL, record[0], record[1], record[2], record[3], record[4])
             self.__db.insert(sql)
         self.__logger.info("Finish to compute real time the number of students for each teaching room.")
 

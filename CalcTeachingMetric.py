@@ -91,15 +91,15 @@ class CalcTeachingMetric(object):
             if action_type not in res:
                 res[action_type] = {}
 
-            class_id = row[1].encode('utf-8')
+            class_id = row[1]
             if class_id not in res[action_type]:
                 res[action_type][class_id] = {}
 
-            course_name = row[2].encode('utf-8')
+            course_name = row[2]
             if course_name not in res[action_type][class_id]:
                 res[action_type][class_id][course_name] = {}
 
-            action = row[3].encode('utf-8')
+            action = row[3]
             res[action_type][class_id][course_name][action] = float(row[4])
 
         self.__logger.debug('Teaching action status: ' + json.dumps(res))

@@ -50,6 +50,9 @@ Build a system to train data model
 1. str_to_date解析出错
     sql_mode='STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
 
+1. 如果出现apt-get install 报
+    sudo rm /var/lib/apt/lists/* -vf  然后执行 apt-get update （把之前的源链接都清楚，重新建立）
+
 # MySQL性能优化
 1. 关闭不必要表的日志.
     alter table table1 nologging;

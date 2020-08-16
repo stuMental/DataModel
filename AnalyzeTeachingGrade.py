@@ -53,7 +53,7 @@ class AnalyzeTeachingGrade(object):
 
         res = []
         for row in self.__db.select(sql):
-            res.append([row[0].encode('utf-8'), row[1].encode('utf-8'), row[2].encode('utf-8'), str(row[3])])
+            res.append([row[0], row[1], row[2], str(row[3])])
 
         self.__logger.info("Need to compute dates: {}".format(res))
 
@@ -78,7 +78,7 @@ class AnalyzeTeachingGrade(object):
 
         res = {}
         for row in self.__db.select(sql):
-            course = row[0].encode('utf-8')
+            course = row[0]
             if course not in res:
                 res[course] = {}
 
@@ -111,7 +111,7 @@ class AnalyzeTeachingGrade(object):
 
         res = {}
         for row in self.__db.select(sql):
-            course = row[0].encode('utf-8')
+            course = row[0]
             if course not in res:
                 res[course] = {}
 

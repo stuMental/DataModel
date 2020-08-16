@@ -122,15 +122,15 @@ class EstimateMental(object):
 
         res = {}
         for row in self.__db.select(sql):
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 
-            ssKey = row[2].encode('utf-8')
+            ssKey = row[2]
             if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = 0
 
@@ -159,11 +159,11 @@ class EstimateMental(object):
 
         res = {}
         for row in self.__db.select(sql):
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            course = row[1].encode('utf-8')
+            course = row[1]
             res[key][course] = max(Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_LOWER'], math.ceil(int(row[2]) * Config.INTEREST_THRESHOLD['STUDY_STATUS_DAYS_RATIO']))
 
         self.__logger.debug(str(res))
@@ -180,7 +180,7 @@ class EstimateMental(object):
                     for course, value in study_states[class_id][face_id].items():
                         if class_id in course_thresholds and course in course_thresholds[class_id]:
                             if value >= course_thresholds[class_id][course]:
-                                if student_interest not in metrics[class_id][face_id]:
+                                if 'student_interest' not in metrics[class_id][face_id]:
                                     metrics[class_id][face_id]['student_interest'] = course
                                 else:
                                     metrics[class_id][face_id]['student_interest'] += ',' + course
@@ -208,13 +208,13 @@ class EstimateMental(object):
 
         res = {}
         for row in self.__db.select(sql):
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
-            res[key]['student_name'] = row[1].encode('utf-8')
-            res[key]['college_name'] = row[2].encode('utf-8')
-            res[key]['grade_name'] = row[3].encode('utf-8')
-            res[key]['class_name'] = row[4].encode('utf-8')
+            res[key]['student_name'] = row[1]
+            res[key]['college_name'] = row[2]
+            res[key]['grade_name'] = row[3]
+            res[key]['class_name'] = row[4]
 
         self.__logger.debug(str(res))
         self.__logger.info("Done")

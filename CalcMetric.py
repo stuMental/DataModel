@@ -146,11 +146,11 @@ class CalcMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 
@@ -216,11 +216,11 @@ class CalcMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 
@@ -281,11 +281,11 @@ class CalcMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 

@@ -80,19 +80,19 @@ class CalcTeacherMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            teacher = row[0].encode('utf-8')
+            teacher = row[0]
             if teacher not in res:
                 res[teacher] = {}
 
-            class_id = row[1].encode('utf-8')
+            class_id = row[1]
             if class_id not in res[teacher]:
                 res[teacher][class_id] = {}
 
-            course = row[2].encode('utf-8')
+            course = row[2]
             if course not in res[teacher][class_id]:
                 res[teacher][class_id][course] = {}
 
-            emotion_id = row[3].encode('utf-8')
+            emotion_id = row[3]
             total = int(row[4])
             if '0' == emotion_id:  # happy
                 res[teacher][class_id][course]['happy'] = total
@@ -130,20 +130,20 @@ class CalcTeacherMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            teacher = row[0].encode('utf-8')
+            teacher = row[0]
             if teacher not in res:
                 res[teacher] = {}
 
-            class_id = row[1].encode('utf-8')
+            class_id = row[1]
             if class_id not in res[teacher]:
                 res[teacher][class_id] = {}
 
-            course = row[2].encode('utf-8')
+            course = row[2]
             if course not in res[teacher][class_id]:
                 res[teacher][class_id][course] = []
 
             unix_time = int(row[3])
-            behaviors = row[4].encode('utf-8')
+            behaviors = row[4]
             res[teacher][class_id][course].append([unix_time, behaviors])
 
         self.__logger.debug(str(res))
@@ -223,15 +223,15 @@ class CalcTeacherMetric(object):
 
         res = {}
         for row in self.__db.select(sql):
-            teacher = row[0].encode('utf-8')
+            teacher = row[0]
             if teacher not in res:
                 res[teacher] = {}
 
-            class_id = row[1].encode('utf-8')
+            class_id = row[1]
             if class_id not in res[teacher]:
                 res[teacher][class_id] = {}
 
-            course = row[2].encode('utf-8')
+            course = row[2]
             if course not in res[teacher][class_id]:
                 res[teacher][class_id][course] = []
 

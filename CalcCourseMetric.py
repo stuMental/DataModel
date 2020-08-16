@@ -127,14 +127,14 @@ class CalcCourseMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 
-            ssKey = row[2].encode('utf-8')
+            ssKey = row[2]
             if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = {}
 
@@ -173,15 +173,15 @@ class CalcCourseMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 
-            ssKey = row[2].encode('utf-8')
+            ssKey = row[2]
             if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = {}
 
@@ -215,15 +215,15 @@ class CalcCourseMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 
-            ssKey = row[2].encode('utf-8')
+            ssKey = row[2]
             if ssKey not in res[key][subKey]:
                 res[key][subKey][ssKey] = {}
 

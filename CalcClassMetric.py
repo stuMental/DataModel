@@ -98,7 +98,7 @@ class CalcClassMetric(object):
             if row[0] not in res:
                 res[row[0]] ={}
 
-            course_name = row[1].encode('utf-8')
+            course_name = row[1]
             if course_name not in res[row[0]]:
                 res[row[0]][course_name] = None
 
@@ -122,7 +122,7 @@ class CalcClassMetric(object):
             if row[0] not in res:
                 res[row[0]] ={}
 
-            course_name = row[1].encode('utf-8')
+            course_name = row[1]
             if course_name not in res[row[0]]:
                 res[row[0]][course_name] = None
 
@@ -146,7 +146,7 @@ class CalcClassMetric(object):
             if row[0] not in res:
                 res[row[0]] ={}
 
-            course_name = row[1].encode('utf-8')
+            course_name = row[1]
             if row[0] not in res[row[0]]:
                 res[row[0]][course_name] = []
 
@@ -170,7 +170,7 @@ class CalcClassMetric(object):
             if row[0] not in res:
                 res[row[0]] ={}
 
-            course_name = row[1].encode('utf-8')
+            course_name = row[1]
             if course_name not in res[row[0]]:
                 res[row[0]][course_name] = []
 
@@ -194,7 +194,7 @@ class CalcClassMetric(object):
             if row[0] not in res:
                 res[row[0]] ={}
 
-            course_name = row[1].encode('utf-8')
+            course_name = row[1]
             if course_name not in res[row[0]]:
                 res[row[0]][course_name] = []
 
@@ -219,11 +219,11 @@ class CalcClassMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            course_name = row[1].encode('utf-8')
+            course_name = row[1]
             if course_name not in res[key]:
                 res[key][course_name] = {}
 
@@ -259,10 +259,10 @@ class CalcClassMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 
@@ -301,11 +301,11 @@ class CalcClassMetric(object):
         count = 0
         for row in self.__db.select(sql):
             count += 1
-            key = row[0].encode('utf-8')
+            key = row[0]
             if key not in res:
                 res[key] = {}
 
-            subKey = row[1].encode('utf-8')
+            subKey = row[1]
             if subKey not in res[key]:
                 res[key][subKey] = {}
 

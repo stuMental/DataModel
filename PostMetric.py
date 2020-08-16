@@ -423,7 +423,7 @@ class PostMetric(object):
         student_name = Config.PREFIX_GUEST + self.get_time_from_unixtimestamp(float(data[0]) / 1000) + "_" + data[1]
         sql = '''
             INSERT INTO {0} (grade_name, class_name, student_number, student_name, dt) VALUES ('{1}', '{2}', '{3}', '{4}', '{5}');
-        '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE, classes[class_id][0].encode('utf-8'), classes[class_id][1].encode('utf-8'), face_id, student_name, dt)
+        '''.format(Config.SCHOOL_STUDENT_CLASS_TABLE, classes[class_id][0], classes[class_id][1], face_id, student_name, dt)
         self.__db.insert(sql)
         self.__logger.debug("已插入一条嘉宾数据， 嘉宾ID是 {0}.".format(face_id))
         return student_name

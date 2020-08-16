@@ -57,7 +57,7 @@ class AnalyzeGrade(object):
 
         res = []
         for row in self.__db.select(sql):
-            res.append([row[0].encode('utf-8'), row[1].encode('utf-8'), row[2].encode('utf-8'), str(row[3])])
+            res.append([row[0], row[1], row[2], str(row[3])])
 
         self.__logger.info("Need to compute dates: {}".format(res))
 
@@ -101,11 +101,11 @@ class AnalyzeGrade(object):
 
         res = {}
         for row in self.__db.select(sql):
-            stu_id = row[0].encode('utf-8')
+            stu_id = row[0]
             if stu_id not in res:
                 res[stu_id] = {}
 
-            course_id = row[1].encode('utf-8')
+            course_id = row[1]
             if course_id not in res[stu_id]:
                 res[stu_id][course_id] = 0
             res[stu_id][course_id] = row[2]
@@ -138,11 +138,11 @@ class AnalyzeGrade(object):
 
         res = {}
         for row in self.__db.select(sql):
-            stu_id = row[0].encode('utf-8')
+            stu_id = row[0]
             if stu_id not in res:
                 res[stu_id] = {}
 
-            course_id = row[1].encode('utf-8')
+            course_id = row[1]
             if course_id not in res[stu_id]:
                 res[stu_id][course_id] = 0
             res[stu_id][course_id] = row[2]
@@ -189,7 +189,7 @@ class AnalyzeGrade(object):
 
         res = []
         for row in self.__db.select(sql):
-            res.append([row[0].encode('utf-8'), row[1].encode('utf-8'), row[2].encode('utf-8'), str(row[3])])
+            res.append([row[0], row[1], row[2], str(row[3])])
 
         self.__logger.info("Need to compute dates: {}".format(res))
 
@@ -214,7 +214,7 @@ class AnalyzeGrade(object):
 
         res = {}
         for row in self.__db.select(sql):
-            course = row[0].encode('utf-8')
+            course = row[0]
             if course not in res:
                 res[course] = {}
 
@@ -242,7 +242,7 @@ class AnalyzeGrade(object):
 
         res = {}
         for row in self.__db.select(sql):
-            course = row[0].encode('utf-8')
+            course = row[0]
             if course not in res:
                 res[course] = 0
             res[course] = float(row[1])
