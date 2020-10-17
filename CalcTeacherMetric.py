@@ -303,7 +303,7 @@ class CalcTeacherMetric(object):
         """ 计算综合得分
         """
 
-        return CommonUtil.sigmoid(x=value, alpha=3.0)  # 当分布为[0.6, 0.6, 0.6]，score的值应该是0.6。因此计算得到alpha的值应该为3。
+        return int(CommonUtil.sigmoid(x=value, alpha=3.0) * 100)  # 当分布为[0.6, 0.6, 0.6]，score的值应该是0.6。因此计算得到alpha的值应该为3。归一化到[0, 100]
 
     def __get_value(self, key, arrs):
         """ 获取非None值

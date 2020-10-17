@@ -52,6 +52,13 @@ INPUT_DB_CHARSET = 'utf8'
 # [local] MAC Address
 MAC_ADDRESS = '04ea5648c08c'
 
+# [Serial number file path]
+SN_FILE_PATH = '/home/.bole_version'
+SN_SALT_POS = 32
+SN_SALT_LEN = 4
+SN_CODE_SHORT_LEN = 72
+SN_CODE_LONG_LEN = 73
+
 # Raw input table
 RAW_INPUT_TABLE = 'person_body_status'
 # Raw data backup

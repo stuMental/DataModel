@@ -7,6 +7,9 @@ import Config
 import argparse
 import uuid
 import math
+import hashlib
+from AuthService import DoAuth
+
 
 class CommonUtil(object):
     """Define some common functions"""
@@ -87,19 +90,11 @@ class CommonUtil(object):
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
 
     @staticmethod
-    def get_mac_addr():
-        """ 获取mac地址
-        """
-
-        return uuid.UUID(int = uuid.getnode()).hex[-12:].lower()
-
-    @staticmethod
     def verify():
         """ 验证权限
         """
 
-        if CommonUtil.get_mac_addr() != Config.MAC_ADDRESS:
-            raise ValueError('Cannot run the service on this machine.')
+        return DoAuth.auth()
 
     @staticmethod
     def parse_arguments():
