@@ -10,7 +10,7 @@ class CalcTeacherMetric(object):
     """评估教师的教学状态，包括S-T分析、教学情绪 """
     def __init__(self, configs):
         super(CalcTeacherMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD if configs['pwd'] is None else configs['pwd'], Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
         self.__delimiter = '@'
 
@@ -303,7 +303,7 @@ class CalcTeacherMetric(object):
         """ 计算综合得分
         """
 
-        return CommonUtil.sigmoid(x=value, alpha=3.0)  # 当分布为[0.6, 0.6, 0.6]，score的值应该是0.6。因此计算得到alpha的值应该为3。
+        return int(CommonUtil.sigmoid(x=value, alpha=3.0) * 100)  # 当分布为[0.6, 0.6, 0.6]，score的值应该是0.6。因此计算得到alpha的值应该为3。归一化到[0, 100]
 
     def __get_value(self, key, arrs):
         """ 获取非None值

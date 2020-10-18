@@ -15,7 +15,7 @@ class MockData(object):
     def __init__(self, configs):
         super(MockData, self).__init__()
         self.__logger = Logger.Logger(__name__)
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD if configs['pwd'] is None else configs['pwd'], Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__students = [['9001', '李小霖', '语文'], ['9002', '黄小莹', '英语'], ['9003', '贺小文', '数学'], ['9004', '梁小浩', '物理'], ['9005', '李小霞', '英语']]
         self.__classid = '201901'
         self.__grade = '2019'

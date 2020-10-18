@@ -11,7 +11,7 @@ class Preprocessor(object):
     """预处理raw数据"""
     def __init__(self, configs):
         super(Preprocessor, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD if configs['pwd'] is None else configs['pwd'], Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
         self.__teaching = True if configs['teaching'] == 1 else False  # teaching=1 表示评估课堂的教学情况
         self.__teacher = True if configs['teaching'] == 2 else False  # teaching=2 表示基于S-T评估教师的教学情况
@@ -417,6 +417,7 @@ class Preprocessor(object):
                         SELECT
                             college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time, COUNT(*) AS total
                         FROM {1}
+                        WHERE face_pose IN ('0', '1', '2')
                         GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, pose_stat_time
                     ) t1 LEFT OUTER JOIN (
                         SELECT
@@ -454,13 +455,13 @@ class Preprocessor(object):
         sql = '''
             CREATE TABLE {0}
             SELECT
-                t4.college_name, t4.grade_name, t4.class_name, t4.course_id, t4.course_name, t4.teacher_id, t4.teacher_name, t3.face_id, t3.body_stat, t3.face_emotion, t3.unix_timestamp - t3.unix_timestamp % {5} AS pose_stat_time, cast(from_unixtime(t3.unix_timestamp,'%H:%i') as time) AS u_time, t4.start_time
+                t4.college_name, t4.grade_name, t4.class_name, t4.course_id, t4.course_name, t4.teacher_id, t4.teacher_name, t3.face_id, t3.body_stat, t3.face_emotion, t3.`unix_timestamp` - t3.`unix_timestamp` % {5} AS pose_stat_time, cast(from_unixtime(t3.`unix_timestamp`,'%H:%i') as time) AS u_time, t4.start_time
             FROM (
                 SELECT
-                    t2.room_addr, t1.body_stat, t1.face_emotion, t1.unix_timestamp, t1.face_id
+                    t2.room_addr, t1.body_stat, t1.face_emotion, t1.`unix_timestamp`, t1.face_id
                 FROM (
                     SELECT
-                        camera_id, face_id, body_stat, face_emotion, unix_timestamp
+                        camera_id, face_id, body_stat, face_emotion, `unix_timestamp`
                     FROM {1}
                     WHERE dt = '{4}'
                 ) t1 JOIN {2} t2 ON t1.camera_id = t2.camera_id
@@ -470,7 +471,7 @@ class Preprocessor(object):
                 FROM {3}
                 WHERE weekday = dayofweek('{4}')
                 GROUP BY room_addr, college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, end_time
-            ) t4 ON t3.room_addr = t4.room_addr AND cast(from_unixtime(t3.unix_timestamp,'%H:%i') as time) >= t4.start_time AND cast(from_unixtime(t3.unix_timestamp,'%H:%i') as time) <= t4.end_time
+            ) t4 ON t3.room_addr = t4.room_addr AND cast(from_unixtime(t3.`unix_timestamp`,'%H:%i') as time) >= t4.start_time AND cast(from_unixtime(t3.`unix_timestamp`,'%H:%i') as time) <= t4.end_time
         '''.format(Config.INTERMEDIATE_TEACHER_COURSE_TABLE, Config.TEACHER_RAW_DATA_TABLE, Config.SCHOOL_CAMERA_ROOM_TABLE, Config.SCHOOL_STUDENT_COURSE_TABLE, day, Config.TEACHER_INTERVAL)
         self.__db.insert(sql)
         self.__logger.info("Finish to add course data for teacher")
@@ -483,24 +484,32 @@ class Preprocessor(object):
     def process_teacher_ontime(self, day):
         """ 判定教师是否准时上课
             标准：教师是否在课堂5分钟内被识别
+            现阶段：由于教师侧目前暂无人脸识别，因此以检测到表情数据来判定老师是否准时上课。
         """
         self.__logger.info("Judge if the teacher begins to take course on time")
         sql = '''
             CREATE TABLE {0}
             SELECT
                 college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time,
-                CASE
-                    WHEN total > 0 THEN 1
-                ELSE 0
-                END AS ontime,
+                if(b.college_name IS NULL, a.ontime, b.ontime) AS ontime,
                 '{3}' AS dt
-            FROM (
+            (
                 SELECT
-                    college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, COUNT(*) AS total
+                    college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, 0 AS ontime
                 FROM {1}
-                WHERE face_id != 'unknown' AND u_time >= start_time AND u_time <= DATE_FORMAT(ADDTIME(start_time, '{2}'), '%H:%i')
                 GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time
-            ) t1
+            ) a LEFT OUTER JOIN (
+                SELECT
+                    college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time,
+                    IF(total > 0, 1, 0) AS ontime
+                FROM (
+                    SELECT
+                        college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time, COUNT(*) AS total
+                    FROM {1}
+                    WHERE face_emotion IN ('0', '1', '2') AND u_time >= start_time AND u_time <= DATE_FORMAT(ADDTIME(start_time, '{2}'), '%H:%i')
+                    GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, start_time
+                ) t1
+            ) b ON a.college_name = b.college_name AND a.grade_name = b.grade_name AND a.class_name = b.class_name AND a.course_id = b.course_id AND a.course_name = b.course_name AND a.teacher_id = b.teacher_id AND a.teacher_name = b.teacher_name AND a.start_time = b.start_time
         '''.format(Config.INTERMEDIATE_TEACHER_ONTIME_TABLE, Config.INTERMEDIATE_TEACHER_COURSE_TABLE, Config.TEACHER_ONTIME, day)
         self.__db.insert(sql)
         self.__logger.info("Finish to judge ontime for teacher")
@@ -514,7 +523,7 @@ class Preprocessor(object):
             SELECT
                 college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, face_emotion, COUNT(*) AS total, '{2}' AS dt
             FROM {1}
-            WHERE face_emotion != '-1'
+            WHERE face_emotion IN ('0', '1', '2')
             GROUP BY college_name, grade_name, class_name, course_id, course_name, teacher_id, teacher_name, face_emotion
         '''.format(Config.INTERMEDIATE_TEACHER_EMOTION_TABLE, Config.INTERMEDIATE_TEACHER_COURSE_TABLE, day)
         self.__db.insert(sql)
