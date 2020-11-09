@@ -1,6 +1,6 @@
 # !/bin/bash
-# Get IP address
-# please update 'eth0' or 'inet 地址' according your computer info. You can run 'ifconfig' to check.
-hostIP=`ifconfig eth0 | grep "inet 地址" | cut -f 2 -d ":" | cut -f 1 -d " "`
-echo "Get the IP address: $hostIP"
-echo "root password" | sudo -S python /data model path/MainBK.py --dbhost $hostIP
+curDate=$(date +%Y%m%d)
+# 以文件的形式备份当天数据，避免数据库太大，导致性能不行。
+echo "123456" | mysqldump -uroot -p -t student_service person_body_status > ./sqls/person_body_status_$curDate.sql
+# 清空当天数据
+echo "mysql password" | sudo -S python /data model path/MainBK.py --dbhost localhost

@@ -94,7 +94,8 @@ class CommonUtil(object):
         """ 验证权限
         """
 
-        return DoAuth.auth()
+        if not DoAuth.auth():
+            exit(-1)
 
     @staticmethod
     def parse_arguments():

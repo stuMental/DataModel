@@ -16,11 +16,11 @@ class BackupData(object):
 
     def process(self):
         CommonUtil.verify()
-        self.__logger.info('开始备份数据，将数据从{0}备份到{1}.'.format(Config.RAW_INPUT_TABLE, Config.RAW_INPUT_TABLE_BAK))
-        sql = '''
-            INSERT INTO {0} SELECT * FROM {1}
-        '''.format(Config.RAW_INPUT_TABLE_BAK, Config.RAW_INPUT_TABLE)
-        self.__db.insert(sql)
+        # self.__logger.info('开始备份数据，将数据从{0}备份到{1}.'.format(Config.RAW_INPUT_TABLE, Config.RAW_INPUT_TABLE_BAK))
+        # sql = '''
+        #     INSERT INTO {0} SELECT * FROM {1}
+        # '''.format(Config.RAW_INPUT_TABLE_BAK, Config.RAW_INPUT_TABLE)
+        # self.__db.insert(sql)
         self.__logger.info('开始将表{0}中的数据删除.'.format(Config.RAW_INPUT_TABLE))
         sql = '''
             TRUNCATE TABLE {0}

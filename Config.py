@@ -9,9 +9,9 @@ import logging
 # INPUT_DB_HOST = 'ip_address'
 
 # Database host for local test 仅local测试
-INPUT_DB_HOST = '172.16.14.190'
+# INPUT_DB_HOST = '172.16.14.190'
 # Database host for BiGuiYuan server
-# INPUT_DB_HOST = 'localhost'
+INPUT_DB_HOST = 'localhost'
 
 # Database username
 INPUT_DB_USERNAME = 'root'

@@ -172,7 +172,7 @@ class DoAuth(object):
             second = str(DoAuth.get_check_s(data[first_number:(second_number + num_length)]))
             third = str(DoAuth.get_check_s(data[:third_pos]))
             if first == data[first_pos] and second == data[second_pos] and third == data[third_pos]:
-                return True, data[0:(first_number - num_length)] + data[(first_number + num_length - 1):sn_salt_pos] + data[(sn_salt_pos + sn_salt_len):first_pos]
+                return True, data[0:(first_number - 1)] + data[(first_number + num_length - 1):sn_salt_pos] + data[(sn_salt_pos + sn_salt_len):first_pos]
 
         return False, ''
 
@@ -193,7 +193,6 @@ class DoAuth(object):
             print ('[-1001] 授权码无效，请先授权')
             return False
 
-        print ('授权成功')
         return True
 
     @staticmethod
@@ -221,11 +220,11 @@ if __name__ == "__main__":
     print('======开始授权======')
     auth.doer()
     print('======结束授权======')
-    
+
     print('======开始验证======')
-    DoAuth.auth()
+    print(DoAuth.auth())
     print('======验证结束======')
-    
+
     print('======获取班级数======')
-    DoAuth.get_class_number()
+    print(DoAuth.get_class_number())
     print('======获取结束======')
