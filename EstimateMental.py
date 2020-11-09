@@ -26,7 +26,7 @@ class EstimateMental(object):
         self.__logger = Logger.Logger(__name__)
         self.__preprocessor = Preprocessor.Preprocessor(configs)
         self.__poster = PostMetric.PostMetric(configs)
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD if configs['pwd'] is None else configs['pwd'], Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__date = configs['date']
         self.__teaching = True if configs['teaching'] == 1 else False  # teaching=1 表示评估课堂的教学情况
         self.__teacher = True if configs['teaching'] == 2 else False  # teaching=2 表示基于S-T评估教师的教学情况

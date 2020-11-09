@@ -11,7 +11,7 @@ class AnalyzeGrade(object):
     """Analyze grade with course ans study_status"""
     def __init__(self, configs):
         super(AnalyzeGrade, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD if configs['pwd'] is None else configs['pwd'], Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__logger = Logger.Logger(__name__)
 
     def Analysis(self, i_dt):
@@ -168,10 +168,10 @@ class AnalyzeGrade(object):
                 metrics[class_id] = {}
             metrics[class_id][dt[3]] = {}
             grade_levels = self.get_class_course_grade_level(dt)
-            study_levels = self.get_class_course_study_status(CommonUtil.get_specific_date(dt[3], Config.ANALYSIS_LOOKBACKWINDOW) , dt)
+            study_levels = self.get_class_course_study_status(CommonUtil.get_specific_date(dt[3], Config.ANALYSIS_LOOKBACKWINDOW), dt)
             for course_name, score in study_levels.items():
-                    if course_name not in Config.FILTER_COURSES and course_name in grade_levels:
-                        metrics[class_id][dt[3]][course_name] = [grade_levels[course_name], score]
+                if course_name not in Config.FILTER_COURSES and course_name in grade_levels:
+                    metrics[class_id][dt[3]][course_name] = [grade_levels[course_name], score]
 
         self.__logger.debug(str(metrics))
         self.__logger.info("Finished to analyze grade and study_status")

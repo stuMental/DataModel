@@ -376,6 +376,7 @@ TEACHING_CONCENTRATION_LOW = {
 
 # 教师模块的参数配置
 TEACHER_RAW_DATA_TABLE = 'person_teacher_body_status'
+TEACHER_RAW_DATA_TABLE_BAK = 'person_teacher_body_status_bak'
 INTERMEDIATE_TEACHER_STUDENT_TABLE = 'person_teacher_body_status_student_course_info'
 INTERMEDIATE_TEACHER_STUDENT_BEHAVIOR_TABLE = 'person_teacher_body_status_student_behavior_info'
 INTERMEDIATE_TEACHER_COURSE_TABLE = 'person_teacher_body_status_course_info'
@@ -391,7 +392,7 @@ OUTPUT_UI_TEA_BEHAVIOR_TABLE = 'teacher_student_behavior_result'
 TEACHER_INTERVAL = 30  # 30秒 标准的S-T分析采用的时间间隔
 TEACHER_STUDENT_THINK = 0.4  # 低头比例超过40% 认为是学生是在思考/计算
 TEACHER_STUDENT_DISCUSSION = 0.4  # 左顾右盼超过40% 认为学生是在讨论
-TEACHER_STUDENT_SPEAK = 3  # 考虑到站立和举手存钻误差识别的情况，因此需要大于一定的阈值才被认为是[发言]。
+TEACHER_STUDENT_SPEAK = 3  # 考虑到站立和举手存在误差识别的情况，因此需要大于一定的阈值才被认为是[发言]。
 TEACHER_ONTIME = '0:5:0'  # 5分钟内识别到，即认为教师准时上课
 TEACHER_BEHAVIORS = ['板书', '解说(讲课)', '巡视', '其他']
 STUDENT_BEHAVIORS = ['发言', '讨论', '思考/计算', '其他']

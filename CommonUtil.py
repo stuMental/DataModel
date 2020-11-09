@@ -90,24 +90,41 @@ class CommonUtil(object):
         return (datetime.date.today() + datetime.timedelta(days=days)).strftime("%Y-%m-%d")
 
     @staticmethod
+    def get_mac_addr():
+        """ 获取mac地址
+        """
+
+        return uuid.UUID(int = uuid.getnode()).hex[-12:].lower()
+
+    @staticmethod
     def verify():
         """ 验证权限
         """
 
-        if not DoAuth.auth():
+        if CommonUtil.get_mac_addr() != Config.MAC_ADDRESS:
             exit(-1)
+
+        return True
+
+    # @staticmethod
+    # def verify():
+    #     """ 验证权限
+    #     """
+
+    #     if not DoAuth.auth():
+    #         exit(-1)
 
     @staticmethod
     def parse_arguments():
         '''
         解析命令行参数
         '''
-
         parser = argparse.ArgumentParser()
         parser.add_argument('--dbhost', type=str, help='Database host ip')
         parser.add_argument('--teaching', type=int, help='0: Don\'t estimate, 1: Estimate teaching status, 2: Estimate teacher status based on S-T analysis', default=0)
         parser.add_argument('--date', type=str, help='date yyyy-mm-dd', default='-1')
         parser.add_argument('--dbname', type=str, help='Database name', default=None)
+        parser.add_argument('--pwd', type=str, help='Input the password', default=None)
 
         args = parser.parse_args()
         if not args.dbhost:
@@ -119,6 +136,7 @@ class CommonUtil(object):
         configs['teaching'] = args.teaching
         configs['date'] = args.date
         configs['dbname'] = args.dbname
+        configs['pwd'] = args.pwd
 
         return configs
 

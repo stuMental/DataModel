@@ -10,7 +10,7 @@ class CalcClassMetric(object):
     """计算教师报表相关的指标，比如教师情绪、师德修养和教学态度等。"""
     def __init__(self, configs):
         super(CalcClassMetric, self).__init__()
-        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD, Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
+        self.__db = DbUtil.DbUtil(configs['dbhost'], Config.INPUT_DB_USERNAME, Config.INPUT_DB_PASSWORD if configs['pwd'] is None else configs['pwd'], Config.INPUT_DB_DATABASE if configs['dbname'] is None else configs['dbname'], Config.INPUT_DB_CHARSET)
         self.__utils = MetricUtil.MetricUtil()
         self.__logger = Logger.Logger(__name__)
 
